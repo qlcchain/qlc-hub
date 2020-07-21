@@ -15,7 +15,7 @@ import (
 const (
 	CfgFileName        = "hub.json"
 	configVersion      = 1
-	cfgDir             = "ghub"
+	cfgDir             = "GHub"
 	nixCfgDir          = ".ghub"
 	bootNodeHttpServer = "0.0.0.0:9997"
 )
@@ -112,4 +112,16 @@ func (c *Config) LogDir() string {
 
 func TestDataDir() string {
 	return filepath.Join(DefaultDataDir(), "test")
+}
+
+// DecodePrivateKey is a helper to decode the users PrivateKey
+func (c *Config) DecodePrivateKey() (ic.PrivKey, error) {
+	pkb, err := base64.StdEncoding.DecodeString(c.P2P.ID.PrivKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// currently storing key unencrypted. in the future we need to encrypt it.
+	// TODO:(security)
+	return ic.UnmarshalPrivateKey(pkb)
 }
