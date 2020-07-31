@@ -11,7 +11,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 	"time"
 
@@ -288,7 +287,7 @@ func TestSerivceContext_ConfigManager(t *testing.T) {
 
 }
 
-func TestChainContext_P2PSyncState(t *testing.T) {
+func TestChainContext(t *testing.T) {
 	cfgFile := filepath.Join(config.TestDataDir(), uuid.New().String(), "test.json")
 	ctx := NewServiceContext(cfgFile)
 	const name = "waitService"
@@ -316,14 +315,6 @@ func TestChainContext_P2PSyncState(t *testing.T) {
 		if len(services) != 1 {
 			t.Fatal()
 		}
-	}
-
-	accounts := []*sdk.Account{mockAccount(), mockAccount()}
-	ctx.SetAccounts(accounts)
-	a2 := ctx.Accounts()
-
-	if !reflect.DeepEqual(accounts, a2) {
-		t.Fatal()
 	}
 
 	if err := ctx.Destroy(); err != nil {

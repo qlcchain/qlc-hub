@@ -8,15 +8,6 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/flynn-archive/go-shlex v0.0.0-20150515145356-3f9db97f8568 // indirect
 	github.com/google/uuid v1.1.1
-	github.com/hashicorp/golang-lru v0.5.4
-	github.com/ipfs/go-log v1.0.4
-	github.com/libp2p/go-libp2p v0.10.0
-	github.com/libp2p/go-libp2p-core v0.6.0
-	github.com/libp2p/go-libp2p-discovery v0.5.0
-	github.com/libp2p/go-libp2p-kad-dht v0.8.1
-	github.com/libp2p/go-libp2p-pubsub v0.3.2
-	github.com/libp2p/go-libp2p-swarm v0.2.8
-	github.com/multiformats/go-multiaddr v0.2.2
 	github.com/qlcchain/qlc-go-sdk v1.3.6-0.20200611134241-32e00d2b0b32
 	github.com/sahilm/fuzzy v0.1.0
 	github.com/spf13/cobra v1.0.0
