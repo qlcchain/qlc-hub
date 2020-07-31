@@ -11,11 +11,7 @@ type TopicType string
 
 //Topic type
 const (
-	EventPeersInfo       TopicType = "peersInfo"
-	EventOnlinePeersInfo TopicType = "onlinePeersInfo"
-	EventAddP2PStream    TopicType = "addP2PStream"
-	EventDeleteP2PStream TopicType = "deleteP2PStream"
-	EventRpcSyncCall     TopicType = "rpcSyncCall"
+	EventRpcSyncCall TopicType = "rpcSyncCall"
 )
 
 // Sync state

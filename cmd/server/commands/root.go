@@ -8,7 +8,6 @@
 package commands
 
 import (
-	"encoding/hex"
 	"fmt"
 	_ "net/http/pprof"
 	"os"
@@ -18,8 +17,6 @@ import (
 	"github.com/abiosoft/ishell"
 	"github.com/abiosoft/readline"
 	"github.com/spf13/cobra"
-
-	sdk "github.com/qlcchain/qlc-go-sdk/pkg/types"
 
 	cmdutil "github.com/qlcchain/qlc-hub/cmd/util"
 	"github.com/qlcchain/qlc-hub/log"
@@ -34,14 +31,11 @@ var (
 )
 
 var (
-	seedP         string
 	cfgPathP      string
 	configParamsP string
 
-	seed           cmdutil.Flag
-	cfgPath        cmdutil.Flag
-	configParams   cmdutil.Flag
-	maxAccountSize = 100
+	cfgPath      cmdutil.Flag
+	configParams cmdutil.Flag
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -77,7 +71,6 @@ func Execute(osArgs []string) {
 			},
 		}
 		rootCmd.PersistentFlags().StringVar(&cfgPathP, "config", "", "config file")
-		rootCmd.PersistentFlags().StringVar(&seedP, "seed", "", "seed for accounts")
 		rootCmd.PersistentFlags().StringVar(&configParamsP, "configParams", "", "parameter set that needs to be changed")
 		addCommand()
 		if err := rootCmd.Execute(); err != nil {
@@ -95,25 +88,10 @@ func addCommand() {
 }
 
 func start() error {
-	var accounts []*sdk.Account
 	servicesContext := context.NewServiceContext(cfgPathP)
 
 	log.Root.Info("Run node id: ", servicesContext.Id())
 
-	if len(seedP) > 0 {
-		log.Root.Info("run hub SEED mode")
-		sByte, _ := hex.DecodeString(seedP)
-		tmp, err := seedToAccounts(sByte)
-		if err != nil {
-			return err
-		}
-		accounts = append(accounts, tmp...)
-	} else {
-		log.Root.Info("run hub without account")
-	}
-
-	// save accounts to context
-	servicesContext.SetAccounts(accounts)
 	// start all services by chain context
 	err := servicesContext.Init(func() error {
 		return services.RegisterServices(servicesContext)
@@ -145,27 +123,7 @@ func trapSignal() {
 	log.Root.Info("hub closed successfully")
 }
 
-func seedToAccounts(data []byte) ([]*sdk.Account, error) {
-	seed, err := sdk.BytesToSeed(data)
-	if err != nil {
-		return nil, err
-	}
-	var accounts []*sdk.Account
-	for i := 0; i < maxAccountSize; i++ {
-		account, _ := seed.Account(uint32(i))
-		accounts = append(accounts, account)
-	}
-
-	return accounts, nil
-}
-
 func run() {
-	seed = cmdutil.Flag{
-		Name:  "seed",
-		Must:  false,
-		Usage: "seed for wallet,if is nil,just run a node",
-		Value: "",
-	}
 	cfgPath = cmdutil.Flag{
 		Name:  "config",
 		Must:  false,
@@ -179,7 +137,7 @@ func run() {
 		Usage: "parameter set that needs to be changed",
 		Value: "",
 	}
-	args := []cmdutil.Flag{seed, cfgPath, configParams}
+	args := []cmdutil.Flag{cfgPath, configParams}
 	s := &ishell.Cmd{
 		Name:                "run",
 		Help:                "start hub server",
@@ -192,7 +150,6 @@ func run() {
 				cmdutil.Warn(err)
 				return
 			}
-			seedP = cmdutil.StringVar(c.Args, seed)
 			cfgPathP = cmdutil.StringVar(c.Args, cfgPath)
 			configParamsP = cmdutil.StringVar(c.Args, configParams)
 

@@ -21,8 +21,6 @@ import (
 	"github.com/qlcchain/qlc-hub/common"
 	"github.com/qlcchain/qlc-hub/common/event"
 	"github.com/qlcchain/qlc-hub/common/hashmap"
-	"github.com/qlcchain/qlc-hub/common/topic"
-	"github.com/qlcchain/qlc-hub/common/types"
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/log"
 )
@@ -32,10 +30,8 @@ var cache = hashmap.New(10)
 var ErrPoVNotFinish = errors.New("pov sync is not finished, please check it")
 
 const (
-	LedgerService       = "ledgerService"
-	BootNodeHttpService = "bootNodeHttpService"
-	P2PService          = "P2PService"
-	LogService          = "logService"
+	LedgerService = "ledgerService"
+	LogService    = "logService"
 )
 
 type serviceManager interface {
@@ -70,10 +66,9 @@ func NewServiceContext(cfgFile string) *ServiceContext {
 		return v.(*ServiceContext)
 	} else {
 		sr := &ServiceContext{
-			services:         newServiceContainer(),
-			cfgFile:          cfgFile,
-			chainID:          id,
-			connectPeersPool: new(sync.Map),
+			services: newServiceContainer(),
+			cfgFile:  cfgFile,
+			chainID:  id,
 		}
 		cache.Set(id, sr)
 		return sr
@@ -82,16 +77,12 @@ func NewServiceContext(cfgFile string) *ServiceContext {
 
 type ServiceContext struct {
 	common.ServiceLifecycle
-	services         *serviceContainer
-	cm               *config.CfgManager
-	cfgFile          string
-	chainID          string
-	locker           sync.RWMutex
-	accounts         []*sdk.Account
-	subscriber       *event.ActorSubscriber
-	connectPeersPool *sync.Map
-	connectPeersInfo []*types.PeerInfo
-	onlinePeersInfo  []*types.PeerInfo
+	services   *serviceContainer
+	cm         *config.CfgManager
+	cfgFile    string
+	chainID    string
+	locker     sync.RWMutex
+	subscriber *event.ActorSubscriber
 }
 
 func (sc *ServiceContext) EventBus() event.EventBus {
@@ -100,25 +91,6 @@ func (sc *ServiceContext) EventBus() event.EventBus {
 
 func (sc *ServiceContext) FeedEventBus() *event.FeedEventBus {
 	return event.GetFeedEventBus(sc.Id())
-}
-
-func (sc *ServiceContext) GetPeersPool() map[string]string {
-	p := make(map[string]string)
-	sc.connectPeersPool.Range(func(key, value interface{}) bool {
-		peerId := key.(string)
-		addr := value.(string)
-		p[peerId] = addr
-		return true
-	})
-	return p
-}
-
-func (sc *ServiceContext) GetConnectPeersInfo() []*types.PeerInfo {
-	return sc.connectPeersInfo
-}
-
-func (sc *ServiceContext) GetOnlinePeersInfo() []*types.PeerInfo {
-	return sc.onlinePeersInfo
 }
 
 func (sc *ServiceContext) ConfigFile() string {
@@ -153,24 +125,11 @@ func (sc *ServiceContext) Init(fn func() error) error {
 	}
 
 	sc.subscriber = event.NewActorSubscriber(event.Spawn(func(c actor.Context) {
-		switch msg := c.Message().(type) {
-		case *topic.EventAddP2PStreamMsg:
-			if _, ok := sc.connectPeersPool.Load(msg.PeerID); ok {
-				sc.connectPeersPool.Delete(msg.PeerID)
-			}
-			sc.connectPeersPool.Store(msg.PeerID, msg.PeerInfo)
-		case *topic.EventDeleteP2PStreamMsg:
-			if _, ok := sc.connectPeersPool.Load(msg.PeerID); ok {
-				sc.connectPeersPool.Delete(msg.PeerID)
-			}
-		case *topic.EventP2PConnectPeersMsg:
-			sc.connectPeersInfo = msg.PeersInfo
-		case *topic.EventP2POnlinePeersMsg:
-			sc.onlinePeersInfo = msg.PeersInfo
-		}
+		//switch msg := c.Message().(type) {
+		//}
 	}), sc.EventBus())
 
-	return sc.subscriber.Subscribe(topic.EventOnlinePeersInfo, topic.EventPeersInfo, topic.EventAddP2PStream, topic.EventDeleteP2PStream)
+	return sc.subscriber.Subscribe()
 }
 
 func (sc *ServiceContext) Start() error {
@@ -215,18 +174,6 @@ func (sc *ServiceContext) Stop() error {
 
 func (sc *ServiceContext) Status() int32 {
 	return sc.State()
-}
-
-func (sc *ServiceContext) SetAccounts(accounts []*sdk.Account) {
-	sc.locker.Lock()
-	defer sc.locker.Unlock()
-	sc.accounts = accounts
-}
-
-func (sc *ServiceContext) Accounts() []*sdk.Account {
-	sc.locker.RLock()
-	defer sc.locker.RUnlock()
-	return sc.accounts
 }
 
 func (sc *ServiceContext) Id() string {

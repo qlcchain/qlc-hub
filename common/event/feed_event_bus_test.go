@@ -9,8 +9,8 @@ import (
 
 func TestFeedEventBus_PubSub1(t *testing.T) {
 	feb := NewFeedEventBus()
-	ch1 := make(chan *topic.EventAddP2PStreamMsg)
-	ch2 := make(chan *topic.EventAddP2PStreamMsg)
+	ch1 := make(chan *topic.EventRPCSyncCallMsg)
+	ch2 := make(chan *topic.EventRPCSyncCallMsg)
 	feb.Subscribe(topic.EventRpcSyncCall, ch1)
 	feb.Subscribe(topic.EventRpcSyncCall, ch2)
 
@@ -30,7 +30,7 @@ func TestFeedEventBus_PubSub1(t *testing.T) {
 		}
 	}()
 
-	feb.Publish(topic.EventRpcSyncCall, &topic.EventAddP2PStreamMsg{})
+	feb.Publish(topic.EventRpcSyncCall, &topic.EventRPCSyncCallMsg{})
 
 	time.Sleep(100 * time.Millisecond)
 
