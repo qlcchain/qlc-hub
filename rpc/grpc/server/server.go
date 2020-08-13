@@ -45,7 +45,7 @@ func (g *GRPCServer) Start(cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to listen: %s", err)
 	}
-	pb.RegisterWrapperAPIServer(g.rpc, &WrapperAPI{})
+	pb.RegisterWrapperAPIServer(g.rpc, &api.WrapperAPI{})
 	reflection.Register(g.rpc)
 	go func() {
 		if err := g.rpc.Serve(lis); err != nil {

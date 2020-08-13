@@ -139,9 +139,9 @@ func run() {
 	}
 	args := []cmdutil.Flag{cfgPath, configParams}
 	s := &ishell.Cmd{
-		Name:                "run",
-		Help:                "start hub server",
-		CompleterWithPrefix: cmdutil.OptsCompleter(args),
+		Name: "run",
+		Help: "start hub server",
+		//CompleterWithPrefix: cmdutil.OptsCompleter(args),
 		Func: func(c *ishell.Context) {
 			if cmdutil.HelpText(c, args) {
 				return

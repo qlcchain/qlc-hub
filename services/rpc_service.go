@@ -16,8 +16,8 @@ type RPCService struct {
 	logger *zap.SugaredLogger
 }
 
-func NewRPCService(cfgFile string, cs *ContractService) (*RPCService, error) {
-	rpc, err := rpc.NewRPC(cfgFile, cs.cs)
+func NewRPCService(cfgFile string) (*RPCService, error) {
+	rpc, err := rpc.NewRPC(cfgFile)
 	if err != nil {
 		return nil, err
 	}
