@@ -1,0 +1,216 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "types.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/Wrapper/eventstatcheck": {
+      "get": {
+        "operationId": "WrapperAPI_EventStatCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoEventStatCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WrapperAPI"
+        ]
+      }
+    },
+    "/Wrapper/nep5locknotice": {
+      "get": {
+        "operationId": "WrapperAPI_Nep5LockNotice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoNep5LockNoticeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "txHash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WrapperAPI"
+        ]
+      }
+    },
+    "/Wrapper/online": {
+      "get": {
+        "operationId": "WrapperAPI_Online",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoOnlineResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "WrapperAPI"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protoEventStatCheckResponse": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "int64"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "format": "int64"
+        },
+        "errno": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protoNep5LockNoticeResponse": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "int64"
+        },
+        "result": {
+          "type": "string",
+          "format": "int64"
+        },
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "protoOnlineResponse": {
+      "type": "object",
+      "properties": {
+        "neoAccount": {
+          "type": "string"
+        },
+        "ethAccount": {
+          "type": "string"
+        },
+        "neoContract": {
+          "type": "string"
+        },
+        "ethContract": {
+          "type": "string"
+        },
+        "activeTime": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
