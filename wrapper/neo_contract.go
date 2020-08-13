@@ -5,6 +5,7 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/interop/storage"
 	"github.com/nspcc-dev/neo-go/pkg/interop/util"
 )
+
 const (
 	decimals   = 8
 	multiplier = 100000000
