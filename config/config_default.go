@@ -24,8 +24,8 @@ func DefaultConfig(dir string) (*Config, error) {
 		ChainUrl: "ws://127.0.0.1:19736",
 		RPC: RPCConfig{
 			Enable:             true,
-			ListenAddress:      "tcp://0.0.0.0:9998",
-			GRPCListenAddress:  "tcp://0.0.0.0:9999",
+			ListenAddress:      "tcp://0.0.0.0:19745",
+			GRPCListenAddress:  "tcp://0.0.0.0:19746",
 			CORSAllowedOrigins: []string{"*"},
 		},
 	}

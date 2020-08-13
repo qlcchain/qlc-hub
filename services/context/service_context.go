@@ -32,6 +32,7 @@ var ErrPoVNotFinish = errors.New("pov sync is not finished, please check it")
 const (
 	LedgerService = "ledgerService"
 	LogService    = "logService"
+	RPCService    = "rpcService"
 )
 
 type serviceManager interface {

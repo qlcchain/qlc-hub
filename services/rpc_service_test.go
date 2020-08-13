@@ -20,11 +20,7 @@ func TestNewRPCService(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(dir)
 	}()
-	cs, err := NewContractService(cm.ConfigFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rpc, err := NewRPCService(cm.ConfigFile, cs)
+	rpc, err := NewRPCService(cm.ConfigFile)
 	if err != nil {
 		t.Fatal(err)
 	}
