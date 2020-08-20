@@ -99,7 +99,10 @@ func NewWrapperSqlconn() *WrapperSqlconn {
 func WrapperSqlInit(cfgFile string) {
 	cc := chainctx.NewServiceContext(cfgFile)
 	cfg, _ := cc.Config()
-	orm.RegisterDriver("mysql", orm.DRMySQL)
+	err := orm.RegisterDriver("mysql", orm.DRMySQL)
+	if err != nil {
+		panic(err)
+	}
 	maxIdle := 30
 	maxConn := 50
 	dbuser := cfg.SQLCFG.Uname
@@ -108,7 +111,10 @@ func WrapperSqlInit(cfgFile string) {
 	dbname := cfg.SQLCFG.DbName
 	connect := dbuser + ":" + dbpwd + "@tcp(" + dburl + ")/" + dbname + "?charset=utf8"
 	fmt.Println(connect)
-	orm.RegisterDataBase("default", "mysql", connect, maxIdle, maxConn)
+	err = orm.RegisterDataBase("default", "mysql", connect, maxIdle, maxConn)
+	if err != nil {
+		panic(err)
+	}
 	orm.RegisterModel(new(DBNeoMortgageEventTBL), new(DBEthRedemptionEventTBL), new(DBEventStatsChangelogTBL))
 	orm.RunSyncdb("default", false, true)
 }

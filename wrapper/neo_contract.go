@@ -240,6 +240,11 @@ func (w *WrapperServer) Nep5TransactionVerifyTry(txhash string) (status int) {
 	return ret
 }
 
+func (w *WrapperServer) Nep5ContractWrapperLock(lockhash string) (status int) {
+	ret := CchTransactionVerifyStatusUnknown
+	return ret
+}
+
 //Nep5TransactionVerifyLoop tx verify loop
 func (w *WrapperServer) Nep5TransactionVerifyLoop(txhash string) (status int) {
 	ticker := time.NewTicker(Nep5VerifyLoopTime)
