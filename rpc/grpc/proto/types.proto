@@ -29,8 +29,9 @@ message EventStatCheckResponse {
 message Nep5LockNoticeRequest{
   int64 type = 1;
   int64 amount = 2;
-  string hash = 3;
-  string txHash = 4;
+  int64 userlocknum = 3;
+  string hash = 4;
+  string txHash = 5;
 }
 
 message Nep5LockNoticeResponse {
@@ -39,20 +40,190 @@ message Nep5LockNoticeResponse {
   string hash = 3;
 }
 
+message EthIssueLockRequest{
+  int64 amount = 1;
+  string lockhash = 2;
+}
+
+message EthIssueLockResponse {
+  int64 result =1;
+  string txhash =2;
+}
+
+message EthIssueFetchRequest{
+  string lockhash =1;
+}
+
+message EthIssueFetchResponse {
+  int64 result =1;
+  string txhash =2;
+}
+
+message EthDestoryUnlockRequest{
+  string lockhash =1;
+  string locksource =2;
+}
+
+message EthDestoryUnlockResponse {
+  int64 result =1;
+  string txhash =2;
+}
+
+message EthUcallerDestoryLockRequest{
+  int64 amount = 1;
+  string lockhash = 2;
+}
+
+message EthUcallerDestoryLockResponse {
+  int64 result =1;
+  string txhash =2;
+}
+
+message EthGetTransationInfoRequest{
+  int64 infotype =1;
+  string txhash =2;
+}
+
+message EthGetTransationInfoResponse {
+  int64 result =1;
+  int64 infotype =2;
+  string info =3;
+}
+
+message EthGetAccountInfoRequest{
+  string address =1;
+}
+
+message EthGetAccountInfoResponse {
+  int64 result =1;
+  string info =2;
+}
+
+message EthGetHashTimerRequest{
+  string lockhash =1;
+}
+
+message EthGetHashTimerResponse {
+  int64 result =1;
+  int64 stat =2;
+  int64 amount =3;
+  int64 locknum =4;
+  int64 unlocknum =5;
+  string account =6;
+  string locksource =7;
+}
+
+message Nep5WrapperLockRequest{
+  int64 amount =1;
+  int64 blocknum =2;
+  string ethaddress =3;
+  string lockhash =4;
+}
+
+message Nep5WrapperLockResponse {
+  int64 result =1;
+  string txhash =2;
+  string msg =3;
+}
+
+message Nep5WrapperUnlockRequest{
+  string ethaddress =1;
+  string locksource =2;
+}
+
+message Nep5WrapperUnlockResponse {
+  int64 result =1;
+  string txhash =2;
+  string msg =3;
+}
+
+message Nep5WrapperRefundRequest{
+  string locksource =1;
+}
+
+message Nep5WrapperRefundResponse {
+  int64 result =1;
+  string txhash =2;
+  string msg =3;
+}
+
 service WrapperAPI{
   rpc Online(OnlineRequest) returns (OnlineResponse){
     option (google.api.http) = {
-      get: "/Wrapper/online"
+      post: "/Wrapper/online/*"
+      body: "*"
     };
   }
   rpc EventStatCheck(EventStatCheckRequest) returns (EventStatCheckResponse){
     option (google.api.http) = {
-      get: "/Wrapper/eventstatcheck"
+      post: "/Wrapper/eventstatcheck/*"
+      body: "*"
     };
   }
   rpc Nep5LockNotice(Nep5LockNoticeRequest) returns (Nep5LockNoticeResponse){
     option (google.api.http) = {
-      get: "/Wrapper/nep5locknotice"
+      post: "/Wrapper/nep5locknotice/*"
+      body: "*"
+    };
+  }
+  rpc EthIssueLock(EthIssueLockRequest) returns (EthIssueLockResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/ethissuelock/*"
+      body: "*"
+    };
+  }
+  rpc EthIssueFetch(EthIssueFetchRequest) returns (EthIssueFetchResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/ethissuefetch/*"
+      body: "*"
+    };
+  }
+  rpc EthDestoryUnlock(EthDestoryUnlockRequest) returns (EthDestoryUnlockResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/ethdestoryunlock/*"
+      body: "*"
+    };
+  }
+  rpc EthUcallerDestoryLock(EthUcallerDestoryLockRequest) returns (EthUcallerDestoryLockResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/ethucallerdestorylock/*"
+      body: "*"
+    };
+  }
+  rpc EthGetTransationInfo(EthGetTransationInfoRequest) returns (EthGetTransationInfoResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/ethgettransationinfo/*"
+      body: "*"
+    };
+  }
+  rpc EthGetAccountInfo(EthGetAccountInfoRequest) returns (EthGetAccountInfoResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/ethgetaccountInfo/*"
+      body: "*"
+    };
+  }
+  rpc EthGetHashTimer(EthGetHashTimerRequest) returns (EthGetHashTimerResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/ethgethashtimer/*"
+      body: "*"
+    };
+  }
+  rpc Nep5WrapperLock(Nep5WrapperLockRequest) returns (Nep5WrapperLockResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/nep5wrapperlock/*"
+      body: "*"
+    };
+  }
+  rpc Nep5WrapperUnlock(Nep5WrapperUnlockRequest) returns (Nep5WrapperUnlockResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/nep5wrappernnlock/*"
+      body: "*"
+    };
+  }
+  rpc Nep5WrapperRefund(Nep5WrapperRefundRequest) returns (Nep5WrapperRefundResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/nep5wrapperrefund/*"
+      body: "*"
     };
   }
 }

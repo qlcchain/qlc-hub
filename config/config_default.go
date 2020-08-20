@@ -20,13 +20,19 @@ func DefaultConfig(dir string) (*Config, error) {
 	cfg = Config{
 		Version:  configVersion,
 		DataDir:  dir,
-		LogLevel: "error",
+		LogLevel: "debug",
 		ChainUrl: "ws://127.0.0.1:19736",
 		RPC: RPCConfig{
 			Enable:             true,
 			ListenAddress:      "tcp://0.0.0.0:19745",
 			GRPCListenAddress:  "tcp://0.0.0.0:19746",
 			CORSAllowedOrigins: []string{"*"},
+		},
+		SQLCFG: SqlConfig{
+			Url:    "127.0.0.1:13306",
+			DbName: "wrapper",
+			Uname:  "",
+			Upwd:   "",
 		},
 	}
 	return &cfg, nil

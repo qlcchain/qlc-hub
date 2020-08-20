@@ -4,11 +4,16 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/interop/runtime"
 	"github.com/nspcc-dev/neo-go/pkg/interop/storage"
 	"github.com/nspcc-dev/neo-go/pkg/interop/util"
+	"time"
 )
 
 const (
 	decimals   = 8
 	multiplier = 100000000
+)
+
+const (
+	Nep5VerifyLoopTime = 10 * time.Second
 )
 
 // Token holds all token info
@@ -139,41 +144,41 @@ func createToken() Token {
 	}
 }
 
-// Main function = contract entry
-func Main(operation string, args []interface{}) interface{} {
-	if operation == "name" {
-		return Name()
-	}
-	if operation == "symbol" {
-		return Symbol()
-	}
-	if operation == "decimals" {
-		return Decimals()
-	}
+// // Main function = contract entry
+// func Main(operation string, args []interface{}) interface{} {
+// 	if operation == "name" {
+// 		return Name()
+// 	}
+// 	if operation == "symbol" {
+// 		return Symbol()
+// 	}
+// 	if operation == "decimals" {
+// 		return Decimals()
+// 	}
 
-	if operation == "totalSupply" {
-		return TotalSupply()
-	}
+// 	if operation == "totalSupply" {
+// 		return TotalSupply()
+// 	}
 
-	if operation == "balanceOf" {
-		hodler := args[0].([]byte)
-		return BalanceOf(hodler)
-	}
+// 	if operation == "balanceOf" {
+// 		hodler := args[0].([]byte)
+// 		return BalanceOf(hodler)
+// 	}
 
-	if operation == "transfer" && checkArgs(args, 3) {
-		from := args[0].([]byte)
-		to := args[1].([]byte)
-		amount := args[2].(int)
-		return Transfer(from, to, amount)
-	}
+// 	if operation == "transfer" && checkArgs(args, 3) {
+// 		from := args[0].([]byte)
+// 		to := args[1].([]byte)
+// 		amount := args[2].(int)
+// 		return Transfer(from, to, amount)
+// 	}
 
-	if operation == "mint" && checkArgs(args, 1) {
-		addr := args[0].([]byte)
-		return Mint(addr)
-	}
+// 	if operation == "mint" && checkArgs(args, 1) {
+// 		addr := args[0].([]byte)
+// 		return Mint(addr)
+// 	}
 
-	return true
-}
+// 	return true
+// }
 
 // checkArgs checks args array against a length indicator
 func checkArgs(args []interface{}, length int) bool {
@@ -228,4 +233,25 @@ func Mint(to []byte) bool {
 	t := createToken()
 	ctx := storage.GetContext()
 	return t.Mint(ctx, to)
+}
+
+func (w *WrapperServer) Nep5TransactionVerifyTry(txhash string) (status int) {
+	ret := CchTransactionVerifyStatusUnknown
+	return ret
+}
+
+//Nep5TransactionVerifyLoop tx verify loop
+func (w *WrapperServer) Nep5TransactionVerifyLoop(txhash string) (status int) {
+	ticker := time.NewTicker(Nep5VerifyLoopTime)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			//verify
+			ret := w.Nep5TransactionVerifyTry(txhash)
+			if ret >= 0 {
+				return ret
+			}
+		}
+	}
 }

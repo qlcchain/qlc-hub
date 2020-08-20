@@ -50,3 +50,39 @@ const (
 	cchLockNoticeRetBadParams       = 1 //参数错误
 	cchLockNoticeRetRepeat          = 2 //事件重复
 )
+const (
+	CchGetEventStatusRetOK       int64 = 0 //正常
+	CchGetEventStatusRetNoTxhash       = 1 //txhash 没找到
+)
+
+const (
+	CchEthGetTransTypeGetAll int64 = 1 //
+	CchEthGetTransTypeErr
+)
+const (
+	CchEthIssueRetOK               int64 = 1 //正常
+	CchEthIssueRetBadParams              = 2 //参数错误
+	CchEthIssueRetBadTxHash              = 3 //TxHash 错误
+	CchEthIssueRetBadLockHash            = 4 //LockHash 错误
+	CchEthIssueRetClientConnFailed       = 5 // client连接失败
+	CchEthIssueRetBadKey                 = 6 //bad key
+)
+const (
+	CchNeoIssueRetOK               int64 = 1 //正常
+	CchNeoIssueRetBadParams              = 2 //参数错误
+	CchNeoIssueRetBadTxHash              = 3 //TxHash 错误
+	CchNeoIssueRetClientConnFailed       = 4 // client连接失败
+)
+
+const (
+	CchEventRunErrOk                     int64 = 0 //正常
+	CchEventRunErrNep5MortgageLockFailed           //nep5 moregage trans verify failed
+	CchEventRunErrnoUnknown
+)
+
+const (
+	CchTransactionVerifyStatusUnknown = -1
+	CchTransactionVerifyStatusFalse   = 0
+	CchTransactionVerifyStatusTrue    = 1
+)
+const WrapperTimestampFormat = "02/01/2006 15:04:05 PM"

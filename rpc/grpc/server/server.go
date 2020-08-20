@@ -18,6 +18,7 @@ import (
 
 	"github.com/qlcchain/qlc-hub/log"
 	"github.com/qlcchain/qlc-hub/rpc/grpc/api"
+	_ "github.com/qlcchain/qlc-hub/wrapper"
 )
 
 type GRPCServer struct {
@@ -35,7 +36,6 @@ func NewGRPCServer() *GRPCServer {
 }
 
 func (g *GRPCServer) Start(cfg *config.Config) error {
-
 	network, address, err := scheme(cfg.RPC.GRPCListenAddress)
 	if err != nil {
 		return err
@@ -45,7 +45,8 @@ func (g *GRPCServer) Start(cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to listen: %s", err)
 	}
-	pb.RegisterWrapperAPIServer(g.rpc, &api.WrapperAPI{})
+	wap := api.NewWrapperAPI()
+	pb.RegisterWrapperAPIServer(g.rpc, wap)
 	reflection.Register(g.rpc)
 	go func() {
 		if err := g.rpc.Serve(lis); err != nil {

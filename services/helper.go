@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/qlcchain/qlc-hub/services/context"
+	"github.com/qlcchain/qlc-hub/wrapper"
 )
 
 //RegisterServices register services to chain context
@@ -17,5 +18,8 @@ func RegisterServices(cs *context.ServiceContext) error {
 	} else {
 		_ = cs.Register(context.RPCService, rpcService)
 	}
+	wrapper.WrapperSqlInit(cfgFile)
+	w := wrapper.NewWrapperServer(cfgFile)
+	w.WrapperEventInit()
 	return nil
 }

@@ -13,9 +13,9 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway v1.14.7
 	github.com/nspcc-dev/neo-go v0.90.0
-	github.com/qlcchain/go-lsobus v0.0.0-20200620071857-8e5ce8a51635
 	github.com/qlcchain/qlc-go-sdk v1.3.6-0.20200611134241-32e00d2b0b32
 	github.com/sahilm/fuzzy v0.1.0
+	github.com/shopspring/decimal v1.2.0
 	github.com/spf13/cobra v1.0.0
 	github.com/tinylib/msgp v1.1.2
 	go.uber.org/zap v1.15.0
