@@ -6,6 +6,7 @@ type Config struct {
 	LogLevel string    `json:"logLevel"` //info,warn,debug.
 	ChainUrl string    `json:"chainUrl"` //chain url.
 	RPC      RPCConfig `json:"rpc"`
+	SQLCFG   SqlConfig `json:"sqlcfg"`
 }
 
 type RPCConfig struct {
@@ -17,4 +18,14 @@ type RPCConfig struct {
 	// TCP or UNIX socket address for the gRPC server to listen on
 	GRPCListenAddress  string   `json:"gRPCListenAddress"`
 	CORSAllowedOrigins []string `json:"httpCors"`
+}
+
+type SqlConfig struct {
+	Url string `json:"dbuserurl"`
+
+	Uname string `json:"dbusername"`
+
+	Upwd string `json:"dbuserpasswd"`
+
+	DbName string `json:"dbname"`
 }

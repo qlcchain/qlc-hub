@@ -22,6 +22,7 @@ import (
 	"github.com/qlcchain/qlc-hub/log"
 	"github.com/qlcchain/qlc-hub/services"
 	"github.com/qlcchain/qlc-hub/services/context"
+	"github.com/qlcchain/qlc-hub/wrapper"
 )
 
 var (
@@ -33,9 +34,15 @@ var (
 var (
 	cfgPathP      string
 	configParamsP string
+	wapEthKeyP    string
+	wapNeoKeyP    string
+	userEthKeyP   string
 
 	cfgPath      cmdutil.Flag
 	configParams cmdutil.Flag
+	wapEthKey    cmdutil.Flag
+	wapNeoKey    cmdutil.Flag
+	userEthKey   cmdutil.Flag
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -72,6 +79,9 @@ func Execute(osArgs []string) {
 		}
 		rootCmd.PersistentFlags().StringVar(&cfgPathP, "config", "", "config file")
 		rootCmd.PersistentFlags().StringVar(&configParamsP, "configParams", "", "parameter set that needs to be changed")
+		rootCmd.PersistentFlags().StringVar(&wapEthKeyP, "wapEthKey", "", "wrapper eth ownner account prikey")
+		rootCmd.PersistentFlags().StringVar(&wapNeoKeyP, "wapNeoKey", "", "wrapper neo ownner account prikey")
+		rootCmd.PersistentFlags().StringVar(&userEthKeyP, "userEthKey", "", "wrapper eth user account prikey")
 		addCommand()
 		if err := rootCmd.Execute(); err != nil {
 			log.Root.Info(err)
@@ -91,7 +101,15 @@ func start() error {
 	servicesContext := context.NewServiceContext(cfgPathP)
 
 	log.Root.Info("Run node id: ", servicesContext.Id())
-
+	if len(wapEthKeyP) > 0 {
+		wrapper.WrapperEthPrikey = wapEthKeyP
+	}
+	if len(wapNeoKeyP) > 0 {
+		wrapper.WrapperNeoPrikey = wapNeoKeyP
+	}
+	if len(userEthKeyP) > 0 {
+		wrapper.WrapperEthUserPrikey = userEthKeyP
+	}
 	// start all services by chain context
 	err := servicesContext.Init(func() error {
 		return services.RegisterServices(servicesContext)
@@ -102,7 +120,6 @@ func start() error {
 	}
 
 	err = servicesContext.Start()
-
 	if err != nil {
 		return err
 	}
@@ -130,14 +147,31 @@ func run() {
 		Usage: "config file path",
 		Value: "",
 	}
-
 	configParams = cmdutil.Flag{
 		Name:  "configParam",
 		Must:  false,
 		Usage: "parameter set that needs to be changed",
 		Value: "",
 	}
-	args := []cmdutil.Flag{cfgPath, configParams}
+	wapEthKey = cmdutil.Flag{
+		Name:  "wapEthKey",
+		Must:  true,
+		Usage: "parameter set that wrapper eth owner account prikey",
+		Value: "",
+	}
+	userEthKey = cmdutil.Flag{
+		Name:  "userEthKey",
+		Must:  false,
+		Usage: "parameter set that wrapper eth user account prikey",
+		Value: "",
+	}
+	wapNeoKey = cmdutil.Flag{
+		Name:  "wapNeoKey",
+		Must:  true,
+		Usage: "parameter set that wrapper neo owner account prikey",
+		Value: "",
+	}
+	args := []cmdutil.Flag{cfgPath, configParams, wapEthKey, userEthKey, wapNeoKey}
 	s := &ishell.Cmd{
 		Name:                "run",
 		Help:                "start hub server",
@@ -152,7 +186,9 @@ func run() {
 			}
 			cfgPathP = cmdutil.StringVar(c.Args, cfgPath)
 			configParamsP = cmdutil.StringVar(c.Args, configParams)
-
+			wapEthKeyP = cmdutil.StringVar(c.Args, wapEthKey)
+			wapNeoKeyP = cmdutil.StringVar(c.Args, wapNeoKey)
+			userEthKeyP = cmdutil.StringVar(c.Args, userEthKey)
 			err := start()
 			if err != nil {
 				cmdutil.Warn(err)
