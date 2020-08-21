@@ -16,11 +16,11 @@ func (w *WrapperServer) WrapperEventRunning(event *EventInfo) {
 			//init status, verify txhash
 			case cchNep5MortgageStatusInit: //init status,unused
 			case cchNep5MortgageStatusWaitNeoLockVerify: //等待neo链上lock数据确认
-				txstatus,err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
+				txstatus, err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
 				if txstatus == CchTransactionVerifyStatusFalse {
 					event.Status = cchNep5MortgageStatusFailed
 					event.Errno = CchEventRunErrNep5MortgageLockFailed
-					w.logger.Error("NeoLock: tx verify failed",err)
+					w.logger.Error("NeoLock: tx verify failed", err)
 				} else {
 					event.Status = cchNep5MortgageStatusTryEthLock
 				}
@@ -35,10 +35,10 @@ func (w *WrapperServer) WrapperEventRunning(event *EventInfo) {
 			case cchNep5MortgageStatusWaitClaim: //ethlock完成，等待用户claim
 			case cchNep5MortgageStatusWaitEthUnlockVerify: //等待eth链上unlock数据确认,eth listen
 			case cchNep5MortgageStatusTryNeoUnlock: //wrapper尝试调用neo unlock to wrapper
-				txid,err := w.nta.Nep5WrapperUnlock(event.HashSource,event.UserAccount)
+				txid, err := w.nta.Nep5WrapperUnlock(event.HashSource, event.UserAccount)
 				if err != nil {
 					w.logger.Error("Nep5WrapperUnlock failed")
-				}else{
+				} else {
 					event.NeoUnlockTxhash = txid
 				}
 			case cchNep5MortgageStatusWaitNeoUnlockVerify: //等待neo链上unlock数据确认
@@ -64,35 +64,35 @@ func (w *WrapperServer) WrapperEventRunning(event *EventInfo) {
 			case cchNep5MortgageStatusInit: //unused
 			case cchEthRedemptionStatusWaitEthLockVerify: //等待eth链上lock数据确认,unused
 			case cchEthRedemptionStatusTryNeoLock: //准备调用neo contrack lock
-				txid,err := w.nta.Nep5WrapperLock(event.Amount,event.UserLockNum,event.UserAccount,event.NeoLockTxhash)
+				txid, err := w.nta.Nep5WrapperLock(event.Amount, event.UserLockNum, event.UserAccount, event.NeoLockTxhash)
 				if err != nil {
 					w.logger.Error("Nep5WrapperLock failed")
-				}else{
+				} else {
 					event.NeoLockTxhash = txid
 				}
 			case cchEthRedemptionStatusWaitNeoLockVerify: //等待neo链上lock数据确认
-				txstatus,err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
+				txstatus, err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
 				if txstatus == CchTransactionVerifyStatusFalse {
 					event.Status = cchNep5MortgageStatusFailed
 					event.Errno = CchEventRunErrNep5MortgageLockFailed
-					w.logger.Error("NeoLock: tx verify failed",err)
+					w.logger.Error("NeoLock: tx verify failed", err)
 				} else {
 					event.Status = cchNep5MortgageStatusTryEthLock
 				}
 			case cchEthRedemptionStatusWaitClaim: //neo lock完成，等待用户claim
 			case cchEthRedemptionStatusWaitNeoUnlockVerify: //等待neo链上unlock数据确认
-				txstatus,err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
+				txstatus, err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
 				if txstatus == CchTransactionVerifyStatusFalse {
 					event.Status = cchNep5MortgageStatusFailed
 					event.Errno = CchEventRunErrNep5MortgageLockFailed
-					w.logger.Error("NeoUnlock: tx verify failed",err)
+					w.logger.Error("NeoUnlock: tx verify failed", err)
 				} else {
 					event.Status = cchNep5MortgageStatusTryEthLock
 				}
 			case cchEthRedemptionStatusTryEthBlackhole: //准备调用eth unlock 销毁之前锁定的用户erc20 token
-				_, txhash, err := w.WrapperEthDestoryUnlock(event.LockHash,event.HashSource)
+				_, txhash, err := w.WrapperEthDestoryUnlock(event.LockHash, event.HashSource)
 				if err != nil {
-					w.logger.Error("WrapperEthDestoryUnlock:err",err)
+					w.logger.Error("WrapperEthDestoryUnlock:err", err)
 				} else {
 					event.EthDestoryTxhash = txhash
 				}
@@ -100,19 +100,19 @@ func (w *WrapperServer) WrapperEventRunning(event *EventInfo) {
 			case cchEthRedemptionStatusClaimOk: //用户正常赎回erc20资产完成
 				break
 			case cchEthRedemptionStatusTimeoutTryUnlock: //用户在正常时间内没有claim，wrapper尝试去neo上refund对应的nep5 token
-				txid,err := w.nta.Nep5WrapperRefund(event.HashSource)
+				txid, err := w.nta.Nep5WrapperRefund(event.HashSource)
 				if err != nil {
 					w.logger.Error("Nep5WrapperLock failed")
-				}else{
+				} else {
 					event.NeoRefundTxhash = txid
 				}
 			case cchEthRedemptionStatusTimeoutUnlockVerify: //用户等待neo上refund数据确认
 			case cchEthRedemptionStatusTimeoutUnlockOk: //用户超时，eth上erc20资产正常释放 unused
-				txstatus,err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
+				txstatus, err := w.nta.Nep5TransactionVerify(event.NeoLockTxhash)
 				if txstatus == CchTransactionVerifyStatusFalse {
 					event.Status = cchNep5MortgageStatusFailed
 					event.Errno = CchEventRunErrNep5MortgageLockFailed
-					w.logger.Error("WrapperRefund: tx verify failed",err)
+					w.logger.Error("WrapperRefund: tx verify failed", err)
 				} else {
 					event.Status = cchNep5MortgageStatusTryEthLock
 				}

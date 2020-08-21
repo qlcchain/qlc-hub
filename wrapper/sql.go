@@ -113,7 +113,7 @@ func WrapperSqlInit(cfgFile string) {
 	fmt.Println(connect)
 	err = orm.RegisterDataBase("default", "mysql", connect, maxIdle, maxConn)
 	if err != nil {
-		log.Root.Error("RegisterDataBase failed",err)
+		log.Root.Error("RegisterDataBase failed", err)
 		return
 	}
 	orm.RegisterModel(new(DBNeoMortgageEventTBL), new(DBEthRedemptionEventTBL), new(DBEventStatsChangelogTBL))

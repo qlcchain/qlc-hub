@@ -19,6 +19,7 @@ import (
 	"github.com/x-contract/neo-go-sdk/neoutils"
 	"go.uber.org/zap"
 )
+
 var (
 	contractHash = "30f69798a129527b4996d6dd8e974cc15d51403d"
 	neoEndPoint  = "http://seed1.ngd.network:20332"
@@ -29,9 +30,9 @@ var (
 var (
 	OpLock              = "lock"
 	OpUnLock            = "unlock"
-	OpWrapperLock		= "wrapperLock" 
-	OpWrapperUnlock		= "wrapperUnlock"
-	OpRefundWrapper		= "refundWrapper"
+	OpWrapperLock       = "wrapperLock"
+	OpWrapperUnlock     = "wrapperUnlock"
+	OpRefundWrapper     = "refundWrapper"
 	OpGetLockInfo       = "getLockInfo"
 	OpGetApplicationLog = "getapplicationlog"
 )
@@ -364,8 +365,8 @@ func getValue(i interface{}) (string, error) {
 	return "", errors.New("error value pattern ")
 }
 
-func (t *Transaction) Nep5WrapperLock(amount,locknum int64,addr,lockhash string) (string, error) {
-	params := lockhash+addr+strconv.FormatInt(amount,10)+strconv.FormatInt(locknum,10)
+func (t *Transaction) Nep5WrapperLock(amount, locknum int64, addr, lockhash string) (string, error) {
+	params := lockhash + addr + strconv.FormatInt(amount, 10) + strconv.FormatInt(locknum, 10)
 	b, err := hex.DecodeString(params)
 	if err != nil {
 		return "", err
@@ -382,8 +383,8 @@ func (t *Transaction) Nep5WrapperLock(amount,locknum int64,addr,lockhash string)
 	return id, nil
 }
 
-func (t *Transaction) Nep5WrapperUnlock(locksource,addr string) (string, error) {
-	params := locksource+addr
+func (t *Transaction) Nep5WrapperUnlock(locksource, addr string) (string, error) {
+	params := locksource + addr
 	b, err := hex.DecodeString(params)
 	if err != nil {
 		return "", err
@@ -418,10 +419,10 @@ func (t *Transaction) Nep5WrapperRefund(locksource string) (string, error) {
 	return id, nil
 }
 
-func (t *Transaction) Nep5TransactionVerify(txid string) (status int,err error) {
+func (t *Transaction) Nep5TransactionVerify(txid string) (status int, err error) {
 	_, err = t.WaitApplicationLog(txid)
 	if err != nil {
 		return CchTransactionVerifyStatusFalse, err
 	}
-	return CchTransactionVerifyStatusTrue,nil
+	return CchTransactionVerifyStatusTrue, nil
 }

@@ -92,7 +92,7 @@ type EventInfo struct {
 	HashSource       string `json:"hashsource"`
 	NeoLockTxhash    string `json:"neolocktxhash"`
 	NeoUnlockTxhash  string `json:"neounlocktxhash"`
-	NeoRefundTxhash	 string `json:"neorefundtxhash"`
+	NeoRefundTxhash  string `json:"neorefundtxhash"`
 	EthLockTxhash    string `json:"ethlocktxhash"`
 	EthUnlockTxhash  string `json:"ethunlocktxhash"`
 	EthDestoryTxhash string `json:"ethdestorytxhash"`
@@ -103,12 +103,12 @@ func NewWrapperServer(cfgFile string) *WrapperServer {
 	cc := context.NewServiceContext(cfgFile)
 	cfg, _ := cc.Config()
 	wsc := NewWrapperSqlconn()
-	nt := NewTransaction(neoEndPoint,WrapperNeoContract,nil)
+	nt := NewTransaction(neoEndPoint, WrapperNeoContract, nil)
 	was := &WrapperServer{
 		cfg:    cfg,
 		logger: log.NewLogger("wrapper Server"),
 		sc:     wsc,
-		nta:	nt,
+		nta:    nt,
 	}
 	return was
 }
