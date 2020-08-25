@@ -262,3 +262,29 @@ func (w *WrapperSqlconn) WsqlEventDbStatusUpdate(etype, status, errno int64, loc
 	}
 	return -1, errors.New("bad event type")
 }
+
+//DbEthRedemptionUpdate
+func (w *WrapperSqlconn) DbRunEventNumGetByUser(etype int64, uaccount string) (num int, err error) {
+	var count int
+	var sqlcmd string
+	if etype == cchEventTypeMortgage {
+		sqlcmd = "SELECT count(*) FROM neomortgage_event_tbl where error !=0 AND neoaccount=" + uaccount + ";"
+		w.logger.Debugf("sqlcmd(%s)", sqlcmd)
+		err := w.ocon.Raw(sqlcmd).QueryRow(&count)
+		if err != nil {
+			w.logger.Error("DbRunEventNumGetByUser get sql(%s) err(%s)", sqlcmd, err)
+			return -1, err
+		}
+	} else if etype == cchEventTypeRedemption {
+		sqlcmd = "SELECT count(*) FROM ethredemption_event_tbl where error !=0 AND ethaccount=" + uaccount + ";"
+		w.logger.Debugf("sqlcmd(%s)", sqlcmd)
+		err := w.ocon.Raw(sqlcmd).QueryRow(&count)
+		if err != nil {
+			w.logger.Error("DbRunEventNumGetByUser get sql(%s) err(%s)", sqlcmd, err)
+			return -1, err
+		}
+	} else {
+		return -1, errors.New("bad etype")
+	}
+	return count, nil
+}

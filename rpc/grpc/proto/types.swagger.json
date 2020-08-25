@@ -267,6 +267,38 @@
         ]
       }
     },
+    "/Wrapper/nep5GetTxInfo/*": {
+      "post": {
+        "operationId": "WrapperAPI_Nep5GetTxInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoNep5GetTxInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoNep5GetTxInfoRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WrapperAPI"
+        ]
+      }
+    },
     "/Wrapper/nep5locknotice/*": {
       "post": {
         "operationId": "WrapperAPI_Nep5LockNotice",
@@ -639,6 +671,36 @@
         }
       }
     },
+    "protoNep5GetTxInfoRequest": {
+      "type": "object",
+      "properties": {
+        "txhash": {
+          "type": "string"
+        }
+      }
+    },
+    "protoNep5GetTxInfoResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "string",
+          "format": "int64"
+        },
+        "action": {
+          "type": "string"
+        },
+        "fromaddr": {
+          "type": "string"
+        },
+        "toaddr": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "protoNep5LockNoticeRequest": {
       "type": "object",
       "properties": {
@@ -658,6 +720,9 @@
           "type": "string"
         },
         "txHash": {
+          "type": "string"
+        },
+        "addr": {
           "type": "string"
         }
       }

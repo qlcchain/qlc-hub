@@ -32,6 +32,7 @@ message Nep5LockNoticeRequest{
   int64 userlocknum = 3;
   string hash = 4;
   string txHash = 5;
+  string addr = 6;
 }
 
 message Nep5LockNoticeResponse {
@@ -147,6 +148,17 @@ message Nep5WrapperRefundResponse {
   string msg =3;
 }
 
+message Nep5GetTxInfoRequest{
+  string txhash =1;
+}
+
+message Nep5GetTxInfoResponse {
+  int64 result =1;
+  string action =2;
+  string fromaddr =3;
+  string toaddr = 4;
+  int64 amount =5;
+}
 service WrapperAPI{
   rpc Online(OnlineRequest) returns (OnlineResponse){
     option (google.api.http) = {
@@ -223,6 +235,12 @@ service WrapperAPI{
   rpc Nep5WrapperRefund(Nep5WrapperRefundRequest) returns (Nep5WrapperRefundResponse){
     option (google.api.http) = {
       post: "/Wrapper/nep5wrapperrefund/*"
+      body: "*"
+    };
+  }
+  rpc Nep5GetTxInfo(Nep5GetTxInfoRequest) returns (Nep5GetTxInfoResponse){
+    option (google.api.http) = {
+      post: "/Wrapper/nep5GetTxInfo/*"
       body: "*"
     };
   }

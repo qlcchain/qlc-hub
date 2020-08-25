@@ -75,14 +75,20 @@ const (
 )
 
 const (
-	CchEventRunErrOk                     int64 = 0 //正常
+	CchEventRunErrOk                     int64 = 0 //正常运行中状态
 	CchEventRunErrNep5MortgageLockFailed           //nep5 moregage trans verify failed
 	CchEventRunErrnoUnknown
+	CchEventRunErrEndingOk = 0xFF //正常结束
 )
 
 const (
 	CchTransactionVerifyStatusUnknown = -1
 	CchTransactionVerifyStatusFalse   = 0
 	CchTransactionVerifyStatusTrue    = 1
+)
+const (
+	CchRunEventCheckErr    = -1
+	CchRunEventCheckOK     = 0
+	CchRunEventCheckFailed = 1
 )
 const WrapperTimestampFormat = "02/01/2006 15:04:05 PM"

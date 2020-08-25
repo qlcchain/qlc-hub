@@ -210,3 +210,19 @@ func (wa *WrapperAPI) Nep5WrapperRefund(ctx context.Context, param *proto.Nep5Wr
 		Msg:    msg,
 	}, nil
 }
+
+//Nep5GetTxInfo neo get txinfo by txid
+func (wa *WrapperAPI) Nep5GetTxInfo(ctx context.Context, param *proto.Nep5GetTxInfoRequest) (*proto.Nep5GetTxInfoResponse, error) {
+	wa.logger.Debugf("Exec Nep5GetTxInfo request %+v", param)
+	result, action, fromaddr, toaddr, amount, err := wa.wap.WrapperNep5GetTxInfo(param.GetTxhash())
+	if err != nil {
+		wa.logger.Debugf("Exec Nep5GetTxInfo get ERR", err)
+	}
+	return &proto.Nep5GetTxInfoResponse{
+		Result:   result,
+		Action:   action,
+		Fromaddr: fromaddr,
+		Toaddr:   toaddr,
+		Amount:   amount,
+	}, nil
+}

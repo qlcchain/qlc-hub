@@ -26,24 +26,24 @@ type WrapperServer struct {
 }
 
 var gWrapperConfig WrapperConfig
+var gWrapperStats WrapperStatistics
 
 //neo contract ownner account
-const WrapperNeoAccount string = "0xARJZeUehdrFD3Koy3iAymfLDWi3HtCVKYV"
+const WrapperNeoAccount string = "ARJZeUehdrFD3Koy3iAymfLDWi3HtCVKYV"
 
 //eth contract ownner account
 const WrapperEthAccount string = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
 
 //eth user account
-const WrapperEthUserAccount string = "0x4cD7459d7D228708C090D7d5Dc7ceDF58Cd2cD49"
+const WrapperEthUserAccount string = "4cD7459d7D228708C090D7d5Dc7ceDF58Cd2cD49"
 
 //contract user prikey securt
 var WrapperEthPrikey string = ""
 var WrapperEthUserPrikey string = ""
 var WrapperNeoPrikey string = ""
 
-//主网合约地址： 0d821bd7b6d53f5c2b40e217c6defc8bbe896cf5
-//测试网合约地址： b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263
-const WrapperNeoContract string = "0xb9d7ea3062e6aeeb3e8ad9548220c4ba1361d263"
+//neo 合约测试地址
+const WrapperNeoContract string = "b85074ec25aa549814eceb2a4e3748f801c71c51"
 
 //eth 测试合约地址
 const WrapperEthContract string = "0xCD60c41De542ebaF81040A1F50B6eFD4B1547d91"
@@ -52,10 +52,12 @@ const wrapperLockNum int64 = 256
 
 const WrapperLockHashMinLen int = 32
 const WrapperSourceTextMinLen int = 20
-const WrapperTxHashMinLen int = 32
+const WrapperTxHashMinLen int = 64
 const WrapperAmountMinNum int = 1
 const WrapperEthAddressMinNum int = 40
 const WrapperLockHashHexLen int = 64
+
+const WrapperPeruserRunEventNumLimit int = 5
 
 type WrapperConfig struct {
 	LockNum     int64  `json:"locknum"`
@@ -68,34 +70,11 @@ type WrapperConfig struct {
 	EthContract string `json:"ethcontract"`
 }
 
-type ServerInfo struct {
-	TotalEvent    int64 `json:"totalnum"`
+type WrapperStatistics struct {
+	//TotalEvent    int64 `json:"totalnum"`
 	RunningEvent  int64 `json:"runningnum"`
 	RunNep5Event  int64 `json:"nep5num"`
 	RunErc20Event int64 `json:"erc20num"`
-}
-
-type EventInfo struct {
-	DId              int64  `json:"dbid"`
-	Type             int64  `json:"type"`
-	Status           int64  `json:"status"`
-	Errno            int64  `json:"error"`
-	Amount           int64  `json:"amount"`
-	StartTime        int64  `json:"starttime"`
-	EndTime          int64  `json:"endtime"`
-	UserLockNum      int64  `json:"userlocknum"`
-	WrapperLockNum   int64  `json:"wrapperlocknum"`
-	LockBlockNum     int64  `json:"lockblocknum"`
-	UnlockBlockNum   int64  `json:"unlockblocknum"`
-	UserAccount      string `json:"useraccount"`
-	LockHash         string `json:"lockhash"`
-	HashSource       string `json:"hashsource"`
-	NeoLockTxhash    string `json:"neolocktxhash"`
-	NeoUnlockTxhash  string `json:"neounlocktxhash"`
-	NeoRefundTxhash  string `json:"neorefundtxhash"`
-	EthLockTxhash    string `json:"ethlocktxhash"`
-	EthUnlockTxhash  string `json:"ethunlocktxhash"`
-	EthDestoryTxhash string `json:"ethdestorytxhash"`
 }
 
 //NewWrapperServer wrapper server init
@@ -182,6 +161,7 @@ func (w *WrapperServer) WrapperEventInsert(stat, amount, eventType, userLocknum 
 	newEvent.StartTime = time.Now().Unix()
 	newEvent.Amount = amount
 	newEvent.Status = stat
+	newEvent.EventChan = make(chan int64)
 	if eventType == cchEventTypeMortgage {
 		MortgageEvent[lockHash] = &newEvent
 	} else if eventType == cchEventTypeRedemption {
@@ -392,33 +372,55 @@ func (w *WrapperServer) WrapperEthGetHashTimer(lockhash string) (result, stat, a
 
 //WrapperNep5WrapperLock neo lock token
 func (w *WrapperServer) WrapperNep5WrapperLock(amount, blocknum int64, ethaddress, lockhash string) (result int64, txhash, msg string, err error) {
-	var ret int64
-	var transhash string
-	var retmsg string
-	ret = CchNeoIssueRetOK
-	transhash = "0x4b92d3cabc33c4fc7d82c4c806eb77b879956018b2a9b9071da6b4ffcf4a4e25"
-	retmsg = "test data"
-	return ret, transhash, retmsg, nil
+	if len(lockhash) < WrapperLockHashHexLen {
+		w.logger.Error("bad lockhash")
+		return CchNeoIssueRetBadParams, "", "", err
+	}
+	txid, err := w.nta.Nep5ContractWrapperLock(amount, blocknum, ethaddress, lockhash)
+	if err != nil {
+		return CchNeoIssueRetBadParams, "", "", err
+	}
+	return CchNeoIssueRetOK, txid, "", nil
 }
 
 //WrapperNep5WrapperUnlock neo unlock nep5 token
 func (w *WrapperServer) WrapperNep5WrapperUnlock(ethaddress, locksource string) (result int64, txhash, msg string, err error) {
-	var ret int64
-	var transhash string
-	var retmsg string
-	ret = CchNeoIssueRetOK
-	transhash = "0x4b92d3cabc33c4fc7d82c4c806eb77b879956018b2a9b9071da6b4ffcf4a4e25"
-	retmsg = "test data"
-	return ret, transhash, retmsg, nil
+	if len(locksource) < WrapperSourceTextMinLen {
+		w.logger.Error("WrapperNep5WrapperUnlock :bad locksource")
+		return CchNeoIssueRetBadParams, "", "", err
+	}
+	txid, err := w.nta.Nep5ContractWrapperUnlock(locksource, ethaddress)
+	if err != nil {
+		w.logger.Error("WrapperNep5WrapperUnlock err", err)
+		return CchNeoIssueRetBadParams, "", "", err
+	}
+	return CchNeoIssueRetOK, txid, "", nil
 }
 
 //WrapperNep5WrapperRefund refund nep5 token
 func (w *WrapperServer) WrapperNep5WrapperRefund(locksource string) (result int64, txhash, msg string, err error) {
-	var ret int64
-	var transhash string
-	var retmsg string
-	ret = CchNeoIssueRetOK
-	transhash = "0x4b92d3cabc33c4fc7d82c4c806eb77b879956018b2a9b9071da6b4ffcf4a4e25"
-	retmsg = "test data"
-	return ret, transhash, retmsg, nil
+	if len(locksource) < WrapperSourceTextMinLen {
+		w.logger.Error("WrapperNep5WrapperRefund :bad locksource")
+		return CchNeoIssueRetBadParams, "", "", err
+	}
+	txid, err := w.nta.Nep5ContractWrapperRefund(locksource)
+	if err != nil {
+		w.logger.Error("WrapperNep5WrapperRefund err", err)
+		return CchNeoIssueRetBadParams, "", "", err
+	}
+	return CchNeoIssueRetOK, txid, "", nil
+}
+
+//WrapperNep5GetTxInfo get neo txinfo by txhash
+func (w *WrapperServer) WrapperNep5GetTxInfo(txhash string) (result int64, action, fromadd, toaddr string, amount int64, err error) {
+	if len(txhash) < WrapperTxHashMinLen {
+		w.logger.Error("WrapperNep5GetTxInfo :bad txhash")
+		return CchNeoIssueRetBadParams, "", "", "", 0, err
+	}
+	txinfo, err := w.nta.Nep5GetTxInfo(txhash)
+	if err != nil {
+		w.logger.Error("WrapperNep5GetTxInfo err", err)
+		return CchNeoIssueRetBadParams, "", "", "", 0, err
+	}
+	return CchNeoIssueRetOK, txinfo.Action, txinfo.Fromaddr, txinfo.Toaddr, txinfo.Amount, nil
 }

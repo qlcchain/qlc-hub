@@ -180,12 +180,12 @@ func (w *WrapperServer) WrapperEthListen() {
 		case err := <-sub.Err():
 			w.logger.Error("logs err:", err)
 		case vLog := <-logs:
-			w.logger.Debugf("get logs: block(%s),blocknum(%d),txhash(%s)", vLog.BlockHash.Hex(), vLog.BlockNumber, vLog.TxHash.Hex())
 			event, err := filogger.ParseLockedState(vLog)
 			if err != nil {
-				w.logger.Error("contractAbi.Unpack err:", err)
+				w.logger.Debugf("unknown vlog")
 				break
 			}
+			w.logger.Debugf("get logs: block(%s),blocknum(%d),txhash(%s)", vLog.BlockHash.Hex(), vLog.BlockNumber, vLog.TxHash.Hex())
 			//w.logger.Debugf("get RHash:",event.RHash)
 			//w.logger.Debugf("get State:",event.State)
 			rhash := hex.EncodeToString(event.RHash[:])
