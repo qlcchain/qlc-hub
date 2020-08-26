@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
@@ -20,17 +24,25 @@ var (
 	contractAddress = "b85074ec25aa549814eceb2a4e3748f801c71c51"
 	contractUint, _ = util.Uint160DecodeStringLE(contractAddress)
 	wif             = ""
-	userWif         = "KyiLMuwnkwjNyuQJMmKvmFENCvC4rXAs9BdRSz9HTDmDFt93LRHt"
+	userWif         = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
 	account, _      = wallet.NewAccountFromWIF(userWif)
 	from, _         = address.StringToUint160(account.Address)
 )
 
 func main() {
 	c, err := client.New(context.Background(), url, client.Options{})
-	c.SetWIF(userWif)
+	//c.SetWIF(userWif)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fromAddr := hex.EncodeToString(from.BytesBE())
+	fmt.Println(account.Address, "==>", fromAddr)
+
+	s := String(10)
+	h := sha256.Sum256([]byte(s))
+	hash := hex.EncodeToString(h[:])
+	fmt.Println(s, "==>", hash)
 
 	//pbs, err := util.Uint256DecodeStringBE("42a854d2f9d7f01d4abf03bba5560dc91f3e88d5c71cab17f37872021b247a2d")
 	//if err != nil {
@@ -56,7 +68,7 @@ func main() {
 						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
 							Type:  request.StringT,
-							Value: "8358c59912535612627221faab20ffdb99c3fb2e5074e7b75d5ea54799e2e4c7",
+							Value: hash,
 						},
 					},
 				},
@@ -66,7 +78,7 @@ func main() {
 						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
 							Type:  request.ArrayT,
-							Value: from.StringBE(),
+							Value: fromAddr,
 						},
 					},
 				},
@@ -76,7 +88,7 @@ func main() {
 						Type: smartcontract.IntegerType,
 						Value: request.Param{
 							Type:  request.NumberT,
-							Value: 100000000,
+							Value: 290000000,
 						},
 					},
 				},
@@ -86,7 +98,7 @@ func main() {
 						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
 							Type:  request.ArrayT,
-							Value: from.StringBE(),
+							Value: fromAddr,
 						},
 					},
 				},
@@ -117,7 +129,7 @@ func main() {
 
 	tx := transaction.NewInvocationTX(scripts, 0)
 	tx.AddVerificationHash(from)
-	bys, _ := json.Marshal(tx)
+	bys, _ := json.MarshalIndent(tx, "", "\t")
 	fmt.Println(string(bys))
 	err = account.SignTx(tx)
 	if err != nil {
@@ -127,7 +139,7 @@ func main() {
 	if err != nil {
 		log.Fatal("send error: ", err)
 	}
-	fmt.Println("==tx ", tx.Hash())
+	fmt.Println("==tx ", fmt.Sprintf("0x%s", tx.Hash().StringLE()))
 }
 
 func invoke(client *client.Client) {
@@ -161,4 +173,22 @@ func invoke(client *client.Client) {
 	r, err := client.InvokeFunction(contractAddress, "userLock", params, nil)
 	fmt.Println(r)
 	fmt.Println(err)
+}
+
+const charset = "abcdefghijklmnopqrstuvwxyz" +
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+var seededRand *rand.Rand = rand.New(
+	rand.NewSource(time.Now().UnixNano()))
+
+func StringWithCharset(length int, charset string) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
+}
+
+func String(length int) string {
+	return StringWithCharset(length, charset)
 }

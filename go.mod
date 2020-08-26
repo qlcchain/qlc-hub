@@ -13,12 +13,10 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway v1.14.7
 	github.com/nspcc-dev/neo-go v0.77.0
-	github.com/qlcchain/qlc-go-sdk v1.3.6-0.20200611134241-32e00d2b0b32
 	github.com/sahilm/fuzzy v0.1.0
 	github.com/shopspring/decimal v1.2.0
 	github.com/spf13/cobra v1.0.0
 	github.com/tinylib/msgp v1.1.2
-	github.com/x-contract/neo-go-sdk v0.0.0-20190602194137-a778fe157118
 	go.uber.org/zap v1.15.0
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
 	google.golang.org/grpc v1.31.0
