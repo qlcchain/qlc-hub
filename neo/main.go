@@ -26,8 +26,6 @@ var (
 )
 
 func main() {
-	//fmt.Println(contractUint.String())
-	//return
 	c, err := client.New(context.Background(), url, client.Options{})
 	c.SetWIF(userWif)
 	if err != nil {
@@ -62,23 +60,13 @@ func main() {
 						},
 					},
 				},
-				//{
-				//	Type: request.FuncParamT,
-				//	Value: request.FuncParam{
-				//		Type: smartcontract.PublicKeyType,
-				//		Value: request.Param{
-				//			Type:  request.StringT,
-				//			Value: "02bfc19e434bb9dde4be76adca4cb39d50bf9832a1ecd347e8a7f6c2bc01a0996f",
-				//		},
-				//	},
-				//},
 				{
 					Type: request.FuncParamT,
 					Value: request.FuncParam{
 						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
 							Type:  request.ArrayT,
-							Value: "412f17f6b11a071ba7e40865469fea562e9b4f19",
+							Value: from.StringBE(),
 						},
 					},
 				},
@@ -88,7 +76,7 @@ func main() {
 						Type: smartcontract.IntegerType,
 						Value: request.Param{
 							Type:  request.NumberT,
-							Value: 2,
+							Value: 100000000,
 						},
 					},
 				},
@@ -98,7 +86,7 @@ func main() {
 						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
 							Type:  request.ArrayT,
-							Value: "412f17f6b11a071ba7e40865469fea562e9b4f19",
+							Value: from.StringBE(),
 						},
 					},
 				},
@@ -108,7 +96,7 @@ func main() {
 						Type: smartcontract.IntegerType,
 						Value: request.Param{
 							Type:  request.NumberT,
-							Value: 19,
+							Value: 40,
 						},
 					},
 				},
