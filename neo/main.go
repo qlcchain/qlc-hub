@@ -7,6 +7,7 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
+	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 )
@@ -27,34 +28,44 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ps := []request.Param{
-		request.Param{
-			Type:  request.StringT,
-			Value: "userLock",
-		},
-		request.Param{
-			Type:  request.StringT,
-			Value: "0xee1445f89e85d41db71debefda3777ce4dbef9bc090fcde91bd906ae403c98c4",
-		},
-		request.Param{
-			Type:  request.StringT,
-			Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
-		},
-		request.Param{
-			Type:  request.NumberT,
-			Value: 10,
-		},
-		request.Param{
-			Type:  request.StringT,
-			Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
-		},
-		request.Param{
-			Type:  request.NumberT,
-			Value: 10,
-		},
-	}
+	//ps := []request.Param{
+	//	{request.FuncParamT, 42},
+	//{
+	//	Type:  request.StringT,
+	//	Value: "userLock",
+	//},
+	//{
+	//	Type:  request.StringT,
+	//	Value: "0xee1445f89e85d41db71debefda3777ce4dbef9bc090fcde91bd906ae403c98c4",
+	//},
+	//{
+	//	Type:  request.StringT,
+	//	Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+	//},
+	//{
+	//	Type:  request.NumberT,
+	//	Value: 10,
+	//},
+	//{
+	//	Type:  request.StringT,
+	//	Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+	//},
+	//{
+	//	Type:  request.NumberT,
+	//	Value: 10,
+	//},
 
-	scripts, err := request.CreateFunctionInvocationScript(contractUint, ps)
+	ps := request.Param{
+		Type: request.ArrayT,
+		Value: request.FuncParam{
+			Type: smartcontract.PublicKeyType,
+			Value: request.Param{
+				Type:  request.StringT,
+				Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+			},
+		}}
+
+	scripts, err := request.CreateInvocationScript(contractUint, ps)
 	if err != nil {
 		log.Fatal("script ", err)
 	}
