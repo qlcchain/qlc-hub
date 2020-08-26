@@ -2,13 +2,11 @@ package wrapper
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/qlcchain/qlc-hub/log"
-	chainctx "github.com/qlcchain/qlc-hub/services/context"
 	"go.uber.org/zap"
 )
 
@@ -97,27 +95,27 @@ func NewWrapperSqlconn() *WrapperSqlconn {
 
 //init sql init
 func WrapperSqlInit(cfgFile string) {
-	cc := chainctx.NewServiceContext(cfgFile)
-	cfg, _ := cc.Config()
-	err := orm.RegisterDriver("mysql", orm.DRMySQL)
-	if err != nil {
-		panic(err)
-	}
-	maxIdle := 30
-	maxConn := 50
-	dbuser := cfg.SQLCFG.Uname
-	dbpwd := cfg.SQLCFG.Upwd
-	dburl := cfg.SQLCFG.Url
-	dbname := cfg.SQLCFG.DbName
-	connect := dbuser + ":" + dbpwd + "@tcp(" + dburl + ")/" + dbname + "?charset=utf8"
-	fmt.Println(connect)
-	err = orm.RegisterDataBase("default", "mysql", connect, maxIdle, maxConn)
-	if err != nil {
-		log.Root.Error("RegisterDataBase failed", err)
-		return
-	}
-	orm.RegisterModel(new(DBNeoMortgageEventTBL), new(DBEthRedemptionEventTBL), new(DBEventStatsChangelogTBL))
-	orm.RunSyncdb("default", false, true)
+	//cc := chainctx.NewServiceContext(cfgFile)
+	//cfg, _ := cc.Config()
+	//err := orm.RegisterDriver("mysql", orm.DRMySQL)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//maxIdle := 30
+	//maxConn := 50
+	//dbuser := cfg.SQLCFG.Uname
+	//dbpwd := cfg.SQLCFG.Upwd
+	//dburl := cfg.SQLCFG.Url
+	//dbname := cfg.SQLCFG.DbName
+	//connect := dbuser + ":" + dbpwd + "@tcp(" + dburl + ")/" + dbname + "?charset=utf8"
+	//fmt.Println(connect)
+	//err = orm.RegisterDataBase("default", "mysql", connect, maxIdle, maxConn)
+	//if err != nil {
+	//	log.Root.Error("RegisterDataBase failed", err)
+	//	return
+	//}
+	//orm.RegisterModel(new(DBNeoMortgageEventTBL), new(DBEthRedemptionEventTBL), new(DBEventStatsChangelogTBL))
+	//orm.RunSyncdb("default", false, true)
 }
 
 //WsqlEventStatChangeLogInsert event status change logrecord insert
