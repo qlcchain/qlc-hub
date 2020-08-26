@@ -18,13 +18,16 @@ import (
 var (
 	url             = "http://seed3.ngd.network:20332"
 	contractAddress = "b85074ec25aa549814eceb2a4e3748f801c71c51"
-	contractUint, _ = util.Uint160DecodeStringBE(contractAddress)
+	contractUint, _ = util.Uint160DecodeStringLE(contractAddress)
 	wif             = ""
 	userWif         = "KyiLMuwnkwjNyuQJMmKvmFENCvC4rXAs9BdRSz9HTDmDFt93LRHt"
 	account, _      = wallet.NewAccountFromWIF(userWif)
+	from, _         = address.StringToUint160(account.Address)
 )
 
 func main() {
+	//fmt.Println(contractUint.String())
+	//return
 	c, err := client.New(context.Background(), url, client.Options{})
 	c.SetWIF(userWif)
 	if err != nil {
@@ -72,10 +75,10 @@ func main() {
 				{
 					Type: request.FuncParamT,
 					Value: request.FuncParam{
-						Type: smartcontract.PublicKeyType,
+						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
-							Type:  request.StringT,
-							Value: "0276813a05c73a7458076b3c453c5f733362f7281b5a770f1ae35f3f63dec50a68",
+							Type:  request.ArrayT,
+							Value: "412f17f6b11a071ba7e40865469fea562e9b4f19",
 						},
 					},
 				},
@@ -92,10 +95,10 @@ func main() {
 				{
 					Type: request.FuncParamT,
 					Value: request.FuncParam{
-						Type: smartcontract.PublicKeyType,
+						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
-							Type:  request.StringT,
-							Value: "0276813a05c73a7458076b3c453c5f733362f7281b5a770f1ae35f3f63dec50a68",
+							Type:  request.ArrayT,
+							Value: "412f17f6b11a071ba7e40865469fea562e9b4f19",
 						},
 					},
 				},
@@ -105,7 +108,7 @@ func main() {
 						Type: smartcontract.IntegerType,
 						Value: request.Param{
 							Type:  request.NumberT,
-							Value: 17,
+							Value: 19,
 						},
 					},
 				},
@@ -125,10 +128,6 @@ func main() {
 	//log.Println(re.String())
 
 	tx := transaction.NewInvocationTX(scripts, 0)
-	from, err := address.StringToUint160(account.Address)
-	if err != nil {
-		log.Fatal("sign error: ", err)
-	}
 	tx.AddVerificationHash(from)
 	bys, _ := json.Marshal(tx)
 	fmt.Println(string(bys))
