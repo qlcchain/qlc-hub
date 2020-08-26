@@ -17,10 +17,11 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	"github.com/qlcchain/qlc-hub/pkg/neo"
 )
 
 var (
-	url             = "http://seed3.ngd.network:20332"
+	url             = "http://seed2.ngd.network:20332"
 	contractAddress = "b85074ec25aa549814eceb2a4e3748f801c71c51"
 	contractUint, _ = util.Uint160DecodeStringLE(contractAddress)
 	wif             = ""
@@ -30,6 +31,41 @@ var (
 )
 
 func main() {
+	transaction2()
+}
+
+func transaction3() {
+
+}
+
+func transaction2() {
+	client, err := neo.NewNeoTransaction(url, contractAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	s := String(10)
+	h := sha256.Sum256([]byte(s))
+	hash := hex.EncodeToString(h[:])
+	fmt.Println(s, "==>", hash)
+
+	params := []request.Param{
+		neo.FunctionName("userLock"),
+		neo.ArrayTypeParams([]request.Param{
+			neo.HashParam(hash),
+			neo.AddressParam(account.Address),
+			neo.IntegerTypeParam(210000000),
+			neo.AddressParam(account.Address),
+			neo.IntegerTypeParam(rand.Intn(100)),
+		}),
+	}
+	r, err := client.CreateTransaction(params, userWif, 0, 0)
+	if err != nil {
+		log.Fatal("tx error: ", err)
+	}
+	log.Println(fmt.Sprintf("0x%s", r))
+}
+
+func transaction1() {
 	c, err := client.New(context.Background(), url, client.Options{})
 	//c.SetWIF(userWif)
 	if err != nil {
