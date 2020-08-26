@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"log"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
@@ -55,17 +56,72 @@ func main() {
 	//	Value: 10,
 	//},
 
-	ps := request.Param{
-		Type: request.ArrayT,
-		Value: request.FuncParam{
-			Type: smartcontract.PublicKeyType,
-			Value: request.Param{
-				Type:  request.StringT,
-				Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+	pbs, err := hex.DecodeString("ee1445f89e85d41db71debefda3777ce4dbef9bc090fcde91bd906ae403c98c4")
+	if err != nil {
+		log.Fatal(err)
+	}
+	ps := []request.Param{
+		{
+			Type:  request.StringT,
+			Value: "userLock",
+		}, {
+			Type: request.ArrayT,
+			Value: []request.Param{
+				{
+					Type: request.FuncParamT,
+					Value: request.FuncParam{
+						Type: smartcontract.PublicKeyType,
+						Value: request.Param{
+							Type:  request.StringT,
+							Value: string(pbs),
+						},
+					},
+				},
+				{
+					Type: request.FuncParamT,
+					Value: request.FuncParam{
+						Type: smartcontract.PublicKeyType,
+						Value: request.Param{
+							Type:  request.StringT,
+							Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+						},
+					},
+				},
+				{
+					Type: request.FuncParamT,
+					Value: request.FuncParam{
+						Type: smartcontract.IntegerType,
+						Value: request.Param{
+							Type:  request.NumberT,
+							Value: 10,
+						},
+					},
+				},
+				{
+					Type: request.FuncParamT,
+					Value: request.FuncParam{
+						Type: smartcontract.PublicKeyType,
+						Value: request.Param{
+							Type:  request.StringT,
+							Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+						},
+					},
+				},
+				{
+					Type: request.FuncParamT,
+					Value: request.FuncParam{
+						Type: smartcontract.IntegerType,
+						Value: request.Param{
+							Type:  request.NumberT,
+							Value: 10,
+						},
+					},
+				},
 			},
-		}}
+		},
+	}
 
-	scripts, err := request.CreateInvocationScript(contractUint, ps)
+	scripts, err := request.CreateFunctionInvocationScript(contractUint, ps)
 	if err != nil {
 		log.Fatal("script ", err)
 	}
