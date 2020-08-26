@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/hex"
 	"log"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
@@ -29,37 +28,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//ps := []request.Param{
-	//	{request.FuncParamT, 42},
-	//{
-	//	Type:  request.StringT,
-	//	Value: "userLock",
-	//},
-	//{
-	//	Type:  request.StringT,
-	//	Value: "0xee1445f89e85d41db71debefda3777ce4dbef9bc090fcde91bd906ae403c98c4",
-	//},
-	//{
-	//	Type:  request.StringT,
-	//	Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
-	//},
-	//{
-	//	Type:  request.NumberT,
-	//	Value: 10,
-	//},
-	//{
-	//	Type:  request.StringT,
-	//	Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
-	//},
-	//{
-	//	Type:  request.NumberT,
-	//	Value: 10,
-	//},
-
-	pbs, err := hex.DecodeString("ee1445f89e85d41db71debefda3777ce4dbef9bc090fcde91bd906ae403c98c4")
-	if err != nil {
-		log.Fatal(err)
-	}
+	//pbs, err := hex.DecodeString("ee1445f89e85d41db71debefda3777ce4dbef9bc090fcde91bd906ae403c98c4")
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	ps := []request.Param{
 		{
 			Type:  request.StringT,
@@ -70,10 +42,10 @@ func main() {
 				{
 					Type: request.FuncParamT,
 					Value: request.FuncParam{
-						Type: smartcontract.PublicKeyType,
+						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
 							Type:  request.StringT,
-							Value: string(pbs),
+							Value: "ee1445f89e85d41db71debefda3777ce4dbef9bc090fcde91bd906ae403c98c4",
 						},
 					},
 				},
@@ -83,7 +55,17 @@ func main() {
 						Type: smartcontract.PublicKeyType,
 						Value: request.Param{
 							Type:  request.StringT,
-							Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+							Value: "02bfc19e434bb9dde4be76adca4cb39d50bf9832a1ecd347e8a7f6c2bc01a0996f",
+						},
+					},
+				},
+				{
+					Type: request.FuncParamT,
+					Value: request.FuncParam{
+						Type: smartcontract.PublicKeyType,
+						Value: request.Param{
+							Type:  request.StringT,
+							Value: "02bfc19e434bb9dde4be76adca4cb39d50bf9832a1ecd347e8a7f6c2bc01a0996f",
 						},
 					},
 				},
@@ -103,7 +85,7 @@ func main() {
 						Type: smartcontract.PublicKeyType,
 						Value: request.Param{
 							Type:  request.StringT,
-							Value: "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK",
+							Value: "02bfc19e434bb9dde4be76adca4cb39d50bf9832a1ecd347e8a7f6c2bc01a0996f",
 						},
 					},
 				},
@@ -123,16 +105,16 @@ func main() {
 
 	scripts, err := request.CreateFunctionInvocationScript(contractUint, ps)
 	if err != nil {
-		log.Fatal("script ", err)
+		log.Fatal("script error: ", err)
 	}
 	tx := transaction.NewInvocationTX(scripts, 1)
 	log.Println(tx.Hash())
 	err = account.SignTx(tx)
 	if err != nil {
-		log.Fatal("sign ", err)
+		log.Fatal("sign error: ", err)
 	}
 	err = c.SendRawTransaction(tx)
 	if err != nil {
-		log.Fatal("send ", err)
+		log.Fatal("send error: ", err)
 	}
 }
