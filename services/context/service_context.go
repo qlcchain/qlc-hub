@@ -16,8 +16,6 @@ import (
 
 	"github.com/AsynkronIT/protoactor-go/actor"
 
-	sdk "github.com/qlcchain/qlc-go-sdk/pkg/types"
-
 	"github.com/qlcchain/qlc-hub/common"
 	"github.com/qlcchain/qlc-hub/common/event"
 	"github.com/qlcchain/qlc-hub/common/hashmap"
@@ -62,7 +60,8 @@ func NewServiceContext(cfgFile string) *ServiceContext {
 		cm := config.NewCfgManagerWithFile(cfgFile)
 		dataDir, _ = cm.ParseDataDir()
 	}
-	id := sdk.HashData([]byte(dataDir)).String()
+	//FIXME: remove
+	id := ""
 	if v, ok := cache.GetStringKey(id); ok {
 		return v.(*ServiceContext)
 	} else {

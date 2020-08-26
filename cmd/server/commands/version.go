@@ -13,7 +13,7 @@ import (
 	"github.com/abiosoft/ishell"
 	"github.com/spf13/cobra"
 
-	"github.com/qlcchain/qlc-hub"
+	version "github.com/qlcchain/qlc-hub"
 	"github.com/qlcchain/qlc-hub/cmd/util"
 )
 

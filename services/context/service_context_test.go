@@ -14,8 +14,6 @@ import (
 	"testing"
 	"time"
 
-	sdk "github.com/qlcchain/qlc-go-sdk/pkg/types"
-
 	"github.com/google/uuid"
 
 	"github.com/qlcchain/qlc-hub/common"
@@ -322,10 +320,4 @@ func TestChainContext(t *testing.T) {
 	}
 
 	t.Log(ctx.Status())
-}
-
-func mockAccount() *sdk.Account {
-	seed, _ := sdk.NewSeed()
-	_, priv, _ := sdk.KeypairFromSeed(seed.String(), 0)
-	return sdk.NewAccount(priv)
 }

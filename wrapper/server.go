@@ -5,12 +5,13 @@ import (
 	"encoding/hex"
 	"errors"
 	_ "fmt"
+	_ "strings"
+	"time"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/log"
 	"github.com/qlcchain/qlc-hub/services/context"
 	"go.uber.org/zap"
-	_ "strings"
-	"time"
 )
 
 var (
@@ -22,7 +23,6 @@ type WrapperServer struct {
 	logger *zap.SugaredLogger
 	cfg    *config.Config
 	sc     *WrapperSqlconn
-	nta    *Transaction
 }
 
 var gWrapperConfig WrapperConfig
@@ -82,12 +82,10 @@ func NewWrapperServer(cfgFile string) *WrapperServer {
 	cc := context.NewServiceContext(cfgFile)
 	cfg, _ := cc.Config()
 	wsc := NewWrapperSqlconn()
-	nt := NewTransaction(neoEndPoint, WrapperNeoContract, nil)
 	was := &WrapperServer{
 		cfg:    cfg,
 		logger: log.NewLogger("wrapper Server"),
 		sc:     wsc,
-		nta:    nt,
 	}
 	return was
 }
@@ -376,11 +374,11 @@ func (w *WrapperServer) WrapperNep5WrapperLock(amount, blocknum int64, ethaddres
 		w.logger.Error("bad lockhash")
 		return CchNeoIssueRetBadParams, "", "", err
 	}
-	txid, err := w.nta.Nep5ContractWrapperLock(amount, blocknum, ethaddress, lockhash)
-	if err != nil {
-		return CchNeoIssueRetBadParams, "", "", err
-	}
-	return CchNeoIssueRetOK, txid, "", nil
+	//txid, err := w.nta.Nep5ContractWrapperLock(amount, blocknum, ethaddress, lockhash)
+	//if err != nil {
+	//	return CchNeoIssueRetBadParams, "", "", err
+	//}
+	return CchNeoIssueRetOK, "txid", "", nil
 }
 
 //WrapperNep5WrapperUnlock neo unlock nep5 token
@@ -389,12 +387,12 @@ func (w *WrapperServer) WrapperNep5WrapperUnlock(ethaddress, locksource string) 
 		w.logger.Error("WrapperNep5WrapperUnlock :bad locksource")
 		return CchNeoIssueRetBadParams, "", "", err
 	}
-	txid, err := w.nta.Nep5ContractWrapperUnlock(locksource, ethaddress)
-	if err != nil {
-		w.logger.Error("WrapperNep5WrapperUnlock err", err)
-		return CchNeoIssueRetBadParams, "", "", err
-	}
-	return CchNeoIssueRetOK, txid, "", nil
+	//txid, err := w.nta.Nep5ContractWrapperUnlock(locksource, ethaddress)
+	//if err != nil {
+	//	w.logger.Error("WrapperNep5WrapperUnlock err", err)
+	//	return CchNeoIssueRetBadParams, "", "", err
+	//}
+	return CchNeoIssueRetOK, "txid", "", nil
 }
 
 //WrapperNep5WrapperRefund refund nep5 token
@@ -403,12 +401,12 @@ func (w *WrapperServer) WrapperNep5WrapperRefund(locksource string) (result int6
 		w.logger.Error("WrapperNep5WrapperRefund :bad locksource")
 		return CchNeoIssueRetBadParams, "", "", err
 	}
-	txid, err := w.nta.Nep5ContractWrapperRefund(locksource)
-	if err != nil {
-		w.logger.Error("WrapperNep5WrapperRefund err", err)
-		return CchNeoIssueRetBadParams, "", "", err
-	}
-	return CchNeoIssueRetOK, txid, "", nil
+	//txid, err := w.nta.Nep5ContractWrapperRefund(locksource)
+	//if err != nil {
+	//	w.logger.Error("WrapperNep5WrapperRefund err", err)
+	//	return CchNeoIssueRetBadParams, "", "", err
+	//}
+	return CchNeoIssueRetOK, "txid", "", nil
 }
 
 //WrapperNep5GetTxInfo get neo txinfo by txhash
@@ -417,10 +415,10 @@ func (w *WrapperServer) WrapperNep5GetTxInfo(txhash string) (result int64, actio
 		w.logger.Error("WrapperNep5GetTxInfo :bad txhash")
 		return CchNeoIssueRetBadParams, "", "", "", 0, err
 	}
-	txinfo, err := w.nta.Nep5GetTxInfo(txhash)
-	if err != nil {
-		w.logger.Error("WrapperNep5GetTxInfo err", err)
-		return CchNeoIssueRetBadParams, "", "", "", 0, err
-	}
-	return CchNeoIssueRetOK, txinfo.Action, txinfo.Fromaddr, txinfo.Toaddr, txinfo.Amount, nil
+	//txinfo, err := w.nta.Nep5GetTxInfo(txhash)
+	//if err != nil {
+	//	w.logger.Error("WrapperNep5GetTxInfo err", err)
+	//	return CchNeoIssueRetBadParams, "", "", "", 0, err
+	//}
+	return CchNeoIssueRetOK, "txinfo.Action", "txinfo.Fromaddr", " txinfo.Toaddr", 0, nil
 }

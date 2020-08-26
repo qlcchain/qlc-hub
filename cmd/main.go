@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/qlcchain/qlc-hub"
+	version "github.com/qlcchain/qlc-hub"
 	server "github.com/qlcchain/qlc-hub/cmd/server/commands"
 )
 
