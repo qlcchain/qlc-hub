@@ -36,7 +36,7 @@ var (
 	wrapperAccount, _     = wallet.NewAccountFromWIF(wrapperWif)
 	wrapperAccountUint, _ = address.StringToUint160(wrapperAccount.Address)
 
-	userEthAddress = "0xCD60c41De542ebaF81040A1F50B6eFD4B1547d91"
+	userEthAddress = "CD60c41De542ebaF81040A1F50B6eFD4B1547d91"
 )
 
 func main() {
@@ -85,16 +85,16 @@ func wrapperUnLock(rOrigin string) {
 						},
 					},
 				},
-				//{
-				//	Type: request.FuncParamT,
-				//	Value: request.FuncParam{
-				//		Type: smartcontract.ByteArrayType,
-				//		Value: request.Param{
-				//			Type:  request.ArrayT,
-				//			Value: hex.EncodeToString(wrapperAccountUint.BytesBE()),
-				//		},
-				//	},
-				//},
+				{
+					Type: request.FuncParamT,
+					Value: request.FuncParam{
+						Type: smartcontract.ByteArrayType,
+						Value: request.Param{
+							Type:  request.ArrayT,
+							Value: userEthAddress,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -122,10 +122,10 @@ func wrapperUnLock(rOrigin string) {
 
 	tx.Scripts = append(tx.Scripts, transaction.Witness{
 		InvocationScript:   script.Bytes(),
-		VerificationScript: contractLE.BytesBE(),
+		VerificationScript: contractLE.BytesLE(),
 	})
 
-	//err = wrapperAccount.SignTx(tx)
+	err = wrapperAccount.SignTx(tx)
 
 	err = c.SendRawTransaction(tx)
 	if err != nil {
