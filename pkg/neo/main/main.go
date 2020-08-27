@@ -40,15 +40,16 @@ var (
 )
 
 func main() {
+	fmt.Println("contract ==> ", address.Uint160ToString(contractLE))
 	fmt.Println("user address    ==> ", userAccount.Address)
 	fmt.Println("wrapper address ==> ", wrapperAccount.Address)
 	rOrigin, rHash := hashValue()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	//  1Gxm18YujSztZosnDjNje4OzqpgtEhW9 ==> f259097181c09e42676f0bc26181747727e9c1d16a3070ec2c30615371841568
+	//  q8HrOhrEwpefU673J0HyI0RRh9praomn ==> affb803ca1439f37fae63a6e0dd8bf9e7191260fd9b4725d00a698de1aff9822
 	//userLock(rHash)
 	//
-	wrapperUnLock("1Gxm18YujSztZosnDjNje4OzqpgtEhW9")
+	wrapperUnLock("q8HrOhrEwpefU673J0HyI0RRh9praomn")
 	//userLockByPkg(rHash)
 }
 
@@ -123,10 +124,11 @@ func wrapperUnLock(rOrigin string) {
 			Data:  wrapperAccountUint.BytesBE(),
 		})
 
-		//remark, _ := hex.DecodeString("000001742e59400741028f48")
+		//r, _ := hex.DecodeString("000001742eafec125f65610c")
+		r := remark()
 		tx.Attributes = append(tx.Attributes, transaction.Attribute{
 			Usage: transaction.Remark,
-			Data:  remark(),
+			Data:  r,
 		})
 	}
 
@@ -139,13 +141,20 @@ func wrapperUnLock(rOrigin string) {
 
 	tx.Scripts = append(tx.Scripts, transaction.Witness{
 		InvocationScript:   script.Bytes(),
-		VerificationScript: contractLE.BytesBE(),
+		VerificationScript: []byte{},
 	})
 
-	fmt.Println(hex.EncodeToString(tx.GetSignedPart()))
+	d := tx.GetSignedPart()
+	fmt.Println(hex.EncodeToString(d))
+	sign := wrapperAccount.PrivateKey().Sign(d)
+	pack := make([]byte, len(sign)+1)
+	pack[0] = byte(len(sign))
+	copy(pack[1:], sign)
+	fmt.Println(hex.EncodeToString(pack))
 	err = wrapperAccount.SignTx(tx)
-
 	fmt.Println("tx", toString(tx))
+	fmt.Println(hex.EncodeToString(tx.Bytes()))
+
 	err = c.SendRawTransaction(tx)
 	if err != nil {
 		log.Fatal("send error: ", err)
