@@ -935,7 +935,6 @@ func (_QLCChain *QLCChainFilterer) WatchLockedState(opts *bind.WatchOpts, sink c
 					return err
 				}
 				event.Raw = log
-
 				select {
 				case sink <- event:
 				case err := <-sub.Err():

@@ -719,7 +719,7 @@
         "hash": {
           "type": "string"
         },
-        "txHash": {
+        "txhash": {
           "type": "string"
         },
         "addr": {

@@ -31,7 +31,7 @@ message Nep5LockNoticeRequest{
   int64 amount = 2;
   int64 userlocknum = 3;
   string hash = 4;
-  string txHash = 5;
+  string txhash = 5;
   string addr = 6;
 }
 

@@ -17,7 +17,9 @@ const (
 	cchNep5MortgageStatusTimeoutTryDestroy          = 9  //用户在正常时间内没有claim，wrapper尝试去eth上destroy对应的erc20资产
 	cchNep5MortgageStatusTimeoutDestroyVerify       = 10 //用户等待eth上destory数据确认
 	cchNep5MortgageStatusTimeoutDestroyOk           = 11 //用户超时，eth上erc20资产正常销毁
-	cchNep5MortgageStatusFailed                     = 12 //本次抵押失败
+	cchNep5MortgageStatusTimeoutUserFetchOk         = 12 //userlock timeout 用户可以赎回
+	cchNep5MortgageStatusFailed                     = 13 //本次抵押失败
+	cchNep5MortgageStatusFailedFetchTimeout         = 14 //本次抵押失败，fetch超时，用户可以赎回
 )
 
 const (
@@ -37,7 +39,9 @@ const (
 	cchEthRedemptionStatusTimeoutTryUnlock          = 9  //用户在正常时间内没有claim，wrapper尝试去eth上unlock对应的erc20 token
 	cchEthRedemptionStatusTimeoutUnlockVerify       = 10 //用户等待eth上unlock数据确认
 	cchEthRedemptionStatusTimeoutUnlockOk           = 11 //用户超时，eth上erc20资产正常释放
-	cchEthRedemptionStatusFailed                    = 12 //本次赎回失败
+	cchEthRedemptionStatusTimeoutUserFetchOk        = 12 //userlock timeout 用户可以赎回
+	cchEthRedemptionStatusFailed                    = 13 //本次赎回失败
+	cchEthRedemptionStatusFailedFetchTimeout        = 14 //本次失败，fetch超时，用户可以赎回
 )
 
 const (
@@ -75,20 +79,33 @@ const (
 )
 
 const (
-	CchEventRunErrOk                     int64 = 0 //正常运行中状态
-	CchEventRunErrNep5MortgageLockFailed           //nep5 moregage trans verify failed
+	CchEventRunErrOk                      int64 = 0 //正常运行中状态
+	CchEventRunErrMortgageNep5LockFailed            //nep5 moregage trans verify failed
+	CchEventRunErrMortgageEthLockFailed             //eth lock failed
+	CchEventRunErrMortgageEthUnLockFailed           //eth unlock failed
+	CchEventRunErrMortgageEthFetchFailed
+	CchEventRunErrMortgageNep5VerifyFailed
+	CchEventRunErrMortgageNep5UnlockFailed
+	CchEventRunErrRedemptionNep5LockFailed
+	CchEventRunErrRedemptionNep5UnlockFailed
+	CchEventRunErrRedemptionNep5RefundFailed
 	CchEventRunErrnoUnknown
-	CchEventRunErrEndingOk = 0xFF //正常结束
+	CchEventRunErrEndingOk = 10000 //正常结束
 )
 
 const (
-	CchTransactionVerifyStatusUnknown = -1
-	CchTransactionVerifyStatusFalse   = 0
-	CchTransactionVerifyStatusTrue    = 1
+	CchTxVerifyStatUnknown = -1
+	CchTxVerifyStatOk      = 0
+	CchTxVerifyStatFailed  = 1
 )
 const (
 	CchRunEventCheckErr    = -1
 	CchRunEventCheckOK     = 0
 	CchRunEventCheckFailed = 1
+)
+
+const (
+	CchBlockTypeEth = 1
+	CchBlockTypeNeo = 2
 )
 const WrapperTimestampFormat = "02/01/2006 15:04:05 PM"

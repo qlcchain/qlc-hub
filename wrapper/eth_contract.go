@@ -30,13 +30,14 @@ const EthRinkebyHttpsLink string = "https://rinkeby.infura.io/v3/a63d9065622f422
 const EthRinkebyWssLink string = "wss://rinkeby.infura.io/ws/v3/a63d9065622f422588b94a6b52f71e5a"
 
 const EthGetHashTimerLoopTime = 5 * time.Second
+
 const (
-	EthEventStatusIssueLock     int = 0 //issueLock
-	EthEventStatusIssueUnLock       = 1 //issueUnlock
-	EthEventStatusIssueFetch        = 2 //issueFetch
-	EthEventStatusDestoryLock       = 3 //destoryLock
-	EthEventStatusDestoryUnlock     = 4 //destoryUnlock
-	EthEventStatusDestoryFetch      = 5 //destoryFetch
+	EthEventStatusIssueLock     int64 = 0 //issueLock
+	EthEventStatusIssueUnLock         = 1 //issueUnlock
+	EthEventStatusIssueFetch          = 2 //issueFetch
+	EthEventStatusDestoryLock         = 3 //destoryLock
+	EthEventStatusDestoryUnlock       = 4 //destoryUnlock
+	EthEventStatusDestoryFetch        = 5 //destoryFetch
 )
 
 // IsValidAddress validate hex address
@@ -143,12 +144,15 @@ func (w *WrapperServer) SigRSV(isig interface{}) ([32]byte, [32]byte, uint8) {
 
 //WrapperEthClientConnect
 func (w *WrapperServer) WrapperEthClientConnect() (c *ethclient.Client, err error) {
-	client, err := ethclient.Dial(EthRinkebyWssLink)
-	if err != nil {
-		w.logger.Error(err)
-		return nil, err
+	for i := 0; i < 100; i++ {
+		client, err := ethclient.Dial(EthRinkebyWssLink)
+		if err != nil {
+			w.logger.Error(err)
+			time.Sleep(time.Second * 3)
+		}
+		return client, nil
 	}
-	return client, nil
+	return nil, err
 }
 
 //WrapperEthListen eth listen
@@ -157,7 +161,7 @@ func (w *WrapperServer) WrapperEthListen() {
 	client, err := w.WrapperEthClientConnect()
 	if err != nil {
 		w.logger.Error(err)
-		return
+		time.Sleep(5)
 	}
 	contractAddress := common.HexToAddress(WrapperEthContract)
 	query := ethereum.FilterQuery{
@@ -211,13 +215,6 @@ func (w *WrapperServer) EthGetBlockByTxhash(infotype int64, txhashstring string)
 		w.logger.Error(err)
 		return CchEthIssueRetBadTxHash, "", errors.New("eth get by txhash failed")
 	}
-	// fmt.Println(tx.Hash().Hex())        // 0x5d49fcaa394c97ec8a9c3e7bd9e8388d420fb050a52083ca52ff24b3b65bc9c2
-	// fmt.Println(tx.Value().String())    // 10000000000000000
-	// fmt.Println(tx.Gas())               // 105000
-	// fmt.Println(tx.GasPrice().Uint64()) // 102000000000
-	// fmt.Println(tx.Nonce())             // 110644
-	// fmt.Println(tx.Data())              // []
-	// fmt.Println(tx.To().Hex())          // 0x55fE59D8Ad77035154dDd0AD0388D09Dd4047A8e
 	var txinfo string
 	txinfo = txinfo + tx.To().Hex() + "_"
 	if infotype == CchEthGetTransTypeGetAll {
@@ -304,7 +301,7 @@ func (w *WrapperServer) EthContractIssueLock(amount int64, lockhash string) (res
 	if err != nil {
 		return ret, "", err
 	}
-	bigAmount := big.NewInt(amount * 100000000)
+	bigAmount := big.NewInt(amount * WrapperGasWeiNum)
 	var lockarray [32]byte
 	lock, err := hex.DecodeString(lockhash)
 	if err != nil {
@@ -319,6 +316,7 @@ func (w *WrapperServer) EthContractIssueLock(amount int64, lockhash string) (res
 		w.logger.Error(err)
 		return CchEthIssueRetBadKey, "", errors.New("eth call IssueLock failed")
 	}
+	w.logger.Debugf("EthContractIssueLock: lock hash %s amount %d", lockhash, amount)
 	return CchEthIssueRetOK, tx.Hash().Hex(), nil
 }
 
@@ -432,7 +430,7 @@ func (w *WrapperServer) EthContractUcallerDestoryLock(amount int64, lockhash str
 	if err != nil {
 		return ret, "", err
 	}
-	bigAmount := big.NewInt(amount * 100000000)
+	bigAmount := big.NewInt(amount * WrapperGasWeiNum)
 	var lockarray [32]byte
 	lock, err := hex.DecodeString(lockhash)
 	if err != nil {
@@ -452,71 +450,127 @@ func (w *WrapperServer) EthContractUcallerDestoryLock(amount int64, lockhash str
 }
 
 //EthGetHashTimer user call destory unlock
-func (w *WrapperServer) EthGetHashTimer(lockhash string) (result, stat, amount, locknum, unlocknum int64, account, locksource string, err error) {
-	var rstat int64
+func (w *WrapperServer) EthGetHashTimer(lockhash string) (result, amount, locknum, unlocknum int64, account, locksource string, err error) {
 	var lockarray [32]byte
 	var callops = bind.CallOpts{}
 	client, err := w.WrapperEthClientConnect()
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetClientConnFailed, 0, 0, 0, 0, "", "", errors.New("eth conn failed")
+		return CchEthIssueRetClientConnFailed, 0, 0, 0, "", "", errors.New("eth conn failed")
 	}
 	contractaddress := common.HexToAddress(WrapperEthContract)
 	instance, err := QLCChain.NewQLCChainCaller(contractaddress, client)
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetClientConnFailed, 0, 0, 0, 0, "", "", errors.New("eth get instance failed")
+		return CchEthIssueRetClientConnFailed, 0, 0, 0, "", "", errors.New("eth get instance failed")
 	}
 	lock, err := hex.DecodeString(lockhash)
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetBadLockHash, 0, 0, 0, 0, "", "", err
+		return CchEthIssueRetBadLockHash, 0, 0, 0, "", "", err
 	}
 	copy(lockarray[:], lock)
-	source, amountbig, addr, lockno, unlockno, statret, err := instance.HashTimer(&callops, lockarray)
+	source, amountbig, addr, lockno, unlockno, _, err := instance.HashTimer(&callops, lockarray)
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetBadKey, 0, 0, 0, 0, "", "", errors.New("eth call HashTimer failed")
+		return CchEthIssueRetBadKey, 0, 0, 0, "", "", errors.New("eth call HashTimer failed")
 	}
 	ramount := amountbig.Int64()
 	rlocknum := lockno.Int64()
 	runlocknum := unlockno.Int64()
-	if statret == true {
-		rstat = int64(1)
-	} else {
-		rstat = int64(2)
-	}
 	//w.logger.Debugf("HashTimer get source:",source)
 	//w.logger.Debugf("HashTimer get addr:",addr)
 	rsource := string(source[:])
 	raddr := hex.EncodeToString(addr[:])
-	w.logger.Debugf("HashTimer get amount:%d,locknum:%d,unlocknum:%d,stat:%b", ramount, rlocknum, runlocknum, rstat)
+	w.logger.Debugf("HashTimer get amount:%d,locknum:%d,unlocknum:%d", ramount, rlocknum, runlocknum)
+	return CchEthIssueRetOK, ramount, rlocknum, runlocknum, raddr, rsource, nil
+}
 
-	return CchEthIssueRetOK, rstat, ramount, rlocknum, runlocknum, raddr, rsource, nil
+func (w *WrapperServer) EthVerifyByLockhash(event *EventInfo) {
+	initstatus := event.Status
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+	for i := 0; i < 100; i++ {
+		<-ticker.C
+		//这里是为了避免状态已经被其他事件触发改变
+		if initstatus != event.Status {
+			w.logger.Debugf("event(%s) break EthVerifyByLockhash")
+			return
+		}
+		_, _, locknum, unlocknum, account, locksource, err := w.EthGetHashTimer(event.LockHash)
+		if err == nil {
+			switch event.Status {
+			case cchNep5MortgageStatusWaitEthLockVerify:
+				//记录locknum
+				event.EthLockNum = locknum
+				event.Status = cchNep5MortgageStatusWaitClaim
+			case cchNep5MortgageStatusWaitEthUnlockVerify:
+				event.UnlockNum = unlocknum
+				event.UserAccount = account
+				event.HashSource = locksource
+				event.Status = cchNep5MortgageStatusTryNeoUnlock
+			case cchNep5MortgageStatusTimeoutDestroyVerify:
+				event.UnlockNum = unlocknum
+				event.Status = cchNep5MortgageStatusTimeoutDestroyOk
+			default:
+				break
+			}
+			w.logger.Debugf("EthVerifyByLockhash:status in(%d) out(%d)", initstatus, event.Status)
+			if event.Status != initstatus {
+				w.sc.DbEventUpdate(event)
+				go w.eventStatusUpdateMsgPush(event, event.Status)
+			}
+			return
+		}
+	}
+	//timeout
+	switch event.Status {
+	case cchNep5MortgageStatusWaitEthLockVerify:
+	case cchNep5MortgageStatusWaitEthUnlockVerify:
+	case cchNep5MortgageStatusTimeoutDestroyVerify:
+		event.Status = cchNep5MortgageStatusFailed
+		event.Errno = CchEventRunErrMortgageNep5VerifyFailed
+		err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+		if err != nil {
+			w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+		}
+	default:
+		break
+	}
 }
 
 //EthGetHashTimerDeal
-func (w *WrapperServer) EthGetHashTimerDeal(action, stat, amount, locknum, unlocknum int64, lockhash, locksource, txhash, addr string) {
+func (w *WrapperServer) EthGetHashTimerDeal(action, amount, locknum, unlocknum int64, lockhash, locksource, txhash, addr string) {
+	var newstat int64
 	if action == EthEventStatusDestoryLock {
-		event, err := w.sc.DbGetEventByLockhash(cchEventTypeRedemption, lockhash)
-		if event != nil && err == nil {
-			err := w.WrapperEventUpdateStatByLockhash(cchEventTypeRedemption, cchEthRedemptionStatusTimeoutUnlockOk, 0, lockhash)
+		event := RedemptionEvent[lockhash]
+		if event != nil {
+			newstat = cchEthRedemptionStatusTimeoutUnlockOk
+			err := w.WrapperEventUpdateStatByLockhash(cchEventTypeRedemption, newstat, 0, lockhash)
 			if err != nil {
-				w.logger.Error("EthGetHashTimerDeal err:", err)
+				w.logger.Error("WrapperEventUpdateStatByLockhash err:", err)
 			}
 		} else {
-			err := w.WrapperEventInsert(cchEthRedemptionStatusTryNeoLock, amount, cchEventTypeRedemption, locknum, lockhash, txhash, addr)
+			newstat = cchEthRedemptionStatusTryNeoLock
+			err := w.WrapperEventInsert(newstat, amount, cchEventTypeRedemption, locknum, lockhash, txhash, addr)
 			if err != nil {
-				w.logger.Error("EthGetHashTimerDeal err:", err)
+				w.logger.Error("WrapperEventInsert err:", err)
 			}
 		}
 	} else if action == EthEventStatusDestoryFetch {
-		err := w.WrapperEventUpdateStatByLockhash(cchEventTypeRedemption, cchEthRedemptionStatusTimeoutUnlockOk, 0, lockhash)
+		newstat = cchEthRedemptionStatusTimeoutUnlockOk
+		err := w.WrapperEventUpdateStatByLockhash(cchEventTypeRedemption, newstat, 0, lockhash)
 		if err != nil {
-			w.logger.Error("EthGetHashTimerDeal err:", err)
+			w.logger.Error("WrapperEventUpdateStatByLockhash err:", err)
+		}
+	} else if action == EthEventStatusIssueLock {
+		newstat = cchNep5MortgageStatusWaitClaim
+		err := w.WrapperEventUpdateStatByLockhash(cchEventTypeMortgage, newstat, 0, lockhash)
+		if err != nil {
+			w.logger.Error("WrapperEventUpdateStatByLockhash err:", err)
 		}
 	}
-	w.logger.Debugf("EthGetHashTimerDeal:action %d,lockhash %s", action, lockhash)
+	w.logger.Debugf("EthGetHashTimerDeal:action %d,lockhash %s stat %d", action, lockhash, newstat)
 }
 
 //EthGetHashTimerLoop
@@ -527,15 +581,51 @@ func (w *WrapperServer) EthGetHashTimerLoop(action int64, lockhash, txhash strin
 		select {
 		case <-ticker.C:
 			//GetHashTimer
-			ret, stat, amount, locknum, unlocknum, account, locksource, err := w.EthGetHashTimer(lockhash)
+			ret, amount, locknum, unlocknum, account, locksource, err := w.EthGetHashTimer(lockhash)
 			if err == nil && ret == CchEthIssueRetOK {
-				//w.logger.Debugf("EthGetHashTimer:get stat:%,amount:%,locknum:%",stat,amount,locknum)
+				//w.logger.Debugf("EthGetHashTimer:get amount:%,locknum:%",amount,locknum)
 				if locknum > 0 {
-					w.logger.Debugf("EthGetHashTimerLoop out,lockhash:", lockhash)
-					w.EthGetHashTimerDeal(action, stat, amount, locknum, unlocknum, lockhash, locksource, txhash, account)
+					w.logger.Debugf("EthGetHashTimerLoop out,lockhash:(%s)", lockhash)
+					w.EthGetHashTimerDeal(action, amount, locknum, unlocknum, lockhash, locksource, txhash, account)
 					return
 				}
 			}
+		}
+	}
+}
+
+//EthBlockNumbersysn
+func (w *WrapperServer) EthBlockNumbersysn() {
+	curnum, err := w.sc.WsqlLastBlockNumGet(CchBlockTypeEth)
+	if err != nil {
+		w.logger.Error("WsqlLastBlockNumGet err:", err)
+		return
+	}
+	gWrapperStats.LastEthBlocknum = curnum
+	gWrapperStats.CurrentEthBlocknum = curnum
+}
+
+//EthUpdateBlockNumber 定时任务，同步当前区块高度
+func (w *WrapperServer) EthUpdateBlockNumber() {
+	client, err := w.WrapperEthClientConnect()
+	if err != nil {
+		w.logger.Error("EthUpdateBlockNumber err:", err)
+		return
+	}
+	//定时查询最新块高度
+	d := time.Duration(time.Second * 10)
+	t := time.NewTicker(d)
+	defer t.Stop()
+	for {
+		<-t.C
+		header, err := client.HeaderByNumber(context.Background(), nil)
+		if err != nil {
+			w.logger.Error("EthUpdateBlockNumber err:", err)
+			continue
+		}
+		if header.Number.Int64() != gWrapperStats.CurrentEthBlocknum {
+			gWrapperStats.CurrentEthBlocknum = header.Number.Int64()
+			w.sc.WsqlBlockNumberUpdateLogInsert(CchBlockTypeEth, gWrapperStats.CurrentEthBlocknum, "update eth blocknum")
 		}
 	}
 }

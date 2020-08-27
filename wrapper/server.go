@@ -43,7 +43,7 @@ var WrapperEthUserPrikey string = ""
 var WrapperNeoPrikey string = ""
 
 //neo 合约测试地址
-const WrapperNeoContract string = "b85074ec25aa549814eceb2a4e3748f801c71c51"
+const WrapperNeoContract string = "0533290f35572cd06e3667653255ffd6ee6430fb"
 
 //eth 测试合约地址
 const WrapperEthContract string = "0xCD60c41De542ebaF81040A1F50B6eFD4B1547d91"
@@ -53,11 +53,16 @@ const wrapperLockNum int64 = 256
 const WrapperLockHashMinLen int = 32
 const WrapperSourceTextMinLen int = 20
 const WrapperTxHashMinLen int = 64
+const WrapperHashHexStringWithPrix int = 66
 const WrapperAmountMinNum int = 1
 const WrapperEthAddressMinNum int = 40
 const WrapperLockHashHexLen int = 64
-
+const WrapperGasWeiNum int64 = 100000000
 const WrapperPeruserRunEventNumLimit int = 5
+const DefaultEthWrapperLockNum int64 = 10 //10 eth block
+const DefaultNeoWrapperLockNum int64 = 20 //30  neo block
+const DefaultEthUserLockNum int64 = 30    //270 sec
+const DefaultNeoUserLockNum int64 = 20    //5 min
 
 type WrapperConfig struct {
 	LockNum     int64  `json:"locknum"`
@@ -71,10 +76,14 @@ type WrapperConfig struct {
 }
 
 type WrapperStatistics struct {
-	//TotalEvent    int64 `json:"totalnum"`
-	RunningEvent  int64 `json:"runningnum"`
-	RunNep5Event  int64 `json:"nep5num"`
-	RunErc20Event int64 `json:"erc20num"`
+	//TotalEvent    	int64 `json:"totalnum"`
+	RunningEvent       int64 `json:"runningnum"`
+	RunNep5Event       int64 `json:"nep5num"`
+	RunErc20Event      int64 `json:"erc20num"`
+	LastEthBlocknum    int64 `json:"lastethbkn"`
+	LastNeoBlocknum    int64 `json:"lastneobkn"`
+	CurrentEthBlocknum int64 `json:"curethbkn"`
+	CurrentNeoBlocknum int64 `json:"curneobkn"`
 }
 
 //NewWrapperServer wrapper server init
@@ -107,6 +116,11 @@ func (w *WrapperServer) WrapperEventInit() {
 	gWrapperConfig.NeoContract = WrapperNeoContract
 	gWrapperConfig.EthContract = WrapperEthContract
 	//w.logger.Debugf("get EthPrikey:%s NeoPrikey:%s EthUserPrikey:%s",gWrapperConfig.EthPrikey,gWrapperConfig.NeoPrikey,WrapperEthUserPrikey)
+	w.NeoBlockNumberSysn()
+	w.EthBlockNumbersysn()
+	w.WrapperRunningEventInit()
+	go w.NeoUpdateBlockNumber()
+	go w.EthUpdateBlockNumber()
 	go w.WrapperEthListen()
 }
 
@@ -154,9 +168,12 @@ func (w *WrapperServer) WrapperEventInsert(stat, amount, eventType, userLocknum 
 	newEvent.UserAccount = account
 	if eventType == cchEventTypeMortgage {
 		newEvent.NeoLockTxhash = txHash
-
+		newEvent.UserLockNum = DefaultNeoUserLockNum
+		newEvent.WrapperLockNum = DefaultEthWrapperLockNum
 	} else {
 		newEvent.EthLockTxhash = txHash
+		newEvent.UserLockNum = DefaultEthUserLockNum
+		newEvent.WrapperLockNum = DefaultNeoWrapperLockNum
 	}
 	newEvent.StartTime = time.Now().Unix()
 	newEvent.Amount = amount
@@ -167,22 +184,25 @@ func (w *WrapperServer) WrapperEventInsert(stat, amount, eventType, userLocknum 
 	} else if eventType == cchEventTypeRedemption {
 		RedemptionEvent[lockHash] = &newEvent
 	}
-	nid, err := w.sc.WsqlEventRecordInsert(&newEvent)
+	nid, err := w.sc.DbEventRecordInsert(&newEvent)
 	if err != nil {
-		w.logger.Error("WsqlEventRecordInsert err", err)
+		w.logger.Error("DbEventRecordInsert err", err)
 	} else {
 		newEvent.DId = nid
 	}
+	//init new running event
+	go w.WrapperEventRunning(&newEvent)
 	return err
 }
 
 //WrapperEventGetByLockhash get event  by lockHash
 func (w *WrapperServer) WrapperEventGetByLockhash(eventType int64, lockHash string) (e *EventInfo, err error) {
-	if len(lockHash) < WrapperLockHashMinLen {
+	lh, err := w.WrapperHashHexStrDelPrix(lockHash)
+	if err != nil {
 		w.logger.Error("WrapperEventGetByLockhash err", lockHash)
 		return nil, errors.New("Bad lockHash")
 	}
-	event, err := w.sc.DbGetEventByLockhash(eventType, lockHash)
+	event, err := w.sc.DbGetEventByLockhash(eventType, lh)
 	if err != nil {
 		return nil, errors.New("DbGetEventByLockhash failed")
 	}
@@ -250,27 +270,37 @@ func (w *WrapperServer) WrapperEventUpdateStatByLockhash(eventType, status, errn
 }
 
 //WrapperEventUpdateCacheStatByLockhash update event cache status by lockHash
-func (w *WrapperServer) WrapperEventUpdateCacheStatByLockhash(eventType, status, errno int64, lockHash string) (err error) {
-	if eventType == cchEventTypeMortgage {
-		for _, event := range MortgageEvent {
-			if event.LockHash == lockHash {
-				event.Status = status
-				event.Errno = errno
-				return nil
-			}
-		}
-	} else if eventType == cchEventTypeRedemption {
-		for _, event := range RedemptionEvent {
-			if event.LockHash == lockHash {
-				event.Status = status
-				event.Errno = errno
-				return nil
-			}
-		}
-	} else {
-		return errors.New("Bad eventType")
+func (w *WrapperServer) WrapperEventUpdateCacheStatByLockhash(eventtype, status, errno int64, lockhash string) (err error) {
+	if len(lockhash) < WrapperLockHashMinLen {
+		w.logger.Error("WrapperEventUpdateCacheStatByLockhash bad lockhash:", lockhash)
+		return errors.New("bad lockhash")
 	}
-	return errors.New("no txHash")
+	if status < cchEthRedemptionStatusInit || status > cchEthRedemptionStatusFailed {
+		w.logger.Error("WrapperEventUpdateCacheStatByLockhash bad newstatus:", status)
+		return errors.New("bad newstatus")
+	}
+	if eventtype == cchEventTypeMortgage {
+		if MortgageEvent[lockhash] == nil {
+			w.logger.Error("WrapperEventUpdateCacheStatByLockhash MortgageEvent lockhash nil", lockhash)
+			return errors.New("bad MortgageEvent lockhash")
+		}
+		//w.logger.Debugf("WrapperEventUpdateCacheStatByLockhash:(%d->%d)",MortgageEvent[lockhash].Status,status)
+		MortgageEvent[lockhash].Status = status
+		MortgageEvent[lockhash].Errno = errno
+		go w.eventStatusUpdateMsgPush(MortgageEvent[lockhash], status)
+		return nil
+	} else if eventtype == cchEventTypeRedemption {
+		if RedemptionEvent[lockhash] == nil {
+			w.logger.Error("WrapperEventUpdateCacheStatByLockhash RedemptionEvent lockhash nil", lockhash)
+			return errors.New("bad RedemptionEvent lockhash")
+		}
+		//w.logger.Debugf("WrapperEventUpdateCacheStatByLockhash:(%d->%d)",RedemptionEvent[lockhash].Status,status)
+		RedemptionEvent[lockhash].Status = status
+		RedemptionEvent[lockhash].Errno = errno
+		go w.eventStatusUpdateMsgPush(RedemptionEvent[lockhash], status)
+		return nil
+	}
+	return errors.New("bad eventtype")
 }
 
 //WrapperOnline Wrapper Online
@@ -280,17 +310,38 @@ func (w *WrapperServer) WrapperOnline() (neoaccount, neocontract, ethaccount, et
 }
 
 //WrapperNep5LockNotice wrapper nep5 lock notice
-func (w *WrapperServer) WrapperNep5LockNotice(eventType, amount, userLocknum int64, txHash, lockHash string) (result int64) {
-	if eventType != cchEventTypeMortgage && eventType != cchEventTypeRedemption {
-		return cchLockNoticeRetBadParams
-	}
+func (w *WrapperServer) WrapperNep5LockNotice(action, amount, userlocknum int64, txhash, lockhash string) (result int64) {
+	var estatus int64
+	var etype int64
 	if int(amount) < WrapperAmountMinNum {
 		return cchLockNoticeRetBadParams
 	}
-	err := w.WrapperEventInsert(cchNep5MortgageStatusInit, amount, eventType, userLocknum, lockHash, txHash, "")
+	lh, err := w.WrapperHashHexStrDelPrix(lockhash)
 	if err != nil {
-		w.logger.Error("WrapperEventInsert err", err)
-		return cchLockNoticeRetRepeat
+		return cchLockNoticeRetBadParams
+	}
+	switch action {
+	case Nep5ActionUserLock:
+		etype = cchEventTypeMortgage
+		estatus = cchNep5MortgageStatusWaitNeoLockVerify
+		err := w.WrapperEventInsert(estatus, amount, etype, userlocknum, lh, txhash, "")
+		if err != nil {
+			w.logger.Error("WrapperNep5LockNotice WrapperEventInsert err", err)
+			return cchLockNoticeRetRepeat
+		}
+	case Nep5ActionRefundUser:
+		etype = cchEventTypeMortgage
+	case Nep5ActionUserUnlock:
+		etype = cchEventTypeRedemption
+		estatus = cchEthRedemptionStatusWaitNeoUnlockVerify
+		err := w.WrapperEventUpdateCacheStatByLockhash(etype, estatus, 0, lh)
+		if err != nil {
+			w.logger.Error("WrapperNep5LockNotice WrapperEventUpdateCacheStatByLockhash err", err)
+			return cchLockNoticeRetRepeat
+		}
+	default:
+		w.logger.Error("WrapperNep5LockNotice:bad action(%d)", action)
+		return cchLockNoticeRetBadParams
 	}
 	return cchLockNoticeRetOK
 }
@@ -362,10 +413,10 @@ func (w *WrapperServer) WrapperEthGetAccountInfo(address string) (result int64, 
 }
 
 //WrapperEthGetHashTimer eth Get HashTimer by lockhash
-func (w *WrapperServer) WrapperEthGetHashTimer(lockhash string) (result, stat, amount, locknum, unlocknum int64, account, locksource string, err error) {
+func (w *WrapperServer) WrapperEthGetHashTimer(lockhash string) (result, amount, locknum, unlocknum int64, account, locksource string, err error) {
 	if len(lockhash) < WrapperLockHashHexLen {
 		w.logger.Error("bad lockhash")
-		return CchEthIssueRetBadParams, 0, 0, 0, 0, "", "", errors.New("bad lockhash")
+		return CchEthIssueRetBadParams, 0, 0, 0, "", "", errors.New("bad lockhash")
 	}
 	return w.EthGetHashTimer(lockhash)
 }
@@ -373,7 +424,7 @@ func (w *WrapperServer) WrapperEthGetHashTimer(lockhash string) (result, stat, a
 //WrapperNep5WrapperLock neo lock token
 func (w *WrapperServer) WrapperNep5WrapperLock(amount, blocknum int64, ethaddress, lockhash string) (result int64, txhash, msg string, err error) {
 	if len(lockhash) < WrapperLockHashHexLen {
-		w.logger.Error("bad lockhash")
+		w.logger.Error("bad lockhash %s", lockhash)
 		return CchNeoIssueRetBadParams, "", "", err
 	}
 	txid, err := w.nta.Nep5ContractWrapperLock(amount, blocknum, ethaddress, lockhash)
@@ -423,4 +474,32 @@ func (w *WrapperServer) WrapperNep5GetTxInfo(txhash string) (result int64, actio
 		return CchNeoIssueRetBadParams, "", "", "", 0, err
 	}
 	return CchNeoIssueRetOK, txinfo.Action, txinfo.Fromaddr, txinfo.Toaddr, txinfo.Amount, nil
+}
+
+func (w *WrapperServer) WrapperHashHexStrDelPrix(hexstring string) (string, error) {
+	if len(hexstring) == WrapperTxHashMinLen {
+		return hexstring, nil
+	} else if len(hexstring) == WrapperHashHexStringWithPrix {
+		if hexstring[0] == '0' && (hexstring[1] == 'x' || hexstring[1] == 'X') {
+
+			retstring := hexstring[2:]
+			return retstring, nil
+		}
+		return "", errors.New("bad hexstring prefix")
+	}
+	return "", errors.New("bad hexstring len")
+}
+
+func (w *WrapperServer) WrapperHashHexStrAddPrix(hexstring string) (string, error) {
+	if len(hexstring) == WrapperTxHashMinLen {
+		retstring := "0x"
+		retstring = retstring + hexstring
+		return retstring, nil
+	} else if len(hexstring) == WrapperHashHexStringWithPrix {
+		if hexstring[0] == '0' && (hexstring[1] == 'x' || hexstring[1] == 'X') {
+			return hexstring, nil
+		}
+		return "", errors.New("bad hexstring prefix")
+	}
+	return "", errors.New("bad hexstring len")
 }

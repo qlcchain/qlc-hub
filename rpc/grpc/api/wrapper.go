@@ -64,7 +64,7 @@ func (wa *WrapperAPI) EventStatCheck(ctx context.Context, param *proto.EventStat
 //Nep5LockNotice nep5 lock notice by app user
 func (wa *WrapperAPI) Nep5LockNotice(ctx context.Context, param *proto.Nep5LockNoticeRequest) (*proto.Nep5LockNoticeResponse, error) {
 	wa.logger.Debugf("Exec Nep5LockNotice request %+v", param)
-	result := wa.wap.WrapperNep5LockNotice(param.GetType(), param.GetAmount(), param.GetUserlocknum(), param.GetTxHash(), param.GetHash())
+	result := wa.wap.WrapperNep5LockNotice(param.GetType(), param.GetAmount(), param.GetUserlocknum(), param.GetTxhash(), param.GetHash())
 	return &proto.Nep5LockNoticeResponse{
 		Type:   param.GetType(),
 		Hash:   param.GetHash(),
@@ -154,13 +154,12 @@ func (wa *WrapperAPI) EthGetAccountInfo(ctx context.Context, param *proto.EthGet
 //EthGetHashTimer eth smartcontract get hashtimer info  by lockhash
 func (wa *WrapperAPI) EthGetHashTimer(ctx context.Context, param *proto.EthGetHashTimerRequest) (*proto.EthGetHashTimerResponse, error) {
 	wa.logger.Debugf("Exec EthGetHashTimer request %+v", param)
-	result, stat, amount, locknum, unlocknum, account, locksource, err := wa.wap.WrapperEthGetHashTimer(param.GetLockhash())
+	result, amount, locknum, unlocknum, account, locksource, err := wa.wap.WrapperEthGetHashTimer(param.GetLockhash())
 	if err != nil {
 		wa.logger.Debugf("Exec EthGetGetHashTimer get ERR", err)
 	}
 	return &proto.EthGetHashTimerResponse{
 		Result:     result,
-		Stat:       stat,
 		Amount:     amount,
 		Locknum:    locknum,
 		Unlocknum:  unlocknum,

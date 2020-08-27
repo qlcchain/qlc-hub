@@ -2,7 +2,8 @@ package wrapper
 
 import (
 	"errors"
-	"fmt"
+	_ "fmt"
+	"strconv"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -24,8 +25,11 @@ type DBNeoMortgageEventTBL struct {
 	EndTime          int64  `json:"endtime" orm:"column(endtime)"`
 	UserLockNum      int64  `json:"userlocknum" orm:"column(userlocknum)"`
 	WrapperLockNum   int64  `json:"wrapperlocknum" orm:"column(wrapperlocknum)"`
-	LockBlockNum     int64  `json:"lockblocknum" orm:"column(lockblocknum)"`
-	UnlockBlockNum   int64  `json:"unlockblocknum" orm:"column(unlockblocknum)"`
+	EthLockNum       int64  `json:"ethlocknum" orm:"column(ethlocknum)"`
+	NeoLockNum       int64  `json:"neolocknum" orm:"column(neolocknum)"`
+	UnlockNum        int64  `json:"unlocknum" orm:"column(unlocknum)"`
+	ClaimOutNum      int64  `json:"claimoutnum" orm:"column(claimoutnum)"`
+	FetchOutNum      int64  `json:"fetchoutnum" orm:"column(fetchoutnum)"`
 	NeoAccount       string `json:"neoaccount" orm:"column(neoaccount);size(128);index"`
 	LockHash         string `json:"lockhash" orm:"column(lockhash);size(128);index"`
 	HashSource       string `json:"hashsource" orm:"column(hashsource);size(256)"`
@@ -50,8 +54,11 @@ type DBEthRedemptionEventTBL struct {
 	EndTime          int64  `json:"endtime" orm:"column(endtime)"`
 	UserLockNum      int64  `json:"userlocknum" orm:"column(userlocknum)"`
 	WrapperLockNum   int64  `json:"wrapperlocknum" orm:"column(wrapperlocknum)"`
-	LockBlockNum     int64  `json:"lockblocknum" orm:"column(lockblocknum)"`
-	UnlockBlockNum   int64  `json:"unlockblocknum" orm:"column(unlockblocknum)"`
+	EthLockNum       int64  `json:"ethlocknum" orm:"column(ethlocknum)"`
+	NeoLockNum       int64  `json:"neolocknum" orm:"column(neolocknum)"`
+	UnlockNum        int64  `json:"unlocknum" orm:"column(unlocknum)"`
+	ClaimOutNum      int64  `json:"claimoutnum" orm:"column(claimoutnum)"`
+	FetchOutNum      int64  `json:"fetchoutnum" orm:"column(fetchoutnum)"`
 	EthAccount       string `json:"ethaccount" orm:"column(ethaccount);size(128);index"`
 	LockHash         string `json:"lockhash" orm:"column(lockhash);size(128);index"`
 	HashSource       string `json:"hashsource" orm:"column(hashsource);size(256)"`
@@ -78,6 +85,19 @@ type DBEventStatsChangelogTBL struct {
 
 func (m *DBEventStatsChangelogTBL) TableName() string {
 	return "event_statchange_logtbl"
+}
+
+//DBBlockNumberLogTBL  update block num
+type DBBlockNumberLogTBL struct {
+	ID         int64  `json:"id" pk:"auto" orm:"column(id)"`
+	BlockType  int64  `json:"blocktype" orm:"column(blocktype)"`
+	BlockNum   int64  `json:"blocknum" orm:"column(blocknum)"`
+	UpdateTime int64  `json:"updatetime" orm:"column(updatetime)"`
+	Msg        string `json:"msg" orm:"column(msg)"`
+}
+
+func (m *DBBlockNumberLogTBL) TableName() string {
+	return "blocknum_logtbl"
 }
 
 //WrapperSqlconn sql connect
@@ -110,13 +130,13 @@ func WrapperSqlInit(cfgFile string) {
 	dburl := cfg.SQLCFG.Url
 	dbname := cfg.SQLCFG.DbName
 	connect := dbuser + ":" + dbpwd + "@tcp(" + dburl + ")/" + dbname + "?charset=utf8"
-	fmt.Println(connect)
+	//fmt.Println(connect)
 	err = orm.RegisterDataBase("default", "mysql", connect, maxIdle, maxConn)
 	if err != nil {
-		log.Root.Error("RegisterDataBase failed", err)
+		log.Root.Debugf("RegisterDataBase failed", err)
 		return
 	}
-	orm.RegisterModel(new(DBNeoMortgageEventTBL), new(DBEthRedemptionEventTBL), new(DBEventStatsChangelogTBL))
+	orm.RegisterModel(new(DBNeoMortgageEventTBL), new(DBEthRedemptionEventTBL), new(DBEventStatsChangelogTBL), new(DBBlockNumberLogTBL))
 	orm.RunSyncdb("default", false, true)
 }
 
@@ -131,8 +151,8 @@ func (w *WrapperSqlconn) WsqlEventStatChangeLogInsert(oldstat, newstat int64, lo
 	return w.ocon.Insert(record)
 }
 
-//WsqlEventRecordInsert new event insert
-func (w *WrapperSqlconn) WsqlEventRecordInsert(event *EventInfo) (id int64, err error) {
+//DbEventRecordInsert new event insert
+func (w *WrapperSqlconn) DbEventRecordInsert(event *EventInfo) (id int64, err error) {
 	if event.Type == cchEventTypeMortgage {
 		var mortgageEvent DBNeoMortgageEventTBL
 		mortgageEvent.Status = event.Status
@@ -140,8 +160,11 @@ func (w *WrapperSqlconn) WsqlEventRecordInsert(event *EventInfo) (id int64, err 
 		mortgageEvent.StartTime = event.StartTime
 		mortgageEvent.UserLockNum = event.UserLockNum
 		mortgageEvent.WrapperLockNum = event.WrapperLockNum
-		mortgageEvent.LockBlockNum = event.LockBlockNum
-		mortgageEvent.UnlockBlockNum = event.UnlockBlockNum
+		mortgageEvent.EthLockNum = event.EthLockNum
+		mortgageEvent.NeoLockNum = event.NeoLockNum
+		mortgageEvent.UnlockNum = event.UnlockNum
+		mortgageEvent.ClaimOutNum = event.ClaimOutNum
+		mortgageEvent.FetchOutNum = event.FetchOutNum
 		mortgageEvent.NeoAccount = event.UserAccount
 		mortgageEvent.LockHash = event.LockHash
 		mortgageEvent.NeoLockTxhash = event.NeoLockTxhash
@@ -154,8 +177,11 @@ func (w *WrapperSqlconn) WsqlEventRecordInsert(event *EventInfo) (id int64, err 
 		redemptionEvent.StartTime = event.StartTime
 		redemptionEvent.UserLockNum = event.UserLockNum
 		redemptionEvent.WrapperLockNum = event.WrapperLockNum
-		redemptionEvent.LockBlockNum = event.LockBlockNum
-		redemptionEvent.UnlockBlockNum = event.UnlockBlockNum
+		redemptionEvent.EthLockNum = event.EthLockNum
+		redemptionEvent.NeoLockNum = event.NeoLockNum
+		redemptionEvent.UnlockNum = event.UnlockNum
+		redemptionEvent.ClaimOutNum = event.ClaimOutNum
+		redemptionEvent.FetchOutNum = event.FetchOutNum
 		redemptionEvent.EthAccount = event.UserAccount
 		redemptionEvent.LockHash = event.LockHash
 		redemptionEvent.NeoLockTxhash = event.NeoLockTxhash
@@ -188,13 +214,17 @@ func (w *WrapperSqlconn) DbGetEventByLockhash(etype int64, lockhash string) (tar
 			w.logger.Debugf("DbGetEventByLockhash:get dbevent by lockhash failed")
 			return nil, errors.New("bad lockhash")
 		}
+		event.Type = etype
 		event.Status = info.Status
 		event.Amount = info.Amount
 		event.StartTime = info.StartTime
 		event.UserLockNum = info.UserLockNum
 		event.WrapperLockNum = info.WrapperLockNum
-		event.LockBlockNum = info.LockBlockNum
-		event.UnlockBlockNum = info.UnlockBlockNum
+		event.EthLockNum = info.EthLockNum
+		event.NeoLockNum = info.NeoLockNum
+		event.UnlockNum = info.UnlockNum
+		event.ClaimOutNum = info.ClaimOutNum
+		event.FetchOutNum = info.FetchOutNum
 		event.UserAccount = info.NeoAccount
 		event.LockHash = info.LockHash
 		event.NeoLockTxhash = info.NeoLockTxhash
@@ -206,13 +236,17 @@ func (w *WrapperSqlconn) DbGetEventByLockhash(etype int64, lockhash string) (tar
 			w.logger.Debugf("DbGetEventByLockhash:get dbevent by lockhash failed")
 			return nil, errors.New("bad lockhash")
 		}
+		event.Type = etype
 		event.Status = info.Status
 		event.Amount = info.Amount
 		event.StartTime = info.StartTime
 		event.UserLockNum = info.UserLockNum
 		event.WrapperLockNum = info.WrapperLockNum
-		event.LockBlockNum = info.LockBlockNum
-		event.UnlockBlockNum = info.UnlockBlockNum
+		event.EthLockNum = info.EthLockNum
+		event.NeoLockNum = info.NeoLockNum
+		event.UnlockNum = info.UnlockNum
+		event.ClaimOutNum = info.ClaimOutNum
+		event.FetchOutNum = info.FetchOutNum
 		event.UserAccount = info.EthAccount
 		event.LockHash = info.LockHash
 		event.NeoLockTxhash = info.NeoLockTxhash
@@ -232,16 +266,131 @@ func (w *WrapperSqlconn) DbEthRedemptionUpdate(info *DBEthRedemptionEventTBL) (i
 	return w.ocon.Update(info)
 }
 
+//DbEventUpdate
+func (w *WrapperSqlconn) DbEventUpdate(event *EventInfo) (id int64, err error) {
+	var modifyflag = false
+	if event.Type == cchEventTypeMortgage {
+		mortgageinfo, err := w.DbGetNeoMortgageEventByLockhash(event.LockHash)
+		if err != nil {
+			return w.DbEventRecordInsert(event)
+		}
+		if mortgageinfo.Status != event.Status {
+			mortgageinfo.Status = event.Status
+			modifyflag = true
+		}
+		if mortgageinfo.Amount != event.Amount {
+			mortgageinfo.Amount = event.Amount
+			modifyflag = true
+		}
+		if mortgageinfo.WrapperLockNum != event.WrapperLockNum {
+			mortgageinfo.WrapperLockNum = event.WrapperLockNum
+			modifyflag = true
+		}
+		if mortgageinfo.EthLockNum != event.EthLockNum {
+			mortgageinfo.EthLockNum = event.EthLockNum
+			modifyflag = true
+		}
+		if mortgageinfo.NeoLockNum != event.NeoLockNum {
+			mortgageinfo.NeoLockNum = event.NeoLockNum
+			modifyflag = true
+		}
+		if mortgageinfo.UnlockNum != event.UnlockNum {
+			mortgageinfo.UnlockNum = event.UnlockNum
+			modifyflag = true
+		}
+		if mortgageinfo.ClaimOutNum != event.ClaimOutNum {
+			mortgageinfo.ClaimOutNum = event.ClaimOutNum
+			modifyflag = true
+		}
+		if mortgageinfo.FetchOutNum != event.FetchOutNum {
+			mortgageinfo.FetchOutNum = event.FetchOutNum
+			modifyflag = true
+		}
+		if mortgageinfo.NeoAccount != event.UserAccount {
+			mortgageinfo.NeoAccount = event.UserAccount
+			modifyflag = true
+		}
+		if mortgageinfo.NeoLockTxhash != event.NeoLockTxhash {
+			mortgageinfo.NeoLockTxhash = event.NeoLockTxhash
+			modifyflag = true
+		}
+		if mortgageinfo.EthLockTxhash != event.EthLockTxhash {
+			mortgageinfo.EthLockTxhash = event.EthLockTxhash
+			modifyflag = true
+		}
+		if modifyflag == true {
+			return w.DbNeoMortgageUpdate(mortgageinfo)
+		} else {
+			return mortgageinfo.ID, nil
+		}
+	} else if event.Type == cchEventTypeRedemption {
+		redeptioninfo, err := w.DbGetEthRedemptionEventByLockhash(event.LockHash)
+		if err != nil {
+			return w.DbEventRecordInsert(event)
+		}
+		if redeptioninfo.Status != event.Status {
+			redeptioninfo.Status = event.Status
+			modifyflag = true
+		}
+		if redeptioninfo.Amount != event.Amount {
+			redeptioninfo.Amount = event.Amount
+			modifyflag = true
+		}
+		if redeptioninfo.WrapperLockNum != event.WrapperLockNum {
+			redeptioninfo.WrapperLockNum = event.WrapperLockNum
+			modifyflag = true
+		}
+		if redeptioninfo.EthLockNum != event.EthLockNum {
+			redeptioninfo.EthLockNum = event.EthLockNum
+			modifyflag = true
+		}
+		if redeptioninfo.NeoLockNum != event.NeoLockNum {
+			redeptioninfo.NeoLockNum = event.NeoLockNum
+			modifyflag = true
+		}
+		if redeptioninfo.UnlockNum != event.UnlockNum {
+			redeptioninfo.UnlockNum = event.UnlockNum
+			modifyflag = true
+		}
+		if redeptioninfo.ClaimOutNum != event.ClaimOutNum {
+			redeptioninfo.ClaimOutNum = event.ClaimOutNum
+			modifyflag = true
+		}
+		if redeptioninfo.FetchOutNum != event.FetchOutNum {
+			redeptioninfo.FetchOutNum = event.FetchOutNum
+			modifyflag = true
+		}
+		if redeptioninfo.EthAccount != event.UserAccount {
+			redeptioninfo.EthAccount = event.UserAccount
+			modifyflag = true
+		}
+		if redeptioninfo.NeoLockTxhash != event.NeoLockTxhash {
+			redeptioninfo.NeoLockTxhash = event.NeoLockTxhash
+			modifyflag = true
+		}
+		if redeptioninfo.EthLockTxhash != event.EthLockTxhash {
+			redeptioninfo.EthLockTxhash = event.EthLockTxhash
+			modifyflag = true
+		}
+		if modifyflag == true {
+			return w.DbEthRedemptionUpdate(redeptioninfo)
+		} else {
+			return redeptioninfo.ID, nil
+		}
+	}
+	return -1, errors.New("bad event type")
+}
+
 //WsqlEventDbStatusUpdate db event status update
 func (w *WrapperSqlconn) WsqlEventDbStatusUpdate(etype, status, errno int64, lockhash string) (id int64, err error) {
-	w.logger.Debugf("WsqlEventDbStatusUpdate,etype:%d,hash:%,status：%d，errno:%d", etype, lockhash, status, errno)
+	//w.logger.Debugf("WsqlEventDbStatusUpdate,etype:%d,hash:%s,status：%d，errno:%d", etype, lockhash, status, errno)
 	if etype == cchEventTypeMortgage {
 		info, err := w.DbGetNeoMortgageEventByLockhash(lockhash)
 		if err != nil {
 			w.logger.Debugf("WsqlEventDbStatusUpdate:get dbevent by lockhash failed")
 			return -1, errors.New("bad lockhash")
 		}
-		if info.Status != status {
+		if info.Status != status || info.Errno != errno {
 			info.Status = status
 			info.Errno = errno
 			return w.DbNeoMortgageUpdate(info)
@@ -253,7 +402,7 @@ func (w *WrapperSqlconn) WsqlEventDbStatusUpdate(etype, status, errno int64, loc
 			w.logger.Debugf("WsqlEventDbStatusUpdate:get dbevent by lockhash failed")
 			return -1, errors.New("bad lockhash")
 		}
-		if info.Status != status {
+		if info.Status != status || info.Errno != errno {
 			info.Status = status
 			info.Errno = errno
 			return w.DbEthRedemptionUpdate(info)
@@ -263,7 +412,7 @@ func (w *WrapperSqlconn) WsqlEventDbStatusUpdate(etype, status, errno int64, loc
 	return -1, errors.New("bad event type")
 }
 
-//DbEthRedemptionUpdate
+//DbRunEventNumGetByUser
 func (w *WrapperSqlconn) DbRunEventNumGetByUser(etype int64, uaccount string) (num int, err error) {
 	var count int
 	var sqlcmd string
@@ -286,5 +435,30 @@ func (w *WrapperSqlconn) DbRunEventNumGetByUser(etype int64, uaccount string) (n
 	} else {
 		return -1, errors.New("bad etype")
 	}
+	return count, nil
+}
+
+//WsqlBlockNumberUpdateLogInsert
+func (w *WrapperSqlconn) WsqlBlockNumberUpdateLogInsert(btype, blocknum int64, msg string) (id int64, err error) {
+	var record DBBlockNumberLogTBL
+	record.BlockType = btype
+	record.BlockNum = blocknum
+	record.Msg = msg
+	record.UpdateTime = time.Now().Unix()
+	//w.logger.Debugf("WsqlBlockNumberUpdateLogInsert:type(%d) blocknum(%d) msg(%s) ocon(%v)",btype,blocknum,msg,w.ocon)
+	return w.ocon.Insert(&record)
+}
+
+//WsqlLastBlockNumGet
+func (w *WrapperSqlconn) WsqlLastBlockNumGet(btype int64) (int64, error) {
+	var count int64
+	sqlcmd := "SELECT blocknum from blocknum_logtbl where blocktype=" + strconv.FormatInt(btype, 10) + " ORDER BY ID desc limit 1;"
+	//w.logger.Debugf("sqlcmd(%s)", sqlcmd)
+	err := w.ocon.Raw(sqlcmd).QueryRow(&count)
+	if err != nil {
+		w.logger.Error("DbRunEventNumGetByUser get sql(%s) err(%s)", sqlcmd, err)
+		return -1, err
+	}
+	w.logger.Debugf("WsqlLastBlockNumGet get block(%d) num(%d)", btype, count)
 	return count, nil
 }
