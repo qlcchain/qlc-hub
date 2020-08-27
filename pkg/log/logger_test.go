@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"go.uber.org/zap"
-
-	"github.com/qlcchain/qlc-hub/config"
 )
 
 func TestNewLogger(t *testing.T) {
@@ -34,19 +32,4 @@ func TestNewLogger(t *testing.T) {
 	//t.Log(cfg)
 	logger, _ := cfg.Build()
 	logger.Sugar().Named("rrrrr").Warn("xxxxx")
-}
-
-func TestInit(t *testing.T) {
-	cfg, err := config.DefaultConfig(config.DefaultDataDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = Setup(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	logger := NewLogger("test2")
-	logger.Warn("xxxxxxxxxxxxxxxxxxxxxx")
 }

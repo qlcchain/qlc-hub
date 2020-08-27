@@ -14,10 +14,8 @@ BUILDDIR = $(shell pwd)/build
 VERSION ?= 0.0.1
 GITREV = $(shell git rev-parse --short HEAD)
 BUILDTIME = $(shell date +'%FT%TZ%z')
-LDFLAGS=-ldflags "-X github.com/qlcchain/qlc-hub/version.Version=${VERSION} \
-				  -X github.com/qlcchain/qlc-hub/version.GitRev=${GITREV} \
-				  -X github.com/qlcchain/qlc-hub/version.BuildTime=${BUILDTIME}"
-GO_BUILDER_VERSION=v1.14.2
+LDFLAGS=-ldflags '-X main.version=${VERSION} -X main.commit=${GITREV} -X main.date=${BUILDTIME}'
+GO_BUILDER_VERSION=v1.15
 
 default: build
 

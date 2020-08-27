@@ -7,7 +7,7 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"github.com/qlcchain/qlc-hub/log"
+	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
 )
 

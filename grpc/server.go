@@ -1,4 +1,4 @@
-package grpcServer
+package grpc
 
 import (
 	"context"
@@ -9,16 +9,14 @@ import (
 
 	"github.com/qlcchain/qlc-hub/config"
 
-	pb "github.com/qlcchain/qlc-hub/rpc/grpc/proto"
+	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/qlcchain/qlc-hub/log"
-	"github.com/qlcchain/qlc-hub/rpc/grpc/api"
-	_ "github.com/qlcchain/qlc-hub/wrapper"
+	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
 type GRPCServer struct {
@@ -36,7 +34,7 @@ func NewGRPCServer() *GRPCServer {
 }
 
 func (g *GRPCServer) Start(cfg *config.Config) error {
-	network, address, err := scheme(cfg.RPC.GRPCListenAddress)
+	network, address, err := scheme(cfg.RPCCfg.GRPCListenAddress)
 	if err != nil {
 		return err
 	}
@@ -45,8 +43,8 @@ func (g *GRPCServer) Start(cfg *config.Config) error {
 	if err != nil {
 		return fmt.Errorf("failed to listen: %s", err)
 	}
-	wap := api.NewWrapperAPI()
-	pb.RegisterWrapperAPIServer(g.rpc, wap)
+	//wap := api.NewWrapperAPI()
+	//pb.RegisterWrapperAPIServer(g.rpc, wap)
 	reflection.Register(g.rpc)
 	go func() {
 		if err := g.rpc.Serve(lis); err != nil {
@@ -54,7 +52,7 @@ func (g *GRPCServer) Start(cfg *config.Config) error {
 		}
 	}()
 	go func() {
-		if err := g.newGateway(address, cfg.RPC.ListenAddress); err != nil {
+		if err := g.newGateway(address, cfg.RPCCfg.ListenAddress); err != nil {
 			g.logger.Errorf("start gateway: %s", err)
 		}
 	}()
