@@ -49,7 +49,7 @@ func neo2eth() {
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
 	userLock(rHash, c)
-	sleepForHashTimer(1, c)
+	sleepForHashTimer(3, c)
 	wrapperUnlock(rOrigin, c)
 }
 
@@ -77,7 +77,7 @@ func eth2neo() {
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
 	wrapperLock(rHash, c)
-	sleepForHashTimer(1, c)
+	sleepForHashTimer(3, c)
 	userUnlock(rOrigin, c)
 }
 
