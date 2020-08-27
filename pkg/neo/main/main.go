@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -10,15 +9,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
-	"github.com/nspcc-dev/neo-go/pkg/io"
-	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
-	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
-	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 )
@@ -40,276 +33,210 @@ var (
 )
 
 func main() {
-	fmt.Println("contract ==> ", address.Uint160ToString(contractLE))
-	fmt.Println("user address    ==> ", userAccount.Address)
-	fmt.Println("wrapper address ==> ", wrapperAccount.Address)
-	rOrigin, rHash := hashValue()
-	fmt.Println("hash: ", rOrigin, "==>", rHash)
-
-	//  q8HrOhrEwpefU673J0HyI0RRh9praomn ==> affb803ca1439f37fae63a6e0dd8bf9e7191260fd9b4725d00a698de1aff9822
-	//userLock(rHash)
-	//
-	wrapperUnLock("q8HrOhrEwpefU673J0HyI0RRh9praomn")
-	//userLockByPkg(rHash)
+	neo2eth()
+	neo2ethRefund()
+	eth2neo()
+	eth2neoRefund()
 }
 
-func wrapperUnLock(rOrigin string) {
-	c, err := client.New(context.Background(), url, client.Options{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ps := []request.Param{
-		{
-			Type:  request.StringT,
-			Value: "wrapperUnlock",
-		}, {
-			Type: request.ArrayT,
-			Value: []request.Param{
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.StringType,
-						Value: request.Param{
-							Type:  request.StringT,
-							Value: rOrigin,
-						},
-					},
-				},
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.ByteArrayType,
-						Value: request.Param{
-							Type:  request.ArrayT,
-							Value: hex.EncodeToString(wrapperAccountUint.BytesBE()),
-						},
-					},
-				},
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.ByteArrayType,
-						Value: request.Param{
-							Type:  request.ArrayT,
-							Value: userEthAddress,
-						},
-					},
-				},
-			},
-		},
-	}
-
-	scripts, err := request.CreateFunctionInvocationScript(contractLE, ps)
-	if err != nil {
-		log.Fatal("script error: ", err)
-	}
-
-	tx := transaction.NewInvocationTX(scripts, 0)
-
-	// add attributes
-	tx.AddVerificationHash(wrapperAccountUint)
-	//tx.Attributes = append(tx.Attributes, transaction.Attribute{
-	//	Usage: transaction.Script,
-	//	Data:  wrapperAccountUint.BytesBE(),
-	//})
-	tx.Attributes = append(tx.Attributes, transaction.Attribute{
-		Usage: transaction.Script,
-		Data:  contractLE.BytesBE(),
-	})
-
-	if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
-		tx.Attributes = append(tx.Attributes, transaction.Attribute{
-			Usage: transaction.Script,
-			Data:  wrapperAccountUint.BytesBE(),
-		})
-
-		//r, _ := hex.DecodeString("000001742eafec125f65610c")
-		r := remark()
-		tx.Attributes = append(tx.Attributes, transaction.Attribute{
-			Usage: transaction.Remark,
-			Data:  r,
-		})
-	}
-
-	// add witness
-	script := io.NewBufBinWriter()
-	emit.String(script.BinWriter, rOrigin)
-	emit.Int(script.BinWriter, 1)
-	emit.Opcode(script.BinWriter, opcode.PACK)
-	emit.String(script.BinWriter, "wrapperUnlock")
-
-	tx.Scripts = append(tx.Scripts, transaction.Witness{
-		InvocationScript:   script.Bytes(),
-		VerificationScript: []byte{},
-	})
-
-	d := tx.GetSignedPart()
-	fmt.Println(hex.EncodeToString(d))
-	sign := wrapperAccount.PrivateKey().Sign(d)
-	pack := make([]byte, len(sign)+1)
-	pack[0] = byte(len(sign))
-	copy(pack[1:], sign)
-	fmt.Println(hex.EncodeToString(pack))
-	err = wrapperAccount.SignTx(tx)
-	fmt.Println("tx", toString(tx))
-	fmt.Println(hex.EncodeToString(tx.Bytes()))
-
-	err = c.SendRawTransaction(tx)
-	if err != nil {
-		log.Fatal("send error: ", err)
-	}
-	fmt.Println("tx: ", fmt.Sprintf("0x%s", tx.Hash().StringLE()))
-	applicationLog(tx.Hash().StringLE(), c)
-}
-
-func userLock(rHash string) {
-	c, err := client.New(context.Background(), url, client.Options{})
-	//c.SetWIF(userWif)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fromAddr := hex.EncodeToString(userAccountUint.BytesBE())
-	toAddr := hex.EncodeToString(wrapperAccountUint.BytesBE())
-	fmt.Println(userAccount.Address, "==>", fromAddr)
-	fmt.Println(wrapperAccount.Address, "==>", toAddr)
-
-	ps := []request.Param{
-		{
-			Type:  request.StringT,
-			Value: "userLock",
-		}, {
-			Type: request.ArrayT,
-			Value: []request.Param{
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.ByteArrayType,
-						Value: request.Param{
-							Type:  request.StringT,
-							Value: rHash,
-						},
-					},
-				},
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.ByteArrayType,
-						Value: request.Param{
-							Type:  request.ArrayT,
-							Value: fromAddr,
-						},
-					},
-				},
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.IntegerType,
-						Value: request.Param{
-							Type:  request.NumberT,
-							Value: 110000000,
-						},
-					},
-				},
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.ByteArrayType,
-						Value: request.Param{
-							Type:  request.ArrayT,
-							Value: toAddr,
-						},
-					},
-				},
-				{
-					Type: request.FuncParamT,
-					Value: request.FuncParam{
-						Type: smartcontract.IntegerType,
-						Value: request.Param{
-							Type:  request.NumberT,
-							Value: 10,
-						},
-					},
-				},
-			},
-		},
-	}
-
-	scripts, err := request.CreateFunctionInvocationScript(contractLE, ps)
-	if err != nil {
-		log.Fatal("script error: ", err)
-	}
-
-	//re, err := c.SignAndPushInvocationTx(scripts, account, 0, 1)
-	//if err != nil {
-	//	log.Fatal("tx: ", err)
-	//}
-	//log.Println(re.String())
-
-	tx := transaction.NewInvocationTX(scripts, 0)
-	tx.AddVerificationHash(userAccountUint)
-	if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
-		tx.Attributes = append(tx.Attributes, transaction.Attribute{
-			Usage: transaction.Script,
-			Data:  userAccountUint.BytesBE(),
-		})
-		tx.Attributes = append(tx.Attributes, transaction.Attribute{
-			Usage: transaction.Remark,
-			Data:  remark(),
-		})
-	}
-
-	fmt.Println(toString(tx))
-	err = userAccount.SignTx(tx)
-
-	if err != nil {
-		log.Fatal("sign error: ", err)
-	}
-	err = c.SendRawTransaction(tx)
-	if err != nil {
-		log.Fatal("send error: ", err)
-	}
-	fmt.Println("tx: ", fmt.Sprintf("0x%s", tx.Hash().StringLE()))
-	applicationLog(tx.Hash().StringLE(), c)
-}
-
-func userLockByPkg(rHash string) {
+func neo2eth() {
+	log.Println("====neo2eth====")
 	c, err := neo.NewNeoTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
+	rOrigin, rHash := hashValue()
+	log.Println("hash: ", rOrigin, "==>", rHash)
 
+	userLock(rHash, c)
+	sleepForHashTimer(1, c)
+	wrapperUnlock(rOrigin, c)
+}
+
+func neo2ethRefund() {
+	log.Println("====neo2ethRefund====")
+	c, err := neo.NewNeoTransaction(url, contractAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rOrigin, rHash := hashValue()
+	log.Println("hash: ", rOrigin, "==>", rHash)
+
+	userLock(rHash, c)
+	sleepForHashTimer(40, c)
+	refundUser(rOrigin, c)
+}
+
+func eth2neo() {
+	log.Println("====eth2neo====")
+	c, err := neo.NewNeoTransaction(url, contractAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rOrigin, rHash := hashValue()
+	log.Println("hash: ", rOrigin, "==>", rHash)
+
+	wrapperLock(rHash, c)
+	sleepForHashTimer(1, c)
+	userUnlock(rOrigin, c)
+}
+
+func eth2neoRefund() {
+	log.Println("====eth2neoRefund====")
+	c, err := neo.NewNeoTransaction(url, contractAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	rOrigin, rHash := hashValue()
+	log.Println("hash: ", rOrigin, "==>", rHash)
+
+	wrapperLock(rHash, c)
+	sleepForHashTimer(20, c)
+	refundWrapper(rOrigin, c)
+}
+
+func sleepForHashTimer(n uint32, c *neo.NeoTransaction) {
+	log.Printf("waiting for %d block confirmed ... \n", n)
+	cHeight, err := c.Client().GetStateHeight()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ch := cHeight.BlockHeight
+	for {
+		time.Sleep(10 * time.Second)
+		nHeight, err := c.Client().GetStateHeight()
+		if err != nil {
+			log.Println(err)
+		} else {
+			nh := nHeight.BlockHeight
+			if nh-ch > n {
+				break
+			}
+		}
+	}
+}
+
+func wrapperLock(rHash string, c *neo.NeoTransaction) {
 	params := []request.Param{
-		neo.FunctionName("userLock"),
-		neo.ArrayTypeParams([]request.Param{
-			neo.HashParam(rHash),
-			neo.AddressParam(userAccount.Address),
-			neo.IntegerTypeParam(120000000),
-			neo.AddressParam(userAccount.Address),
-			neo.IntegerTypeParam(rand.Intn(100)),
+		neo.FunctionName("wrapperLock"),
+		neo.ArrayParams([]request.Param{
+			neo.ArrayTypeParam(rHash),
+			neo.AddressParam(wrapperAccount.Address),
+			neo.IntegerTypeParam(140000000),
+			neo.ArrayTypeParam(userEthAddress),
+			neo.IntegerTypeParam(10),
 		}),
 	}
-	r, err := c.CreateTransaction(params, userWif, 0, 0)
+	r, err := c.CreateTransaction(neo.TransactionParam{
+		Params: params,
+		Wif:    wrapperWif,
+	})
 	if err != nil {
 		log.Fatal("tx error: ", err)
 	}
-	log.Println(fmt.Sprintf("0x%s", r))
+	log.Println("wrapper lock hash ==> ", fmt.Sprintf("0x%s", r))
 }
 
-func applicationLog(hash string, c *client.Client) {
-	time.Sleep(30 * time.Second)
-	fmt.Println("----application log-----")
-	if h, err := util.Uint256DecodeStringLE(hash); err == nil {
-		if l, err := c.GetApplicationLog(h); err == nil {
-			data, _ := json.MarshalIndent(l, "", "\t")
-			fmt.Println(string(data))
-		} else {
-			fmt.Println(err)
-		}
-	} else {
-		fmt.Println(err)
+func userUnlock(rOrigin string, c *neo.NeoTransaction) {
+	params := []request.Param{
+		neo.FunctionName("userUnlock"),
+		neo.ArrayParams([]request.Param{
+			neo.StringTypeParam(rOrigin),
+			neo.AddressParam(userAccount.Address),
+		}),
 	}
+	r, err := c.CreateTransactionAppendWitness(neo.TransactionParam{
+		Params:   params,
+		Wif:      userWif,
+		ROrigin:  rOrigin,
+		FuncName: "userUnlock",
+	})
+	if err != nil {
+		log.Fatal("tx error: ", err)
+	}
+	log.Println("user unlock hash ==> ", fmt.Sprintf("0x%s", r))
+}
+
+func refundWrapper(rOrigin string, c *neo.NeoTransaction) {
+	params := []request.Param{
+		neo.FunctionName("refundWrapper"),
+		neo.ArrayParams([]request.Param{
+			neo.StringTypeParam(rOrigin),
+			neo.AddressParam(wrapperAccount.Address),
+		}),
+	}
+	r, err := c.CreateTransactionAppendWitness(neo.TransactionParam{
+		Params:   params,
+		Wif:      wrapperWif,
+		ROrigin:  rOrigin,
+		FuncName: "refundWrapper",
+	})
+	if err != nil {
+		log.Fatal("tx error: ", err)
+	}
+	log.Println("refund wrapper hash ==> ", fmt.Sprintf("0x%s", r))
+}
+
+func userLock(rHash string, c *neo.NeoTransaction) {
+	params := []request.Param{
+		neo.FunctionName("userLock"),
+		neo.ArrayParams([]request.Param{
+			neo.ArrayTypeParam(rHash),
+			neo.AddressParam(userAccount.Address),
+			neo.IntegerTypeParam(130000000),
+			neo.AddressParam(wrapperAccount.Address),
+			neo.IntegerTypeParam(10),
+		}),
+	}
+	r, err := c.CreateTransaction(neo.TransactionParam{
+		Params: params,
+		Wif:    userWif,
+	})
+	if err != nil {
+		log.Fatal("tx error: ", err)
+	}
+	log.Println("user lock hash ==> ", fmt.Sprintf("0x%s", r))
+}
+
+func wrapperUnlock(rOrigin string, c *neo.NeoTransaction) {
+	params := []request.Param{
+		neo.FunctionName("wrapperUnlock"),
+		neo.ArrayParams([]request.Param{
+			neo.StringTypeParam(rOrigin),
+			neo.AddressParam(wrapperAccount.Address),
+			neo.ArrayTypeParam(userEthAddress),
+		}),
+	}
+	r, err := c.CreateTransactionAppendWitness(neo.TransactionParam{
+		Params:   params,
+		Wif:      wrapperWif,
+		ROrigin:  rOrigin,
+		FuncName: "wrapperUnlock",
+	})
+	if err != nil {
+		log.Fatal("tx error: ", err)
+	}
+	log.Println("wrapper unlock hash ==> ", fmt.Sprintf("0x%s", r))
+}
+
+func refundUser(rOrigin string, c *neo.NeoTransaction) {
+	params := []request.Param{
+		neo.FunctionName("refundUser"),
+		neo.ArrayParams([]request.Param{
+			neo.StringTypeParam(rOrigin),
+			neo.AddressParam(userAccount.Address),
+		}),
+	}
+	r, err := c.CreateTransactionAppendWitness(neo.TransactionParam{
+		Params:   params,
+		Wif:      userWif,
+		ROrigin:  rOrigin,
+		FuncName: "refundUser",
+	})
+	if err != nil {
+		log.Fatal("tx error: ", err)
+	}
+	log.Println("refund user hash ==> ", fmt.Sprintf("0x%s", r))
 }
 
 func toString(v interface{}) string {

@@ -11,26 +11,17 @@ import (
 func AddressParam(addr string) request.Param {
 	addrUint, _ := address.StringToUint160(addr)
 	addrHex := hex.EncodeToString(addrUint.BytesBE())
+	return ArrayTypeParam(addrHex)
+}
+
+func ArrayTypeParam(hexStr string) request.Param {
 	return request.Param{
 		Type: request.FuncParamT,
 		Value: request.FuncParam{
 			Type: smartcontract.ByteArrayType,
 			Value: request.Param{
 				Type:  request.ArrayT,
-				Value: addrHex,
-			},
-		},
-	}
-}
-
-func HashParam(hash string) request.Param {
-	return request.Param{
-		Type: request.FuncParamT,
-		Value: request.FuncParam{
-			Type: smartcontract.ByteArrayType,
-			Value: request.Param{
-				Type:  request.StringT,
-				Value: hash,
+				Value: hexStr,
 			},
 		},
 	}
@@ -49,7 +40,20 @@ func IntegerTypeParam(v int) request.Param {
 	}
 }
 
-func ArrayTypeParams(params []request.Param) request.Param {
+func StringTypeParam(v string) request.Param {
+	return request.Param{
+		Type: request.FuncParamT,
+		Value: request.FuncParam{
+			Type: smartcontract.StringType,
+			Value: request.Param{
+				Type:  request.StringT,
+				Value: v,
+			},
+		},
+	}
+}
+
+func ArrayParams(params []request.Param) request.Param {
 	return request.Param{
 		Type:  request.ArrayT,
 		Value: params,
