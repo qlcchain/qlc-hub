@@ -36,7 +36,7 @@ var (
 	wrapperAccount, _     = wallet.NewAccountFromWIF(wrapperWif)
 	wrapperAccountUint, _ = address.StringToUint160(wrapperAccount.Address)
 
-	userEthAddress = "CD60c41De542ebaF81040A1F50B6eFD4B1547d91"
+	userEthAddress = "2e1ac6242bb084029a9eb29dfb083757d27fced4"
 )
 
 func main() {
@@ -45,10 +45,10 @@ func main() {
 	rOrigin, rHash := hashValue()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	// pU06k8yXI9EEGvpLDSYIrfxPhMSBc3bl ==> 98217d36387faf951e3cc777817c4f5f49a8de964d2c297f0783df851eac2802
+	//  1Gxm18YujSztZosnDjNje4OzqpgtEhW9 ==> f259097181c09e42676f0bc26181747727e9c1d16a3070ec2c30615371841568
 	//userLock(rHash)
-	wrapperUnLock("pU06k8yXI9EEGvpLDSYIrfxPhMSBc3bl")
-
+	//
+	wrapperUnLock("1Gxm18YujSztZosnDjNje4OzqpgtEhW9")
 	//userLockByPkg(rHash)
 }
 
@@ -107,11 +107,28 @@ func wrapperUnLock(rOrigin string) {
 	tx := transaction.NewInvocationTX(scripts, 0)
 
 	// add attributes
-	tx.AddVerificationHash(userAccountUint)
+	tx.AddVerificationHash(wrapperAccountUint)
+	//tx.Attributes = append(tx.Attributes, transaction.Attribute{
+	//	Usage: transaction.Script,
+	//	Data:  wrapperAccountUint.BytesBE(),
+	//})
 	tx.Attributes = append(tx.Attributes, transaction.Attribute{
 		Usage: transaction.Script,
 		Data:  contractLE.BytesBE(),
 	})
+
+	if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
+		tx.Attributes = append(tx.Attributes, transaction.Attribute{
+			Usage: transaction.Script,
+			Data:  wrapperAccountUint.BytesBE(),
+		})
+
+		//remark, _ := hex.DecodeString("000001742e59400741028f48")
+		tx.Attributes = append(tx.Attributes, transaction.Attribute{
+			Usage: transaction.Remark,
+			Data:  remark(),
+		})
+	}
 
 	// add witness
 	script := io.NewBufBinWriter()
@@ -122,11 +139,13 @@ func wrapperUnLock(rOrigin string) {
 
 	tx.Scripts = append(tx.Scripts, transaction.Witness{
 		InvocationScript:   script.Bytes(),
-		VerificationScript: contractLE.BytesLE(),
+		VerificationScript: contractLE.BytesBE(),
 	})
 
+	fmt.Println(hex.EncodeToString(tx.GetSignedPart()))
 	err = wrapperAccount.SignTx(tx)
 
+	fmt.Println("tx", toString(tx))
 	err = c.SendRawTransaction(tx)
 	if err != nil {
 		log.Fatal("send error: ", err)
@@ -143,7 +162,9 @@ func userLock(rHash string) {
 	}
 
 	fromAddr := hex.EncodeToString(userAccountUint.BytesBE())
+	toAddr := hex.EncodeToString(wrapperAccountUint.BytesBE())
 	fmt.Println(userAccount.Address, "==>", fromAddr)
+	fmt.Println(wrapperAccount.Address, "==>", toAddr)
 
 	ps := []request.Param{
 		{
@@ -188,7 +209,7 @@ func userLock(rHash string) {
 						Type: smartcontract.ByteArrayType,
 						Value: request.Param{
 							Type:  request.ArrayT,
-							Value: fromAddr,
+							Value: toAddr,
 						},
 					},
 				},
@@ -198,7 +219,7 @@ func userLock(rHash string) {
 						Type: smartcontract.IntegerType,
 						Value: request.Param{
 							Type:  request.NumberT,
-							Value: 1000000,
+							Value: 10,
 						},
 					},
 				},
@@ -219,9 +240,20 @@ func userLock(rHash string) {
 
 	tx := transaction.NewInvocationTX(scripts, 0)
 	tx.AddVerificationHash(userAccountUint)
-	bys, _ := json.MarshalIndent(tx, "", "\t")
-	fmt.Println(string(bys))
+	if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
+		tx.Attributes = append(tx.Attributes, transaction.Attribute{
+			Usage: transaction.Script,
+			Data:  userAccountUint.BytesBE(),
+		})
+		tx.Attributes = append(tx.Attributes, transaction.Attribute{
+			Usage: transaction.Remark,
+			Data:  remark(),
+		})
+	}
+
+	fmt.Println(toString(tx))
 	err = userAccount.SignTx(tx)
+
 	if err != nil {
 		log.Fatal("sign error: ", err)
 	}
@@ -269,6 +301,17 @@ func applicationLog(hash string, c *client.Client) {
 	} else {
 		fmt.Println(err)
 	}
+}
+
+func toString(v interface{}) string {
+	data, _ := json.MarshalIndent(v, "", "\t")
+	return string(data)
+}
+
+func remark() []byte {
+	remark := make([]byte, 12)
+	rand.Read(remark)
+	return remark
 }
 
 const charset = "abcdefghijklmnopqrstuvwxyz" +
