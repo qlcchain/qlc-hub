@@ -20,7 +20,7 @@ var (
 	_ = big.NewInt
 	_ = strings.NewReader
 	_ = ethereum.NotFound
-	//_ = abi.U256
+	_ = abi.U256
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup
@@ -28,7 +28,7 @@ var (
 )
 
 // QLCChainABI is the input ABI used to generate the binding from.
-const QLCChainABI = "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"state\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"rOrigin\",\"type\":\"bytes32\"}],\"name\":\"LockedState\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\"}],\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\"}],\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"issueLock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"rOrigin\",\"type\":\"bytes32\"}],\"name\":\"issueUnlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"}],\"name\":\"issueFetch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"destoryLock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"rOrigin\",\"type\":\"bytes32\"}],\"name\":\"destoryUnlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"}],\"name\":\"destoryFetch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"}],\"name\":\"hashTimer\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true}]"
+const QLCChainABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"state\",\"type\":\"uint256\"}],\"name\":\"LockedState\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\"}],\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\"}],\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"issueLock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"rOrigin\",\"type\":\"bytes32\"}],\"name\":\"issueUnlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"}],\"name\":\"issueFetch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"name\":\"destoryLock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"rOrigin\",\"type\":\"bytes32\"}],\"name\":\"destoryUnlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"}],\"name\":\"destoryFetch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"rHash\",\"type\":\"bytes32\"}],\"name\":\"hashTimer\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // QLCChain is an auto generated Go binding around an Ethereum contract.
 type QLCChain struct {
@@ -172,224 +172,25 @@ func (_QLCChain *QLCChainTransactorRaw) Transact(opts *bind.TransactOpts, method
 	return _QLCChain.Contract.contract.Transact(opts, method, params...)
 }
 
-// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
+// Allowance is a paid mutator transaction binding the contract method 0xdd62ed3e.
 //
-// Solidity: function allowance(address owner, address spender) constant returns(uint256)
-func (_QLCChain *QLCChainCaller) Allowance(opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _QLCChain.contract.Call(opts, out, "allowance", owner, spender)
-	return *ret0, err
+// Solidity: function allowance(address owner, address spender) returns(uint256)
+func (_QLCChain *QLCChainTransactor) Allowance(opts *bind.TransactOpts, owner common.Address, spender common.Address) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "allowance", owner, spender)
 }
 
-// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
+// Allowance is a paid mutator transaction binding the contract method 0xdd62ed3e.
 //
-// Solidity: function allowance(address owner, address spender) constant returns(uint256)
-func (_QLCChain *QLCChainSession) Allowance(owner common.Address, spender common.Address) (*big.Int, error) {
-	return _QLCChain.Contract.Allowance(&_QLCChain.CallOpts, owner, spender)
+// Solidity: function allowance(address owner, address spender) returns(uint256)
+func (_QLCChain *QLCChainSession) Allowance(owner common.Address, spender common.Address) (*types.Transaction, error) {
+	return _QLCChain.Contract.Allowance(&_QLCChain.TransactOpts, owner, spender)
 }
 
-// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
+// Allowance is a paid mutator transaction binding the contract method 0xdd62ed3e.
 //
-// Solidity: function allowance(address owner, address spender) constant returns(uint256)
-func (_QLCChain *QLCChainCallerSession) Allowance(owner common.Address, spender common.Address) (*big.Int, error) {
-	return _QLCChain.Contract.Allowance(&_QLCChain.CallOpts, owner, spender)
-}
-
-// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address account) constant returns(uint256)
-func (_QLCChain *QLCChainCaller) BalanceOf(opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _QLCChain.contract.Call(opts, out, "balanceOf", account)
-	return *ret0, err
-}
-
-// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address account) constant returns(uint256)
-func (_QLCChain *QLCChainSession) BalanceOf(account common.Address) (*big.Int, error) {
-	return _QLCChain.Contract.BalanceOf(&_QLCChain.CallOpts, account)
-}
-
-// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
-//
-// Solidity: function balanceOf(address account) constant returns(uint256)
-func (_QLCChain *QLCChainCallerSession) BalanceOf(account common.Address) (*big.Int, error) {
-	return _QLCChain.Contract.BalanceOf(&_QLCChain.CallOpts, account)
-}
-
-// Decimals is a free data retrieval call binding the contract method 0x313ce567.
-//
-// Solidity: function decimals() constant returns(uint8)
-func (_QLCChain *QLCChainCaller) Decimals(opts *bind.CallOpts) (uint8, error) {
-	var (
-		ret0 = new(uint8)
-	)
-	out := ret0
-	err := _QLCChain.contract.Call(opts, out, "decimals")
-	return *ret0, err
-}
-
-// Decimals is a free data retrieval call binding the contract method 0x313ce567.
-//
-// Solidity: function decimals() constant returns(uint8)
-func (_QLCChain *QLCChainSession) Decimals() (uint8, error) {
-	return _QLCChain.Contract.Decimals(&_QLCChain.CallOpts)
-}
-
-// Decimals is a free data retrieval call binding the contract method 0x313ce567.
-//
-// Solidity: function decimals() constant returns(uint8)
-func (_QLCChain *QLCChainCallerSession) Decimals() (uint8, error) {
-	return _QLCChain.Contract.Decimals(&_QLCChain.CallOpts)
-}
-
-// HashTimer is a free data retrieval call binding the contract method 0x6aacd506.
-//
-// Solidity: function hashTimer(bytes32 rHash) constant returns(bytes32, uint256, address, uint256, uint256, bool)
-func (_QLCChain *QLCChainCaller) HashTimer(opts *bind.CallOpts, rHash [32]byte) ([32]byte, *big.Int, common.Address, *big.Int, *big.Int, bool, error) {
-	var (
-		ret0 = new([32]byte)
-		ret1 = new(*big.Int)
-		ret2 = new(common.Address)
-		ret3 = new(*big.Int)
-		ret4 = new(*big.Int)
-		ret5 = new(bool)
-	)
-	out := &[]interface{}{
-		ret0,
-		ret1,
-		ret2,
-		ret3,
-		ret4,
-		ret5,
-	}
-	err := _QLCChain.contract.Call(opts, out, "hashTimer", rHash)
-	return *ret0, *ret1, *ret2, *ret3, *ret4, *ret5, err
-}
-
-// HashTimer is a free data retrieval call binding the contract method 0x6aacd506.
-//
-// Solidity: function hashTimer(bytes32 rHash) constant returns(bytes32, uint256, address, uint256, uint256, bool)
-func (_QLCChain *QLCChainSession) HashTimer(rHash [32]byte) ([32]byte, *big.Int, common.Address, *big.Int, *big.Int, bool, error) {
-	return _QLCChain.Contract.HashTimer(&_QLCChain.CallOpts, rHash)
-}
-
-// HashTimer is a free data retrieval call binding the contract method 0x6aacd506.
-//
-// Solidity: function hashTimer(bytes32 rHash) constant returns(bytes32, uint256, address, uint256, uint256, bool)
-func (_QLCChain *QLCChainCallerSession) HashTimer(rHash [32]byte) ([32]byte, *big.Int, common.Address, *big.Int, *big.Int, bool, error) {
-	return _QLCChain.Contract.HashTimer(&_QLCChain.CallOpts, rHash)
-}
-
-// Name is a free data retrieval call binding the contract method 0x06fdde03.
-//
-// Solidity: function name() constant returns(string)
-func (_QLCChain *QLCChainCaller) Name(opts *bind.CallOpts) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _QLCChain.contract.Call(opts, out, "name")
-	return *ret0, err
-}
-
-// Name is a free data retrieval call binding the contract method 0x06fdde03.
-//
-// Solidity: function name() constant returns(string)
-func (_QLCChain *QLCChainSession) Name() (string, error) {
-	return _QLCChain.Contract.Name(&_QLCChain.CallOpts)
-}
-
-// Name is a free data retrieval call binding the contract method 0x06fdde03.
-//
-// Solidity: function name() constant returns(string)
-func (_QLCChain *QLCChainCallerSession) Name() (string, error) {
-	return _QLCChain.Contract.Name(&_QLCChain.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() constant returns(address)
-func (_QLCChain *QLCChainCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var (
-		ret0 = new(common.Address)
-	)
-	out := ret0
-	err := _QLCChain.contract.Call(opts, out, "owner")
-	return *ret0, err
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() constant returns(address)
-func (_QLCChain *QLCChainSession) Owner() (common.Address, error) {
-	return _QLCChain.Contract.Owner(&_QLCChain.CallOpts)
-}
-
-// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
-//
-// Solidity: function owner() constant returns(address)
-func (_QLCChain *QLCChainCallerSession) Owner() (common.Address, error) {
-	return _QLCChain.Contract.Owner(&_QLCChain.CallOpts)
-}
-
-// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
-//
-// Solidity: function symbol() constant returns(string)
-func (_QLCChain *QLCChainCaller) Symbol(opts *bind.CallOpts) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _QLCChain.contract.Call(opts, out, "symbol")
-	return *ret0, err
-}
-
-// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
-//
-// Solidity: function symbol() constant returns(string)
-func (_QLCChain *QLCChainSession) Symbol() (string, error) {
-	return _QLCChain.Contract.Symbol(&_QLCChain.CallOpts)
-}
-
-// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
-//
-// Solidity: function symbol() constant returns(string)
-func (_QLCChain *QLCChainCallerSession) Symbol() (string, error) {
-	return _QLCChain.Contract.Symbol(&_QLCChain.CallOpts)
-}
-
-// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() constant returns(uint256)
-func (_QLCChain *QLCChainCaller) TotalSupply(opts *bind.CallOpts) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
-	err := _QLCChain.contract.Call(opts, out, "totalSupply")
-	return *ret0, err
-}
-
-// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() constant returns(uint256)
-func (_QLCChain *QLCChainSession) TotalSupply() (*big.Int, error) {
-	return _QLCChain.Contract.TotalSupply(&_QLCChain.CallOpts)
-}
-
-// TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
-//
-// Solidity: function totalSupply() constant returns(uint256)
-func (_QLCChain *QLCChainCallerSession) TotalSupply() (*big.Int, error) {
-	return _QLCChain.Contract.TotalSupply(&_QLCChain.CallOpts)
+// Solidity: function allowance(address owner, address spender) returns(uint256)
+func (_QLCChain *QLCChainTransactorSession) Allowance(owner common.Address, spender common.Address) (*types.Transaction, error) {
+	return _QLCChain.Contract.Allowance(&_QLCChain.TransactOpts, owner, spender)
 }
 
 // Approve is a paid mutator transaction binding the contract method 0x095ea7b3.
@@ -411,6 +212,48 @@ func (_QLCChain *QLCChainSession) Approve(spender common.Address, amount *big.In
 // Solidity: function approve(address spender, uint256 amount) returns(bool)
 func (_QLCChain *QLCChainTransactorSession) Approve(spender common.Address, amount *big.Int) (*types.Transaction, error) {
 	return _QLCChain.Contract.Approve(&_QLCChain.TransactOpts, spender, amount)
+}
+
+// BalanceOf is a paid mutator transaction binding the contract method 0x70a08231.
+//
+// Solidity: function balanceOf(address account) returns(uint256)
+func (_QLCChain *QLCChainTransactor) BalanceOf(opts *bind.TransactOpts, account common.Address) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "balanceOf", account)
+}
+
+// BalanceOf is a paid mutator transaction binding the contract method 0x70a08231.
+//
+// Solidity: function balanceOf(address account) returns(uint256)
+func (_QLCChain *QLCChainSession) BalanceOf(account common.Address) (*types.Transaction, error) {
+	return _QLCChain.Contract.BalanceOf(&_QLCChain.TransactOpts, account)
+}
+
+// BalanceOf is a paid mutator transaction binding the contract method 0x70a08231.
+//
+// Solidity: function balanceOf(address account) returns(uint256)
+func (_QLCChain *QLCChainTransactorSession) BalanceOf(account common.Address) (*types.Transaction, error) {
+	return _QLCChain.Contract.BalanceOf(&_QLCChain.TransactOpts, account)
+}
+
+// Decimals is a paid mutator transaction binding the contract method 0x313ce567.
+//
+// Solidity: function decimals() returns(uint8)
+func (_QLCChain *QLCChainTransactor) Decimals(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "decimals")
+}
+
+// Decimals is a paid mutator transaction binding the contract method 0x313ce567.
+//
+// Solidity: function decimals() returns(uint8)
+func (_QLCChain *QLCChainSession) Decimals() (*types.Transaction, error) {
+	return _QLCChain.Contract.Decimals(&_QLCChain.TransactOpts)
+}
+
+// Decimals is a paid mutator transaction binding the contract method 0x313ce567.
+//
+// Solidity: function decimals() returns(uint8)
+func (_QLCChain *QLCChainTransactorSession) Decimals() (*types.Transaction, error) {
+	return _QLCChain.Contract.Decimals(&_QLCChain.TransactOpts)
 }
 
 // DecreaseAllowance is a paid mutator transaction binding the contract method 0xa457c2d7.
@@ -497,6 +340,27 @@ func (_QLCChain *QLCChainTransactorSession) DestoryUnlock(rHash [32]byte, rOrigi
 	return _QLCChain.Contract.DestoryUnlock(&_QLCChain.TransactOpts, rHash, rOrigin)
 }
 
+// HashTimer is a paid mutator transaction binding the contract method 0x6aacd506.
+//
+// Solidity: function hashTimer(bytes32 rHash) returns(bytes32, uint256, address, uint256, uint256)
+func (_QLCChain *QLCChainTransactor) HashTimer(opts *bind.TransactOpts, rHash [32]byte) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "hashTimer", rHash)
+}
+
+// HashTimer is a paid mutator transaction binding the contract method 0x6aacd506.
+//
+// Solidity: function hashTimer(bytes32 rHash) returns(bytes32, uint256, address, uint256, uint256)
+func (_QLCChain *QLCChainSession) HashTimer(rHash [32]byte) (*types.Transaction, error) {
+	return _QLCChain.Contract.HashTimer(&_QLCChain.TransactOpts, rHash)
+}
+
+// HashTimer is a paid mutator transaction binding the contract method 0x6aacd506.
+//
+// Solidity: function hashTimer(bytes32 rHash) returns(bytes32, uint256, address, uint256, uint256)
+func (_QLCChain *QLCChainTransactorSession) HashTimer(rHash [32]byte) (*types.Transaction, error) {
+	return _QLCChain.Contract.HashTimer(&_QLCChain.TransactOpts, rHash)
+}
+
 // IncreaseAllowance is a paid mutator transaction binding the contract method 0x39509351.
 //
 // Solidity: function increaseAllowance(address spender, uint256 addedValue) returns(bool)
@@ -516,6 +380,27 @@ func (_QLCChain *QLCChainSession) IncreaseAllowance(spender common.Address, adde
 // Solidity: function increaseAllowance(address spender, uint256 addedValue) returns(bool)
 func (_QLCChain *QLCChainTransactorSession) IncreaseAllowance(spender common.Address, addedValue *big.Int) (*types.Transaction, error) {
 	return _QLCChain.Contract.IncreaseAllowance(&_QLCChain.TransactOpts, spender, addedValue)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0x4cd88b76.
+//
+// Solidity: function initialize(string name, string symbol) returns()
+func (_QLCChain *QLCChainTransactor) Initialize(opts *bind.TransactOpts, name string, symbol string) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "initialize", name, symbol)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0x4cd88b76.
+//
+// Solidity: function initialize(string name, string symbol) returns()
+func (_QLCChain *QLCChainSession) Initialize(name string, symbol string) (*types.Transaction, error) {
+	return _QLCChain.Contract.Initialize(&_QLCChain.TransactOpts, name, symbol)
+}
+
+// Initialize is a paid mutator transaction binding the contract method 0x4cd88b76.
+//
+// Solidity: function initialize(string name, string symbol) returns()
+func (_QLCChain *QLCChainTransactorSession) Initialize(name string, symbol string) (*types.Transaction, error) {
+	return _QLCChain.Contract.Initialize(&_QLCChain.TransactOpts, name, symbol)
 }
 
 // IssueFetch is a paid mutator transaction binding the contract method 0x19a4440a.
@@ -581,6 +466,48 @@ func (_QLCChain *QLCChainTransactorSession) IssueUnlock(rHash [32]byte, rOrigin 
 	return _QLCChain.Contract.IssueUnlock(&_QLCChain.TransactOpts, rHash, rOrigin)
 }
 
+// Name is a paid mutator transaction binding the contract method 0x06fdde03.
+//
+// Solidity: function name() returns(string)
+func (_QLCChain *QLCChainTransactor) Name(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "name")
+}
+
+// Name is a paid mutator transaction binding the contract method 0x06fdde03.
+//
+// Solidity: function name() returns(string)
+func (_QLCChain *QLCChainSession) Name() (*types.Transaction, error) {
+	return _QLCChain.Contract.Name(&_QLCChain.TransactOpts)
+}
+
+// Name is a paid mutator transaction binding the contract method 0x06fdde03.
+//
+// Solidity: function name() returns(string)
+func (_QLCChain *QLCChainTransactorSession) Name() (*types.Transaction, error) {
+	return _QLCChain.Contract.Name(&_QLCChain.TransactOpts)
+}
+
+// Owner is a paid mutator transaction binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() returns(address)
+func (_QLCChain *QLCChainTransactor) Owner(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "owner")
+}
+
+// Owner is a paid mutator transaction binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() returns(address)
+func (_QLCChain *QLCChainSession) Owner() (*types.Transaction, error) {
+	return _QLCChain.Contract.Owner(&_QLCChain.TransactOpts)
+}
+
+// Owner is a paid mutator transaction binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() returns(address)
+func (_QLCChain *QLCChainTransactorSession) Owner() (*types.Transaction, error) {
+	return _QLCChain.Contract.Owner(&_QLCChain.TransactOpts)
+}
+
 // RenounceOwnership is a paid mutator transaction binding the contract method 0x715018a6.
 //
 // Solidity: function renounceOwnership() returns()
@@ -600,6 +527,48 @@ func (_QLCChain *QLCChainSession) RenounceOwnership() (*types.Transaction, error
 // Solidity: function renounceOwnership() returns()
 func (_QLCChain *QLCChainTransactorSession) RenounceOwnership() (*types.Transaction, error) {
 	return _QLCChain.Contract.RenounceOwnership(&_QLCChain.TransactOpts)
+}
+
+// Symbol is a paid mutator transaction binding the contract method 0x95d89b41.
+//
+// Solidity: function symbol() returns(string)
+func (_QLCChain *QLCChainTransactor) Symbol(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "symbol")
+}
+
+// Symbol is a paid mutator transaction binding the contract method 0x95d89b41.
+//
+// Solidity: function symbol() returns(string)
+func (_QLCChain *QLCChainSession) Symbol() (*types.Transaction, error) {
+	return _QLCChain.Contract.Symbol(&_QLCChain.TransactOpts)
+}
+
+// Symbol is a paid mutator transaction binding the contract method 0x95d89b41.
+//
+// Solidity: function symbol() returns(string)
+func (_QLCChain *QLCChainTransactorSession) Symbol() (*types.Transaction, error) {
+	return _QLCChain.Contract.Symbol(&_QLCChain.TransactOpts)
+}
+
+// TotalSupply is a paid mutator transaction binding the contract method 0x18160ddd.
+//
+// Solidity: function totalSupply() returns(uint256)
+func (_QLCChain *QLCChainTransactor) TotalSupply(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _QLCChain.contract.Transact(opts, "totalSupply")
+}
+
+// TotalSupply is a paid mutator transaction binding the contract method 0x18160ddd.
+//
+// Solidity: function totalSupply() returns(uint256)
+func (_QLCChain *QLCChainSession) TotalSupply() (*types.Transaction, error) {
+	return _QLCChain.Contract.TotalSupply(&_QLCChain.TransactOpts)
+}
+
+// TotalSupply is a paid mutator transaction binding the contract method 0x18160ddd.
+//
+// Solidity: function totalSupply() returns(uint256)
+func (_QLCChain *QLCChainTransactorSession) TotalSupply() (*types.Transaction, error) {
+	return _QLCChain.Contract.TotalSupply(&_QLCChain.TransactOpts)
 }
 
 // Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
@@ -887,15 +856,14 @@ func (it *QLCChainLockedStateIterator) Close() error {
 
 // QLCChainLockedState represents a LockedState event raised by the QLCChain contract.
 type QLCChainLockedState struct {
-	RHash   [32]byte
-	State   *big.Int
-	ROrigin [32]byte
-	Raw     types.Log // Blockchain specific contextual infos
+	RHash [32]byte
+	State *big.Int
+	Raw   types.Log // Blockchain specific contextual infos
 }
 
-// FilterLockedState is a free log retrieval operation binding the contract event 0x4937c1ddf48950d567279e443f70ce4cf2443ef0f165441feb35a2ddf34d7676.
+// FilterLockedState is a free log retrieval operation binding the contract event 0x9602218484dbca102b1b8ecd40a2b8d3a19f098859a193580428927b239737db.
 //
-// Solidity: event LockedState(bytes32 indexed rHash, uint256 state, bytes32 rOrigin)
+// Solidity: event LockedState(bytes32 indexed rHash, uint256 state)
 func (_QLCChain *QLCChainFilterer) FilterLockedState(opts *bind.FilterOpts, rHash [][32]byte) (*QLCChainLockedStateIterator, error) {
 
 	var rHashRule []interface{}
@@ -910,9 +878,9 @@ func (_QLCChain *QLCChainFilterer) FilterLockedState(opts *bind.FilterOpts, rHas
 	return &QLCChainLockedStateIterator{contract: _QLCChain.contract, event: "LockedState", logs: logs, sub: sub}, nil
 }
 
-// WatchLockedState is a free log subscription operation binding the contract event 0x4937c1ddf48950d567279e443f70ce4cf2443ef0f165441feb35a2ddf34d7676.
+// WatchLockedState is a free log subscription operation binding the contract event 0x9602218484dbca102b1b8ecd40a2b8d3a19f098859a193580428927b239737db.
 //
-// Solidity: event LockedState(bytes32 indexed rHash, uint256 state, bytes32 rOrigin)
+// Solidity: event LockedState(bytes32 indexed rHash, uint256 state)
 func (_QLCChain *QLCChainFilterer) WatchLockedState(opts *bind.WatchOpts, sink chan<- *QLCChainLockedState, rHash [][32]byte) (event.Subscription, error) {
 
 	var rHashRule []interface{}
@@ -952,9 +920,9 @@ func (_QLCChain *QLCChainFilterer) WatchLockedState(opts *bind.WatchOpts, sink c
 	}), nil
 }
 
-// ParseLockedState is a log parse operation binding the contract event 0x4937c1ddf48950d567279e443f70ce4cf2443ef0f165441feb35a2ddf34d7676.
+// ParseLockedState is a log parse operation binding the contract event 0x9602218484dbca102b1b8ecd40a2b8d3a19f098859a193580428927b239737db.
 //
-// Solidity: event LockedState(bytes32 indexed rHash, uint256 state, bytes32 rOrigin)
+// Solidity: event LockedState(bytes32 indexed rHash, uint256 state)
 func (_QLCChain *QLCChainFilterer) ParseLockedState(log types.Log) (*QLCChainLockedState, error) {
 	event := new(QLCChainLockedState)
 	if err := _QLCChain.contract.UnpackLog(event, "LockedState", log); err != nil {
