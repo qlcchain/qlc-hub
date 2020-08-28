@@ -72,7 +72,7 @@ func (g *GRPCServer) newGateway(grpcAddress, gwAddress string) error {
 		return (&net.Dialer{}).DialContext(ctx, network, addr)
 	})
 	opts := []grpc.DialOption{grpc.WithInsecure(), optDial}
-	err := pb.RegisterWrapperAPIHandlerFromEndpoint(ctx, gwmux, grpcAddress, opts)
+	err := pb.RegisterWithDrawAPIHandlerFromEndpoint(ctx, gwmux, grpcAddress, opts)
 	if err != nil {
 		return fmt.Errorf("gateway register: %s", err)
 	}
