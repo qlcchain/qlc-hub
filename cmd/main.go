@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/pkg/log"
@@ -38,7 +39,7 @@ func main() {
 
 	if err := cfg.Verify(); err != nil {
 		fmt.Println(util.ToIndentString(cfg))
-		panic(err)
+		log.Root.Fatal(err)
 	}
 
 	if cfg.Verbose {

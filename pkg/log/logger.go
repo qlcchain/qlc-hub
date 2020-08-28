@@ -5,11 +5,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/qlcchain/qlc-hub/config"
-	"github.com/qlcchain/qlc-hub/pkg/util"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/qlcchain/qlc-hub/config"
+	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 const (

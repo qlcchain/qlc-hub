@@ -14,8 +14,9 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
+
+	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
 type NeoTransaction struct {
