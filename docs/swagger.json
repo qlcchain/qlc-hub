@@ -11,14 +11,14 @@
     "application/json"
   ],
   "paths": {
-    "/Wrapper/ethdestoryunlock/*": {
-      "post": {
-        "operationId": "WrapperAPI_EthDestoryUnlock",
+    "/debug/ping": {
+      "get": {
+        "operationId": "DebugAPI_Ping",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoEthDestoryUnlockResponse"
+              "$ref": "#/definitions/protoPingResponse"
             }
           },
           "default": {
@@ -28,29 +28,19 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoEthDestoryUnlockRequest"
-            }
-          }
-        ],
         "tags": [
-          "WrapperAPI"
+          "DebugAPI"
         ]
       }
     },
-    "/Wrapper/ethgetaccountInfo/*": {
-      "post": {
-        "operationId": "WrapperAPI_EthGetAccountInfo",
+    "/debug/state": {
+      "get": {
+        "operationId": "DebugAPI_HashState",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoEthGetAccountInfoResponse"
+              "$ref": "#/definitions/protoStateInfo"
             }
           },
           "default": {
@@ -62,27 +52,34 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoEthGetAccountInfoRequest"
-            }
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
-          "WrapperAPI"
+          "DebugAPI"
         ]
       }
     },
-    "/Wrapper/ethgethashtimer/*": {
-      "post": {
-        "operationId": "WrapperAPI_EthGetHashTimer",
+    "/deposit/event": {
+      "get": {
+        "operationId": "DepositAPI_DepositEvent",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "A successful response.(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/protoEthGetHashTimerResponse"
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/protoEventResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/runtimeStreamError"
+                }
+              },
+              "title": "Stream result of protoEventResponse"
             }
           },
           "default": {
@@ -92,29 +89,19 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoEthGetHashTimerRequest"
-            }
-          }
-        ],
         "tags": [
-          "WrapperAPI"
+          "DepositAPI"
         ]
       }
     },
-    "/Wrapper/ethgettransationinfo/*": {
+    "/deposit/fetchNotice": {
       "post": {
-        "operationId": "WrapperAPI_EthGetTransationInfo",
+        "operationId": "DepositAPI_DepositFetchNotice",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoEthGetTransationInfoResponse"
+              "$ref": "#/definitions/protoBoolean"
             }
           },
           "default": {
@@ -130,23 +117,23 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoEthGetTransationInfoRequest"
+              "$ref": "#/definitions/protoDepositFetchNoticeRequest"
             }
           }
         ],
         "tags": [
-          "WrapperAPI"
+          "DepositAPI"
         ]
       }
     },
-    "/Wrapper/ethissuefetch/*": {
+    "/deposit/lock": {
       "post": {
-        "operationId": "WrapperAPI_EthIssueFetch",
+        "operationId": "DepositAPI_DepositLock",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoEthIssueFetchResponse"
+              "$ref": "#/definitions/protoBoolean"
             }
           },
           "default": {
@@ -162,23 +149,32 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoEthIssueFetchRequest"
+              "$ref": "#/definitions/protoDepositLockRequest"
             }
           }
         ],
         "tags": [
-          "WrapperAPI"
+          "DepositAPI"
         ]
       }
     },
-    "/Wrapper/ethissuelock/*": {
-      "post": {
-        "operationId": "WrapperAPI_EthIssueLock",
+    "/withdraw/event": {
+      "get": {
+        "operationId": "WithDrawAPI_WithDrawEvent",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "A successful response.(streaming responses)",
             "schema": {
-              "$ref": "#/definitions/protoEthIssueLockResponse"
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/protoEventResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/runtimeStreamError"
+                }
+              },
+              "title": "Stream result of protoEventResponse"
             }
           },
           "default": {
@@ -188,29 +184,19 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoEthIssueLockRequest"
-            }
-          }
-        ],
         "tags": [
-          "WrapperAPI"
+          "WithDrawAPI"
         ]
       }
     },
-    "/Wrapper/ethucallerdestorylock/*": {
+    "/withdraw/unlock": {
       "post": {
-        "operationId": "WrapperAPI_EthUcallerDestoryLock",
+        "operationId": "WithDrawAPI_WithDrawUnlock",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoEthUcallerDestoryLockResponse"
+              "$ref": "#/definitions/protoBoolean"
             }
           },
           "default": {
@@ -226,435 +212,66 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoEthUcallerDestoryLockRequest"
+              "$ref": "#/definitions/protoWithDrawUnlockRequest"
             }
           }
         ],
         "tags": [
-          "WrapperAPI"
-        ]
-      }
-    },
-    "/Wrapper/eventstatcheck/*": {
-      "post": {
-        "operationId": "WrapperAPI_EventStatCheck",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoEventStatCheckResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoEventStatCheckRequest"
-            }
-          }
-        ],
-        "tags": [
-          "WrapperAPI"
-        ]
-      }
-    },
-    "/Wrapper/nep5locknotice/*": {
-      "post": {
-        "operationId": "WrapperAPI_Nep5LockNotice",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoNep5LockNoticeResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoNep5LockNoticeRequest"
-            }
-          }
-        ],
-        "tags": [
-          "WrapperAPI"
-        ]
-      }
-    },
-    "/Wrapper/nep5wrapperlock/*": {
-      "post": {
-        "operationId": "WrapperAPI_Nep5WrapperLock",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoNep5WrapperLockResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoNep5WrapperLockRequest"
-            }
-          }
-        ],
-        "tags": [
-          "WrapperAPI"
-        ]
-      }
-    },
-    "/Wrapper/nep5wrappernnlock/*": {
-      "post": {
-        "operationId": "WrapperAPI_Nep5WrapperUnlock",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoNep5WrapperUnlockResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoNep5WrapperUnlockRequest"
-            }
-          }
-        ],
-        "tags": [
-          "WrapperAPI"
-        ]
-      }
-    },
-    "/Wrapper/nep5wrapperrefund/*": {
-      "post": {
-        "operationId": "WrapperAPI_Nep5WrapperRefund",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoNep5WrapperRefundResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoNep5WrapperRefundRequest"
-            }
-          }
-        ],
-        "tags": [
-          "WrapperAPI"
-        ]
-      }
-    },
-    "/Wrapper/online/*": {
-      "post": {
-        "operationId": "WrapperAPI_Online",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoOnlineResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoOnlineRequest"
-            }
-          }
-        ],
-        "tags": [
-          "WrapperAPI"
+          "WithDrawAPI"
         ]
       }
     }
   },
   "definitions": {
-    "protoEthDestoryUnlockRequest": {
+    "protoBoolean": {
       "type": "object",
       "properties": {
-        "lockhash": {
+        "value": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "protoDepositFetchNoticeRequest": {
+      "type": "object",
+      "properties": {
+        "rHash": {
           "type": "string"
         },
-        "locksource": {
+        "nep5TxHash": {
           "type": "string"
         }
       }
     },
-    "protoEthDestoryUnlockResponse": {
+    "protoDepositLockRequest": {
       "type": "object",
       "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "txhash": {
+        "nep5TxHash": {
           "type": "string"
-        }
-      }
-    },
-    "protoEthGetAccountInfoRequest": {
-      "type": "object",
-      "properties": {
-        "address": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthGetAccountInfoResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "info": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthGetHashTimerRequest": {
-      "type": "object",
-      "properties": {
-        "lockhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthGetHashTimerResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "stat": {
-          "type": "string",
-          "format": "int64"
         },
         "amount": {
           "type": "string",
           "format": "int64"
         },
-        "locknum": {
-          "type": "string",
-          "format": "int64"
-        },
-        "unlocknum": {
-          "type": "string",
-          "format": "int64"
-        },
-        "account": {
+        "rHash": {
           "type": "string"
         },
-        "locksource": {
+        "addr": {
           "type": "string"
         }
       }
     },
-    "protoEthGetTransationInfoRequest": {
+    "protoEventResponse": {
       "type": "object",
       "properties": {
-        "infotype": {
+        "state": {
           "type": "string",
           "format": "int64"
         },
-        "txhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthGetTransationInfoResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "infotype": {
-          "type": "string",
-          "format": "int64"
-        },
-        "info": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthIssueFetchRequest": {
-      "type": "object",
-      "properties": {
-        "lockhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthIssueFetchResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "txhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthIssueLockRequest": {
-      "type": "object",
-      "properties": {
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "lockhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthIssueLockResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "txhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthUcallerDestoryLockRequest": {
-      "type": "object",
-      "properties": {
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "lockhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEthUcallerDestoryLockResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "txhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEventStatCheckRequest": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "format": "int64"
-        },
-        "hash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoEventStatCheckResponse": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "format": "int64"
-        },
-        "hash": {
+        "stateStr": {
           "type": "string"
         },
-        "status": {
-          "type": "string",
-          "format": "int64"
-        },
-        "errno": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "protoNep5LockNoticeRequest": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "format": "int64"
-        },
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "userlocknum": {
-          "type": "string",
-          "format": "int64"
-        },
-        "hash": {
+        "rHash": {
           "type": "string"
         },
         "txHash": {
@@ -662,126 +279,63 @@
         }
       }
     },
-    "protoNep5LockNoticeResponse": {
+    "protoPingResponse": {
       "type": "object",
       "properties": {
-        "type": {
-          "type": "string",
-          "format": "int64"
+        "nep5Address": {
+          "type": "string"
         },
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "hash": {
+        "erc20Address": {
           "type": "string"
         }
       }
     },
-    "protoNep5WrapperLockRequest": {
+    "protoStateInfo": {
       "type": "object",
       "properties": {
-        "amount": {
+        "state": {
           "type": "string",
           "format": "int64"
         },
-        "blocknum": {
+        "stateStr": {
+          "type": "string"
+        },
+        "rHash": {
+          "type": "string"
+        },
+        "rOrigin": {
+          "type": "string"
+        },
+        "lockedNep5Hash": {
+          "type": "string"
+        },
+        "lockedErc20Hash": {
+          "type": "string"
+        },
+        "unlockedNep5Hash": {
+          "type": "string"
+        },
+        "unlockedErc20Hash": {
+          "type": "string"
+        },
+        "lockedHeight": {
           "type": "string",
           "format": "int64"
         },
-        "ethaddress": {
-          "type": "string"
-        },
-        "lockhash": {
-          "type": "string"
-        }
-      }
-    },
-    "protoNep5WrapperLockResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
+        "unlockedHeight": {
           "type": "string",
           "format": "int64"
-        },
-        "txhash": {
-          "type": "string"
-        },
-        "msg": {
-          "type": "string"
         }
       }
     },
-    "protoNep5WrapperRefundRequest": {
+    "protoWithDrawUnlockRequest": {
       "type": "object",
       "properties": {
-        "locksource": {
-          "type": "string"
-        }
-      }
-    },
-    "protoNep5WrapperRefundResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "txhash": {
+        "nep5TxHash": {
           "type": "string"
         },
-        "msg": {
+        "rOrigin": {
           "type": "string"
-        }
-      }
-    },
-    "protoNep5WrapperUnlockRequest": {
-      "type": "object",
-      "properties": {
-        "ethaddress": {
-          "type": "string"
-        },
-        "locksource": {
-          "type": "string"
-        }
-      }
-    },
-    "protoNep5WrapperUnlockResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "string",
-          "format": "int64"
-        },
-        "txhash": {
-          "type": "string"
-        },
-        "msg": {
-          "type": "string"
-        }
-      }
-    },
-    "protoOnlineRequest": {
-      "type": "object"
-    },
-    "protoOnlineResponse": {
-      "type": "object",
-      "properties": {
-        "neoAccount": {
-          "type": "string"
-        },
-        "ethAccount": {
-          "type": "string"
-        },
-        "neoContract": {
-          "type": "string"
-        },
-        "ethContract": {
-          "type": "string"
-        },
-        "activeTime": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -808,6 +362,31 @@
           "format": "int32"
         },
         "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpc_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "http_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "http_status": {
           "type": "string"
         },
         "details": {
