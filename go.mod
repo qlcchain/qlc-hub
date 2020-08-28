@@ -6,6 +6,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/grpc-ecosystem/grpc-gateway v1.14.7
 	github.com/jessevdk/go-flags v1.4.0
+	github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c
 	github.com/nspcc-dev/neo-go v0.77.0
 	go.uber.org/zap v1.15.0
 	google.golang.org/genproto v0.0.0-20200828030656-73b5761be4c5
