@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
-	flags "github.com/jessevdk/go-flags"
+	flag "github.com/jessevdk/go-flags"
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/pkg/log"
@@ -27,21 +26,28 @@ func main() {
 	fmt.Printf("qlc-hub %s-%s.%s", version, commit, date)
 	fmt.Println()
 
-	args, err := flags.ParseArgs(cfg, os.Args)
-	if err != nil {
+	if _, err := flag.ParseArgs(cfg, os.Args); err != nil {
+		code := 1
+		if fe, ok := err.(*flag.Error); ok {
+			if fe.Type == flag.ErrHelp {
+				code = 0
+			}
+		}
+		os.Exit(code)
+	}
+
+	if err := cfg.Verify(); err != nil {
+		fmt.Println(util.ToIndentString(cfg))
 		panic(err)
 	}
 
-	// TODO: verify config
-	if err = cfg.Verify(); err != nil {
-		panic(err)
+	if cfg.Verbose {
+		cfg.LogLevel = "debug"
 	}
-
 	log.Setup(cfg)
 
 	logger := log.NewLogger("main")
 	logger.Debug(util.ToIndentString(cfg))
-	logger.Infof("remaining args: %s", strings.Join(args, " "))
 
 	server := grpc.NewGRPCServer()
 	if err := server.Start(cfg); err != nil {
@@ -64,6 +70,5 @@ func logo() string {
  | |  | | |   | |      |  __  | |  | |  _ < 
  | |__| | |___| |____  | |  | | |__| | |_) |
   \___\_\______\_____| |_|  |_|\____/|____/ 
-                                            
 `
 }
