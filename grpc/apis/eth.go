@@ -23,6 +23,8 @@ type EthAPI struct {
 }
 
 func NewEthAPI(ctx context.Context, cfg *config.Config) (*EthAPI, error) {
+	//todo check address validity
+
 	ethClient, err := ethclient.Dial(cfg.EthereumCfg.EndPoint)
 	if err != nil {
 		return nil, fmt.Errorf("eth client dail: %s", err)

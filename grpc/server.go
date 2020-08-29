@@ -7,16 +7,13 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/qlcchain/qlc-hub/config"
-
-	pb "github.com/qlcchain/qlc-hub/grpc/proto"
-
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/qlcchain/qlc-hub/config"
+	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
 type GRPCServer struct {
@@ -72,7 +69,7 @@ func (g *GRPCServer) newGateway(grpcAddress, gwAddress string) error {
 		return (&net.Dialer{}).DialContext(ctx, network, addr)
 	})
 	opts := []grpc.DialOption{grpc.WithInsecure(), optDial}
-	err := pb.RegisterWithDrawAPIHandlerFromEndpoint(ctx, gwmux, grpcAddress, opts)
+	err := pb.RegisterEthAPIHandlerFromEndpoint(ctx, gwmux, grpcAddress, opts)
 	if err != nil {
 		return fmt.Errorf("gateway register: %s", err)
 	}
