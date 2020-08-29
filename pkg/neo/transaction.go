@@ -3,6 +3,7 @@ package neo
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"math/rand"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
@@ -10,20 +11,22 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/io"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
+	"github.com/nspcc-dev/neo-go/pkg/rpc/response/result"
+	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	"go.uber.org/zap"
 )
 
 type NeoTransaction struct {
-	url      string
-	client   *client.Client
-	contract util.Uint160
-	logger   *zap.SugaredLogger
+	url          string
+	client       *client.Client
+	contractLE   util.Uint160
+	contractAddr string
+	logger       *zap.SugaredLogger
 }
 
 func NewNeoTransaction(url, contractAddr string) (*NeoTransaction, error) {
@@ -36,10 +39,11 @@ func NewNeoTransaction(url, contractAddr string) (*NeoTransaction, error) {
 		return nil, err
 	}
 	return &NeoTransaction{
-		url:      url,
-		client:   c,
-		contract: contract,
-		logger:   log.NewLogger("neo/transaction"),
+		url:          url,
+		client:       c,
+		contractLE:   contract,
+		contractAddr: contractAddr,
+		logger:       log.NewLogger("neo/transaction"),
 	}, nil
 }
 
@@ -57,7 +61,7 @@ func (n *NeoTransaction) CreateTransaction(param TransactionParam) (string, erro
 	if err != nil {
 		return "", fmt.Errorf("NewAccountFromWIF: %s", err)
 	}
-	scripts, err := request.CreateFunctionInvocationScript(n.contract, param.Params)
+	scripts, err := request.CreateFunctionInvocationScript(n.contractLE, param.Params)
 	if err != nil {
 		return "", fmt.Errorf("CreateFunctionInvocationScript: %s", err)
 	}
@@ -78,7 +82,7 @@ func (n *NeoTransaction) CreateTransactionAppendWitness(param TransactionParam) 
 	if err != nil {
 		return "", fmt.Errorf("address uint160: %s", err)
 	}
-	scripts, err := request.CreateFunctionInvocationScript(n.contract, param.Params)
+	scripts, err := request.CreateFunctionInvocationScript(n.contractLE, param.Params)
 	if err != nil {
 		return "", fmt.Errorf("create script: %s", err)
 	}
@@ -88,7 +92,7 @@ func (n *NeoTransaction) CreateTransactionAppendWitness(param TransactionParam) 
 	tx.AddVerificationHash(accountUint)
 	tx.Attributes = append(tx.Attributes, transaction.Attribute{
 		Usage: transaction.Script,
-		Data:  n.contract.BytesBE(),
+		Data:  n.contractLE.BytesBE(),
 	})
 
 	if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
@@ -133,4 +137,36 @@ func remark() []byte {
 
 func (n *NeoTransaction) Client() *client.Client {
 	return n.client
+}
+
+type SwapInfo struct {
+	rHash   string
+	rOrigin string
+	state   string
+	amount  *big.Int
+}
+
+func (n *NeoTransaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
+	_, err := n.querySwapInfo(rHash)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert result to SwapInfo
+	return &SwapInfo{}, nil
+}
+
+func (n *NeoTransaction) querySwapInfo(rHash string) (*result.Invoke, error) {
+	//hash, err := util.Uint160DecodeStringLE(rHash)
+	params := []smartcontract.Parameter{
+		{
+			Type:  smartcontract.StringType,
+			Value: rHash,
+		},
+	}
+	r, err := n.client.InvokeFunction(n.contractAddr, "querySwapInfo", params, nil)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }

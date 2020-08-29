@@ -63,72 +63,9 @@
         ]
       }
     },
-    "/deposit/event": {
-      "get": {
-        "operationId": "DepositAPI_DepositEvent",
-        "responses": {
-          "200": {
-            "description": "A successful response.(streaming responses)",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/protoEventResponse"
-                },
-                "error": {
-                  "$ref": "#/definitions/runtimeStreamError"
-                }
-              },
-              "title": "Stream result of protoEventResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "DepositAPI"
-        ]
-      }
-    },
-    "/deposit/fetchNotice": {
+    "/eth/depositLock": {
       "post": {
-        "operationId": "DepositAPI_DepositFetchNotice",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoBoolean"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoDepositFetchNoticeRequest"
-            }
-          }
-        ],
-        "tags": [
-          "DepositAPI"
-        ]
-      }
-    },
-    "/deposit/lock": {
-      "post": {
-        "operationId": "DepositAPI_DepositLock",
+        "operationId": "EthAPI_DepositLock",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -154,13 +91,45 @@
           }
         ],
         "tags": [
-          "DepositAPI"
+          "EthAPI"
         ]
       }
     },
-    "/withdraw/event": {
+    "/eth/withdrawUnlock": {
+      "post": {
+        "operationId": "EthAPI_WithdrawUnlock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoWithdrawUnlockRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EthAPI"
+        ]
+      }
+    },
+    "/event/state": {
       "get": {
-        "operationId": "WithDrawAPI_WithDrawEvent",
+        "operationId": "EventAPI_Event",
         "responses": {
           "200": {
             "description": "A successful response.(streaming responses)",
@@ -185,13 +154,13 @@
           }
         },
         "tags": [
-          "WithDrawAPI"
+          "EventAPI"
         ]
       }
     },
-    "/withdraw/unlock": {
+    "/neo/depositFetchNotice": {
       "post": {
-        "operationId": "WithDrawAPI_WithDrawUnlock",
+        "operationId": "NeoAPI_DepositFetchNotice",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -212,12 +181,12 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoWithDrawUnlockRequest"
+              "$ref": "#/definitions/protoFetchNoticeRequest"
             }
           }
         ],
         "tags": [
-          "WithDrawAPI"
+          "NeoAPI"
         ]
       }
     }
@@ -229,17 +198,6 @@
         "value": {
           "type": "boolean",
           "format": "boolean"
-        }
-      }
-    },
-    "protoDepositFetchNoticeRequest": {
-      "type": "object",
-      "properties": {
-        "rHash": {
-          "type": "string"
-        },
-        "nep5TxHash": {
-          "type": "string"
         }
       }
     },
@@ -275,6 +233,17 @@
           "type": "string"
         },
         "txHash": {
+          "type": "string"
+        }
+      }
+    },
+    "protoFetchNoticeRequest": {
+      "type": "object",
+      "properties": {
+        "rHash": {
+          "type": "string"
+        },
+        "nep5TxHash": {
           "type": "string"
         }
       }
@@ -328,7 +297,7 @@
         }
       }
     },
-    "protoWithDrawUnlockRequest": {
+    "protoWithdrawUnlockRequest": {
       "type": "object",
       "properties": {
         "nep5TxHash": {

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,8 +11,8 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-
 	"github.com/qlcchain/qlc-hub/pkg/neo"
+	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 var (
@@ -35,9 +33,9 @@ var (
 
 func main() {
 	neo2eth()
-	neo2ethRefund()
-	eth2neo()
-	eth2neoRefund()
+	//neo2ethRefund()
+	//eth2neo()
+	//eth2neoRefund()
 }
 
 func neo2eth() {
@@ -46,7 +44,7 @@ func neo2eth() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rOrigin, rHash := hashValue()
+	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
 	userLock(rHash, c)
@@ -60,7 +58,7 @@ func neo2ethRefund() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rOrigin, rHash := hashValue()
+	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
 	userLock(rHash, c)
@@ -74,7 +72,7 @@ func eth2neo() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rOrigin, rHash := hashValue()
+	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
 	wrapperLock(rHash, c)
@@ -88,7 +86,7 @@ func eth2neoRefund() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rOrigin, rHash := hashValue()
+	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
 	wrapperLock(rHash, c)
@@ -249,29 +247,4 @@ func remark() []byte {
 	remark := make([]byte, 12)
 	rand.Read(remark)
 	return remark
-}
-
-const charset = "abcdefghijklmnopqrstuvwxyz" +
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-var seededRand *rand.Rand = rand.New(
-	rand.NewSource(time.Now().UnixNano()))
-
-func StringWithCharset(length int, charset string) string {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(b)
-}
-
-func String(length int) string {
-	return StringWithCharset(length, charset)
-}
-
-func hashValue() (string, string) {
-	rOrigin := String(32)
-	h := sha256.Sum256([]byte(rOrigin))
-	rHash := hex.EncodeToString(h[:])
-	return rOrigin, rHash
 }

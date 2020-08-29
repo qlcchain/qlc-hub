@@ -17,12 +17,12 @@ message DepositLockRequest{
    string addr       = 4;
 }
 
-message DepositFetchNoticeRequest{
+message FetchNoticeRequest{
    string rHash      = 1;
    string nep5TxHash = 2;
 }
 
-message WithDrawUnlockRequest{
+message WithdrawUnlockRequest{
   string nep5TxHash = 1;
   string rOrigin    = 2;
 }
@@ -47,42 +47,39 @@ message StateInfo {
   int64  unlockedHeight    = 10;
 }
 
-service DepositAPI {
-  rpc DepositLock(DepositLockRequest) returns (Boolean){
-    option (google.api.http) = {
-      post: "/deposit/lock"
-      body: "*"
-    };
-  }
-
-   rpc DepositFetchNotice(DepositFetchNoticeRequest) returns (Boolean){
-       option (google.api.http) = {
-           post: "/deposit/fetchNotice"
-           body: "*"
+service EthAPI {
+    rpc DepositLock(DepositLockRequest) returns (Boolean){
+        option (google.api.http) = {
+          post: "/eth/depositLock"
+          body: "*"
         };
-   }
+    }
 
-   rpc DepositEvent(google.protobuf.Empty) returns (stream EventResponse){
-      option (google.api.http) = {
-         get: "/deposit/event"
-      };
-   }
-}
-
-service WithDrawAPI {
-   rpc WithDrawUnlock(WithDrawUnlockRequest) returns (Boolean){
+   rpc WithdrawUnlock(WithdrawUnlockRequest) returns (Boolean){
        option (google.api.http) = {
-         post: "/withdraw/unlock"
+         post: "/eth/withdrawUnlock"
          body: "*"
        };
     }
+}
 
-    rpc WithDrawEvent(google.protobuf.Empty) returns (stream EventResponse){
+service NeoAPI {
+   rpc DepositFetchNotice(FetchNoticeRequest) returns (Boolean){
        option (google.api.http) = {
-         get: "/withdraw/event"
+           post: "/neo/depositFetchNotice"
+           body: "*"
+        };
+   }
+}
+
+service EventAPI {
+    rpc Event(google.protobuf.Empty) returns (stream EventResponse){
+       option (google.api.http) = {
+         get: "/event/state"
        };
     }
 }
+
 
 service DebugAPI {
     rpc Ping(google.protobuf.Empty) returns (PingResponse){

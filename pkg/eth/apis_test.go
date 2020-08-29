@@ -2,8 +2,10 @@ package eth
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts"
@@ -16,11 +18,78 @@ import (
 )
 
 const (
-	endPoint          = "https://rinkeby.infura.io/v3/0865b420656e4d70bcbbcc76e265fd57"
-	webSocketEndPoint = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
-	mnemonic          = `lumber choice thing skull allow favorite light horse gun media treat peasant`
-	contract          = "0x6d37597F0d9e917baeF2727ece52AEeb8B5294c7"
+	endPoint   = "https://rinkeby.infura.io/v3/0865b420656e4d70bcbbcc76e265fd57"
+	endPointws = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
+	mnemonic   = `lumber choice thing skull allow favorite light horse gun media treat peasant`
+	contract   = "0xCD60c41De542ebaF81040A1F50B6eFD4B1547d91"
+
+	wrapperPrikey = "67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e"
+	userEthPrikey = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 )
+
+func TestNewQLCChain(t *testing.T) {
+	client, err := ethclient.Dial(endPointws)
+	defer func() {
+		client.Close()
+	}()
+	instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rOrigin, rHash := util.Sha256Hash()
+	fmt.Println("hash: ", rOrigin, "==>", rHash)
+
+	bigAmount := big.NewInt(12 * 100000000)
+	rHashBytes, err := util.HexStringToBytes32(rHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx, err := instance.IssueLock(opts, rHashBytes, bigAmount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(tx.Hash().Hex())
+
+	time.Sleep(30 * time.Second)
+	instance2, opts2, err := GetTransactor(client, userEthPrikey, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rOriginBytes, err := util.StringToBytes32(rOrigin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx2, err := instance2.IssueUnlock(opts2, rHashBytes, rOriginBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(tx2.Hash().Hex())
+}
+
+func TestNewQLCChain2(t *testing.T) {
+	client, err := ethclient.Dial(endPointws)
+	defer func() {
+		client.Close()
+	}()
+	instance, err := GetTransactorSession(client, wrapperPrikey, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rOrigin, rHash := util.Sha256Hash()
+	fmt.Println("hash: ", rOrigin, "==>", rHash)
+
+	bigAmount := big.NewInt(12 * 100000000)
+	rHashBytes, err := util.HexStringToBytes32(rHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx, err := instance.IssueLock(rHashBytes, bigAmount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(tx.Hash().Hex())
+}
 
 func TestQLCChainTransactorSession_IssueLock(t *testing.T) {
 	t.Skip()
@@ -44,7 +113,7 @@ func TestQLCChainTransactorSession_IssueLock(t *testing.T) {
 	//if err != nil {
 	//	t.Fatal(err)
 	//}
-	client, err := ethclient.Dial(webSocketEndPoint)
+	client, err := ethclient.Dial(endPointws)
 	if err != nil {
 		t.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}

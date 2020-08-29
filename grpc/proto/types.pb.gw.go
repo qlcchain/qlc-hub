@@ -32,7 +32,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_DepositAPI_DepositLock_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_EthAPI_DepositLock_0(ctx context.Context, marshaler runtime.Marshaler, client EthAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq DepositLockRequest
 	var metadata runtime.ServerMetadata
 
@@ -49,7 +49,7 @@ func request_DepositAPI_DepositLock_0(ctx context.Context, marshaler runtime.Mar
 
 }
 
-func local_request_DepositAPI_DepositLock_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_EthAPI_DepositLock_0(ctx context.Context, marshaler runtime.Marshaler, server EthAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq DepositLockRequest
 	var metadata runtime.ServerMetadata
 
@@ -66,8 +66,42 @@ func local_request_DepositAPI_DepositLock_0(ctx context.Context, marshaler runti
 
 }
 
-func request_DepositAPI_DepositFetchNotice_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq DepositFetchNoticeRequest
+func request_EthAPI_WithdrawUnlock_0(ctx context.Context, marshaler runtime.Marshaler, client EthAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq WithdrawUnlockRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.WithdrawUnlock(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_EthAPI_WithdrawUnlock_0(ctx context.Context, marshaler runtime.Marshaler, server EthAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq WithdrawUnlockRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.WithdrawUnlock(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_NeoAPI_DepositFetchNotice_0(ctx context.Context, marshaler runtime.Marshaler, client NeoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq FetchNoticeRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -83,8 +117,8 @@ func request_DepositAPI_DepositFetchNotice_0(ctx context.Context, marshaler runt
 
 }
 
-func local_request_DepositAPI_DepositFetchNotice_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq DepositFetchNoticeRequest
+func local_request_NeoAPI_DepositFetchNotice_0(ctx context.Context, marshaler runtime.Marshaler, server NeoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq FetchNoticeRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -100,62 +134,11 @@ func local_request_DepositAPI_DepositFetchNotice_0(ctx context.Context, marshale
 
 }
 
-func request_DepositAPI_DepositEvent_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (DepositAPI_DepositEventClient, runtime.ServerMetadata, error) {
+func request_EventAPI_Event_0(ctx context.Context, marshaler runtime.Marshaler, client EventAPIClient, req *http.Request, pathParams map[string]string) (EventAPI_EventClient, runtime.ServerMetadata, error) {
 	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
-	stream, err := client.DepositEvent(ctx, &protoReq)
-	if err != nil {
-		return nil, metadata, err
-	}
-	header, err := stream.Header()
-	if err != nil {
-		return nil, metadata, err
-	}
-	metadata.HeaderMD = header
-	return stream, metadata, nil
-
-}
-
-func request_WithDrawAPI_WithDrawUnlock_0(ctx context.Context, marshaler runtime.Marshaler, client WithDrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq WithDrawUnlockRequest
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.WithDrawUnlock(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_WithDrawAPI_WithDrawUnlock_0(ctx context.Context, marshaler runtime.Marshaler, server WithDrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq WithDrawUnlockRequest
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.WithDrawUnlock(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-func request_WithDrawAPI_WithDrawEvent_0(ctx context.Context, marshaler runtime.Marshaler, client WithDrawAPIClient, req *http.Request, pathParams map[string]string) (WithDrawAPI_WithDrawEventClient, runtime.ServerMetadata, error) {
-	var protoReq empty.Empty
-	var metadata runtime.ServerMetadata
-
-	stream, err := client.WithDrawEvent(ctx, &protoReq)
+	stream, err := client.Event(ctx, &protoReq)
 	if err != nil {
 		return nil, metadata, err
 	}
@@ -222,12 +205,12 @@ func local_request_DebugAPI_HashState_0(ctx context.Context, marshaler runtime.M
 
 }
 
-// RegisterDepositAPIHandlerServer registers the http handlers for service DepositAPI to "mux".
-// UnaryRPC     :call DepositAPIServer directly.
+// RegisterEthAPIHandlerServer registers the http handlers for service EthAPI to "mux".
+// UnaryRPC     :call EthAPIServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DepositAPIServer) error {
+func RegisterEthAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server EthAPIServer) error {
 
-	mux.Handle("POST", pattern_DepositAPI_DepositLock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_EthAPI_DepositLock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -236,18 +219,18 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DepositAPI_DepositLock_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_EthAPI_DepositLock_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_DepositLock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_EthAPI_DepositLock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_DepositFetchNotice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_EthAPI_WithdrawUnlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -256,33 +239,26 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DepositAPI_DepositFetchNotice_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_EthAPI_WithdrawUnlock_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_DepositFetchNotice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_EthAPI_WithdrawUnlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
-	})
-
-	mux.Handle("GET", pattern_DepositAPI_DepositEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
-		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-		return
 	})
 
 	return nil
 }
 
-// RegisterWithDrawAPIHandlerServer registers the http handlers for service WithDrawAPI to "mux".
-// UnaryRPC     :call WithDrawAPIServer directly.
+// RegisterNeoAPIHandlerServer registers the http handlers for service NeoAPI to "mux".
+// UnaryRPC     :call NeoAPIServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterWithDrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WithDrawAPIServer) error {
+func RegisterNeoAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server NeoAPIServer) error {
 
-	mux.Handle("POST", pattern_WithDrawAPI_WithDrawUnlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_NeoAPI_DepositFetchNotice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -291,18 +267,26 @@ func RegisterWithDrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithDrawAPI_WithDrawUnlock_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_NeoAPI_DepositFetchNotice_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithDrawAPI_WithDrawUnlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_NeoAPI_DepositFetchNotice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WithDrawAPI_WithDrawEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	return nil
+}
+
+// RegisterEventAPIHandlerServer registers the http handlers for service EventAPI to "mux".
+// UnaryRPC     :call EventAPIServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+func RegisterEventAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server EventAPIServer) error {
+
+	mux.Handle("GET", pattern_EventAPI_Event_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
 		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -360,9 +344,9 @@ func RegisterDebugAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 	return nil
 }
 
-// RegisterDepositAPIHandlerFromEndpoint is same as RegisterDepositAPIHandler but
+// RegisterEthAPIHandlerFromEndpoint is same as RegisterEthAPIHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterDepositAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterEthAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -382,23 +366,23 @@ func RegisterDepositAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.Ser
 		}()
 	}()
 
-	return RegisterDepositAPIHandler(ctx, mux, conn)
+	return RegisterEthAPIHandler(ctx, mux, conn)
 }
 
-// RegisterDepositAPIHandler registers the http handlers for service DepositAPI to "mux".
+// RegisterEthAPIHandler registers the http handlers for service EthAPI to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterDepositAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterDepositAPIHandlerClient(ctx, mux, NewDepositAPIClient(conn))
+func RegisterEthAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterEthAPIHandlerClient(ctx, mux, NewEthAPIClient(conn))
 }
 
-// RegisterDepositAPIHandlerClient registers the http handlers for service DepositAPI
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "DepositAPIClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "DepositAPIClient"
+// RegisterEthAPIHandlerClient registers the http handlers for service EthAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "EthAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "EthAPIClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "DepositAPIClient" to call the correct interceptors.
-func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client DepositAPIClient) error {
+// "EthAPIClient" to call the correct interceptors.
+func RegisterEthAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client EthAPIClient) error {
 
-	mux.Handle("POST", pattern_DepositAPI_DepositLock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_EthAPI_DepositLock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -407,18 +391,18 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DepositAPI_DepositLock_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_EthAPI_DepositLock_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_DepositLock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_EthAPI_DepositLock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_DepositFetchNotice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_EthAPI_WithdrawUnlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -427,34 +411,14 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DepositAPI_DepositFetchNotice_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_EthAPI_WithdrawUnlock_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_DepositFetchNotice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_DepositAPI_DepositEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_DepositAPI_DepositEvent_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DepositAPI_DepositEvent_0(ctx, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+		forward_EthAPI_WithdrawUnlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -462,24 +426,20 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 }
 
 var (
-	pattern_DepositAPI_DepositLock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "lock"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_EthAPI_DepositLock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"eth", "depositLock"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DepositAPI_DepositFetchNotice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "fetchNotice"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_DepositAPI_DepositEvent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "event"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_EthAPI_WithdrawUnlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"eth", "withdrawUnlock"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_DepositAPI_DepositLock_0 = runtime.ForwardResponseMessage
+	forward_EthAPI_DepositLock_0 = runtime.ForwardResponseMessage
 
-	forward_DepositAPI_DepositFetchNotice_0 = runtime.ForwardResponseMessage
-
-	forward_DepositAPI_DepositEvent_0 = runtime.ForwardResponseStream
+	forward_EthAPI_WithdrawUnlock_0 = runtime.ForwardResponseMessage
 )
 
-// RegisterWithDrawAPIHandlerFromEndpoint is same as RegisterWithDrawAPIHandler but
+// RegisterNeoAPIHandlerFromEndpoint is same as RegisterNeoAPIHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterWithDrawAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterNeoAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -499,23 +459,23 @@ func RegisterWithDrawAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.Se
 		}()
 	}()
 
-	return RegisterWithDrawAPIHandler(ctx, mux, conn)
+	return RegisterNeoAPIHandler(ctx, mux, conn)
 }
 
-// RegisterWithDrawAPIHandler registers the http handlers for service WithDrawAPI to "mux".
+// RegisterNeoAPIHandler registers the http handlers for service NeoAPI to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterWithDrawAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterWithDrawAPIHandlerClient(ctx, mux, NewWithDrawAPIClient(conn))
+func RegisterNeoAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterNeoAPIHandlerClient(ctx, mux, NewNeoAPIClient(conn))
 }
 
-// RegisterWithDrawAPIHandlerClient registers the http handlers for service WithDrawAPI
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "WithDrawAPIClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "WithDrawAPIClient"
+// RegisterNeoAPIHandlerClient registers the http handlers for service NeoAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "NeoAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "NeoAPIClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "WithDrawAPIClient" to call the correct interceptors.
-func RegisterWithDrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WithDrawAPIClient) error {
+// "NeoAPIClient" to call the correct interceptors.
+func RegisterNeoAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client NeoAPIClient) error {
 
-	mux.Handle("POST", pattern_WithDrawAPI_WithDrawUnlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_NeoAPI_DepositFetchNotice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -524,34 +484,14 @@ func RegisterWithDrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithDrawAPI_WithDrawUnlock_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_NeoAPI_DepositFetchNotice_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithDrawAPI_WithDrawUnlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_WithDrawAPI_WithDrawEvent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_WithDrawAPI_WithDrawEvent_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_WithDrawAPI_WithDrawEvent_0(ctx, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+		forward_NeoAPI_DepositFetchNotice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -559,15 +499,80 @@ func RegisterWithDrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 }
 
 var (
-	pattern_WithDrawAPI_WithDrawUnlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "unlock"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_WithDrawAPI_WithDrawEvent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "event"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_NeoAPI_DepositFetchNotice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"neo", "depositFetchNotice"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_WithDrawAPI_WithDrawUnlock_0 = runtime.ForwardResponseMessage
+	forward_NeoAPI_DepositFetchNotice_0 = runtime.ForwardResponseMessage
+)
 
-	forward_WithDrawAPI_WithDrawEvent_0 = runtime.ForwardResponseStream
+// RegisterEventAPIHandlerFromEndpoint is same as RegisterEventAPIHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterEventAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.Dial(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+			return
+		}
+		go func() {
+			<-ctx.Done()
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+		}()
+	}()
+
+	return RegisterEventAPIHandler(ctx, mux, conn)
+}
+
+// RegisterEventAPIHandler registers the http handlers for service EventAPI to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterEventAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterEventAPIHandlerClient(ctx, mux, NewEventAPIClient(conn))
+}
+
+// RegisterEventAPIHandlerClient registers the http handlers for service EventAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "EventAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "EventAPIClient"
+// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
+// "EventAPIClient" to call the correct interceptors.
+func RegisterEventAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client EventAPIClient) error {
+
+	mux.Handle("GET", pattern_EventAPI_Event_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_EventAPI_Event_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_EventAPI_Event_0(ctx, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+var (
+	pattern_EventAPI_Event_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"event", "state"}, "", runtime.AssumeColonVerbOpt(true)))
+)
+
+var (
+	forward_EventAPI_Event_0 = runtime.ForwardResponseStream
 )
 
 // RegisterDebugAPIHandlerFromEndpoint is same as RegisterDebugAPIHandler but
