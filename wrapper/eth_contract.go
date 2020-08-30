@@ -40,6 +40,17 @@ const (
 	EthEventStatusDestoryFetch        = 5 //destoryFetch
 )
 
+type etheventhtimerlog struct {
+	Action     int64
+	Amount     int64
+	LockNum    int64
+	UnlockNum  int64
+	TxHash     string
+	Account    string
+	LockSource string
+	LockHash   string
+}
+
 // IsValidAddress validate hex address
 func (w *WrapperServer) IsValidAddress(iaddress interface{}) bool {
 	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
@@ -189,13 +200,13 @@ func (w *WrapperServer) WrapperEthListen() {
 				w.logger.Debugf("unknown vlog")
 				break
 			}
-			w.logger.Debugf("get logs: block(%s),blocknum(%d),txhash(%s)", vLog.BlockHash.Hex(), vLog.BlockNumber, vLog.TxHash.Hex())
+			//w.logger.Debugf("get logs: block(%s),blocknum(%d),txhash(%s)", vLog.BlockHash.Hex(), vLog.BlockNumber, vLog.TxHash.Hex())
 			//w.logger.Debugf("get RHash:",event.RHash)
 			//w.logger.Debugf("get State:",event.State)
 			rhash := hex.EncodeToString(event.RHash[:])
 			action := event.State.Int64()
 			txhash := vLog.TxHash.Hex()
-			w.logger.Debugf("get log%d action :%d, rash %s", logindex, action, rhash)
+			//w.logger.Debugf("get log%d action :%d, rash %s", logindex, action, rhash)
 			logindex++
 			go w.EthGetHashTimerLoop(action, rhash, txhash)
 		}
@@ -358,7 +369,7 @@ func (w *WrapperServer) EthContractDestoryUnlock(lockhash string, locksource str
 	}
 	copy(lockarray[:], lock)
 	//copy(lockarray[:],[]byte(lockhash))
-	w.logger.Debugf("DestoryUnlock get lockarray", lockarray)
+	//w.logger.Debugf("DestoryUnlock get lockarray", lockarray)
 	// source,err := hex.DecodeString(locksource)
 	// if err != nil {
 	// 	w.logger.Error(err)
@@ -450,40 +461,43 @@ func (w *WrapperServer) EthContractUcallerDestoryLock(amount int64, lockhash str
 }
 
 //EthGetHashTimer user call destory unlock
-func (w *WrapperServer) EthGetHashTimer(lockhash string) (result, amount, locknum, unlocknum int64, account, locksource string, err error) {
+func (w *WrapperServer) EthGetHashTimer(lockhash string) (int64, *etheventhtimerlog, error) {
 	var lockarray [32]byte
 	var callops = bind.CallOpts{}
+	elog := new(etheventhtimerlog)
 	client, err := w.WrapperEthClientConnect()
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetClientConnFailed, 0, 0, 0, "", "", errors.New("eth conn failed")
+		return CchEthIssueRetClientConnFailed, nil, errors.New("eth conn failed")
 	}
 	contractaddress := common.HexToAddress(WrapperEthContract)
+	//instance, err := QLCChain.NewQLCChainTransactor(contractaddress, client)
 	instance, err := QLCChain.NewQLCChainCaller(contractaddress, client)
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetClientConnFailed, 0, 0, 0, "", "", errors.New("eth get instance failed")
+		return CchEthIssueRetClientConnFailed, nil, errors.New("eth get instance failed")
 	}
 	lock, err := hex.DecodeString(lockhash)
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetBadLockHash, 0, 0, 0, "", "", err
+		return CchEthIssueRetBadLockHash, nil, err
 	}
 	copy(lockarray[:], lock)
-	source, amountbig, addr, lockno, unlockno, _, err := instance.HashTimer(&callops, lockarray)
+	//transaction, err := instance.HashTimer(&callops, lockarray)
+	source, amountbig, addr, lockno, unlockno, err := instance.HashTimer(&callops, lockarray)
 	if err != nil {
 		w.logger.Error(err)
-		return CchEthIssueRetBadKey, 0, 0, 0, "", "", errors.New("eth call HashTimer failed")
+		return CchEthIssueRetBadKey, nil, errors.New("eth call HashTimer failed")
 	}
-	ramount := amountbig.Int64()
-	rlocknum := lockno.Int64()
-	runlocknum := unlockno.Int64()
-	//w.logger.Debugf("HashTimer get source:",source)
-	//w.logger.Debugf("HashTimer get addr:",addr)
-	rsource := string(source[:])
-	raddr := hex.EncodeToString(addr[:])
-	w.logger.Debugf("HashTimer get amount:%d,locknum:%d,unlocknum:%d", ramount, rlocknum, runlocknum)
-	return CchEthIssueRetOK, ramount, rlocknum, runlocknum, raddr, rsource, nil
+	elog.LockHash = lockhash
+	elog.Amount = amountbig.Int64()
+	elog.LockNum = lockno.Int64()
+	elog.UnlockNum = unlockno.Int64()
+	elog.LockSource = string(source[:])
+	elog.Account = hex.EncodeToString(addr[:])
+	w.logger.Debugf("HashTimer get source(%s) addr(%s)", elog.LockSource, elog.Account)
+	w.logger.Debugf("HashTimer get amount:%d,locknum:%d,unlocknum:%d", elog.Amount, elog.UnlockNum, elog.LockNum)
+	return CchEthIssueRetOK, elog, nil
 }
 
 func (w *WrapperServer) EthVerifyByLockhash(event *EventInfo) {
@@ -497,25 +511,38 @@ func (w *WrapperServer) EthVerifyByLockhash(event *EventInfo) {
 			w.logger.Debugf("event(%s) break EthVerifyByLockhash")
 			return
 		}
-		_, _, locknum, unlocknum, account, locksource, err := w.EthGetHashTimer(event.LockHash)
+		_, elog, err := w.EthGetHashTimer(event.LockHash)
 		if err == nil {
-			switch event.Status {
-			case cchNep5MortgageStatusWaitEthLockVerify:
-				//记录locknum
-				event.EthLockNum = locknum
-				event.Status = cchNep5MortgageStatusWaitClaim
-			case cchNep5MortgageStatusWaitEthUnlockVerify:
-				event.UnlockNum = unlocknum
-				event.UserAccount = account
-				event.HashSource = locksource
-				event.Status = cchNep5MortgageStatusTryNeoUnlock
-			case cchNep5MortgageStatusTimeoutDestroyVerify:
-				event.UnlockNum = unlocknum
-				event.Status = cchNep5MortgageStatusTimeoutDestroyOk
-			default:
-				break
+			if event.Type == cchEventTypeMortgage {
+				switch event.Status {
+				case cchNep5MortgageStatusWaitEthLockVerify:
+					//记录locknum
+					event.EthLockNum = elog.LockNum
+					event.Status = cchNep5MortgageStatusWaitClaim
+				case cchNep5MortgageStatusWaitEthUnlockVerify:
+					event.UnlockNum = elog.UnlockNum
+					event.UserAccount = elog.Account
+					event.HashSource = elog.LockSource
+					event.Status = cchNep5MortgageStatusTryNeoUnlock
+				case cchNep5MortgageStatusTimeoutDestroyVerify:
+					event.UnlockNum = elog.UnlockNum
+					event.Status = cchNep5MortgageStatusTimeoutDestroyOk
+				default:
+					break
+				}
+				w.logger.Debugf("Mortgage EthVerifyByLockhash:status in(%d) out(%d)", initstatus, event.Status)
+			} else {
+				switch event.Status {
+				case cchEthRedemptionStatusWaitEthUnlockVerify:
+					event.UnlockNum = elog.UnlockNum
+					//event.UserAccount = elog.Account
+					event.Status = cchEthRedemptionStatusClaimOk
+					break
+				default:
+					break
+				}
+				w.logger.Debugf("Redemption EthVerifyByLockhash:status in(%d) out(%d)", initstatus, event.Status)
 			}
-			w.logger.Debugf("EthVerifyByLockhash:status in(%d) out(%d)", initstatus, event.Status)
 			if event.Status != initstatus {
 				w.sc.DbEventUpdate(event)
 				go w.eventStatusUpdateMsgPush(event, event.Status)
@@ -524,53 +551,105 @@ func (w *WrapperServer) EthVerifyByLockhash(event *EventInfo) {
 		}
 	}
 	//timeout
-	switch event.Status {
-	case cchNep5MortgageStatusWaitEthLockVerify:
-	case cchNep5MortgageStatusWaitEthUnlockVerify:
-	case cchNep5MortgageStatusTimeoutDestroyVerify:
-		event.Status = cchNep5MortgageStatusFailed
-		event.Errno = CchEventRunErrMortgageNep5VerifyFailed
-		err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
-		if err != nil {
-			w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+	if event.Type == cchEventTypeMortgage {
+		switch event.Status {
+		case cchNep5MortgageStatusWaitEthLockVerify:
+		case cchNep5MortgageStatusWaitEthUnlockVerify:
+		case cchNep5MortgageStatusTimeoutDestroyVerify:
+			event.Status = cchNep5MortgageStatusFailed
+			event.Errno = CchEventRunErrMortgageNep5VerifyFailed
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
+			}
+		default:
+			break
 		}
-	default:
-		break
+	} else {
+		switch event.Status {
+		case cchEthRedemptionStatusWaitEthUnlockVerify:
+			event.Status = cchEthRedemptionStatusFailed
+			event.Errno = CchEventRunErrRedemptionEthDestoryUnlockFailed
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
+			}
+		default:
+			break
+		}
 	}
 }
 
 //EthGetHashTimerDeal
-func (w *WrapperServer) EthGetHashTimerDeal(action, amount, locknum, unlocknum int64, lockhash, locksource, txhash, addr string) {
+func (w *WrapperServer) EthGetHashTimerDeal(action int64, elog *etheventhtimerlog) {
 	var newstat int64
-	if action == EthEventStatusDestoryLock {
-		event := RedemptionEvent[lockhash]
-		if event != nil {
-			newstat = cchEthRedemptionStatusTimeoutUnlockOk
-			err := w.WrapperEventUpdateStatByLockhash(cchEventTypeRedemption, newstat, 0, lockhash)
+	switch action {
+	case EthEventStatusIssueLock: //0
+		event := MortgageEvent[elog.LockHash]
+		if event != nil && event.Status == cchNep5MortgageStatusWaitEthLockVerify {
+			newstat = cchNep5MortgageStatusWaitClaim
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(cchEventTypeMortgage, newstat, 0, elog.LockHash)
 			if err != nil {
-				w.logger.Error("WrapperEventUpdateStatByLockhash err:", err)
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash err:", err)
 			}
-		} else {
+		}
+		break
+	case EthEventStatusIssueUnLock: //1
+		event := MortgageEvent[elog.LockHash]
+		if event != nil && event.Status == cchNep5MortgageStatusWaitEthUnlockVerify {
+			event.UnlockNum = elog.UnlockNum
+			event.UserAccount = elog.Account
+			event.HashSource = elog.LockSource
+			newstat = cchNep5MortgageStatusTryNeoUnlock
+			event.Status = newstat
+			w.sc.DbEventUpdate(event)
+			go w.eventStatusUpdateMsgPush(event, event.Status)
+		}
+		break
+	case EthEventStatusIssueFetch: //2
+		event := MortgageEvent[elog.LockHash]
+		if event != nil && event.Status == cchNep5MortgageStatusFailedFetchTimeout {
+			newstat = cchNep5MortgageStatusUserFetched
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(cchEventTypeRedemption, newstat, event.Errno, elog.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash err:", err)
+			}
+		}
+		break
+	case EthEventStatusDestoryLock: //3
+		event := RedemptionEvent[elog.LockHash]
+		if event != nil && event.Status == cchEthRedemptionStatusWaitEthLockVerify {
 			newstat = cchEthRedemptionStatusTryNeoLock
-			err := w.WrapperEventInsert(newstat, amount, cchEventTypeRedemption, locknum, lockhash, txhash, addr)
+			err := w.WrapperEventInsert(newstat, elog.Amount, cchEventTypeRedemption, elog.LockNum, elog.LockHash, elog.TxHash, elog.Account)
 			if err != nil {
 				w.logger.Error("WrapperEventInsert err:", err)
 			}
 		}
-	} else if action == EthEventStatusDestoryFetch {
-		newstat = cchEthRedemptionStatusTimeoutUnlockOk
-		err := w.WrapperEventUpdateStatByLockhash(cchEventTypeRedemption, newstat, 0, lockhash)
-		if err != nil {
-			w.logger.Error("WrapperEventUpdateStatByLockhash err:", err)
+		break
+	case EthEventStatusDestoryUnlock: //4
+		event := RedemptionEvent[elog.LockHash]
+		if event != nil && event.Status == cchEthRedemptionStatusWaitEthUnlockVerify {
+			newstat = cchEthRedemptionStatusClaimOk
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(cchEventTypeRedemption, newstat, event.Errno, elog.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash err:", err)
+			}
 		}
-	} else if action == EthEventStatusIssueLock {
-		newstat = cchNep5MortgageStatusWaitClaim
-		err := w.WrapperEventUpdateStatByLockhash(cchEventTypeMortgage, newstat, 0, lockhash)
-		if err != nil {
-			w.logger.Error("WrapperEventUpdateStatByLockhash err:", err)
+		break
+	case EthEventStatusDestoryFetch: //5
+		event := RedemptionEvent[elog.LockHash]
+		if event != nil && event.Status == cchEthRedemptionStatusFailedFetchTimeout {
+			newstat = cchEthRedemptionStatusUserFetched
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(cchEventTypeRedemption, newstat, event.Errno, elog.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash err:", err)
+			}
 		}
+		break
+	default:
+		break
 	}
-	w.logger.Debugf("EthGetHashTimerDeal:action %d,lockhash %s stat %d", action, lockhash, newstat)
+	w.logger.Debugf("EthGetHashTimerDeal:action %d,lockhash %s stat %d", action, elog.LockHash, newstat)
 }
 
 //EthGetHashTimerLoop
@@ -581,12 +660,13 @@ func (w *WrapperServer) EthGetHashTimerLoop(action int64, lockhash, txhash strin
 		select {
 		case <-ticker.C:
 			//GetHashTimer
-			ret, amount, locknum, unlocknum, account, locksource, err := w.EthGetHashTimer(lockhash)
+			ret, elog, err := w.EthGetHashTimer(lockhash)
 			if err == nil && ret == CchEthIssueRetOK {
 				//w.logger.Debugf("EthGetHashTimer:get amount:%,locknum:%",amount,locknum)
-				if locknum > 0 {
-					w.logger.Debugf("EthGetHashTimerLoop out,lockhash:(%s)", lockhash)
-					w.EthGetHashTimerDeal(action, amount, locknum, unlocknum, lockhash, locksource, txhash, account)
+				if elog.LockNum > 0 {
+					elog.TxHash = txhash
+					w.logger.Debugf("EthGetHashTimerLoop out,lockhash:(%s)", elog.LockHash)
+					w.EthGetHashTimerDeal(action, elog)
 					return
 				}
 			}

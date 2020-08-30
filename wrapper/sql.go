@@ -100,6 +100,45 @@ func (m *DBBlockNumberLogTBL) TableName() string {
 	return "blocknum_logtbl"
 }
 
+//DBEthEventLogTBL  eth event log
+type DBEthEventLogTBL struct {
+	ID         int64  `json:"id" pk:"auto" orm:"column(id)"`
+	BlockNum   int64  `json:"blocknum" orm:"column(blocknum)"`
+	TimeStamp  int64  `json:"timestamp" orm:"column(timestamp)"`
+	VFlag      int64  `json:"vflag" orm:"column(vflag)"`
+	Amount     int64  `json:"amount" orm:"column(amount)"`
+	LockNum    int64  `json:"locknum" orm:"column(locknum)"`
+	UnlockNum  int64  `json:"unlocknum" orm:"column(unlocknum)"`
+	Account    string `json:"account" orm:"column(account)"`
+	Action     string `json:"action" orm:"column(action)"`
+	TxHash     string `json:"txhash" orm:"column(txhash);size(128);index"`
+	Lockhash   string `json:"lockhash" orm:"column(lockhash)"`
+	HashSource string `json:"hashsource" orm:"column(hashsource)"`
+}
+
+func (m *DBEthEventLogTBL) TableName() string {
+	return "ethevent_logtbl"
+}
+
+//DBNeoEventLogTBL  neo event log
+type DBNeoEventLogTBL struct {
+	ID         int64  `json:"id" pk:"auto" orm:"column(id)"`
+	BlockNum   int64  `json:"blocknum" orm:"column(blocknum)"`
+	TimeStamp  int64  `json:"timestamp" orm:"column(timestamp)"`
+	VFlag      int64  `json:"vflag" orm:"column(vflag)"`
+	Amount     int64  `json:"amount" orm:"column(amount)"`
+	From       string `json:"from" orm:"column(from)"`
+	To         string `json:"to" orm:"column(to)"`
+	Action     string `json:"action" orm:"column(action)"`
+	TxHash     string `json:"txhash" orm:"column(txhash);size(128);index"`
+	Lockhash   string `json:"lockhash" orm:"column(lockhash)"`
+	HashSource string `json:"hashsource" orm:"column(hashsource)"`
+}
+
+func (m *DBNeoEventLogTBL) TableName() string {
+	return "neoevent_logtbl"
+}
+
 //WrapperSqlconn sql connect
 type WrapperSqlconn struct {
 	logger *zap.SugaredLogger
@@ -133,7 +172,7 @@ func WrapperSqlInit(cfgFile string) {
 	//fmt.Println(connect)
 	err = orm.RegisterDataBase("default", "mysql", connect, maxIdle, maxConn)
 	if err != nil {
-		log.Root.Debugf("RegisterDataBase failed", err)
+		log.Root.Debugf("RegisterDataBase connect(%s) failed", connect, err)
 		return
 	}
 	orm.RegisterModel(new(DBNeoMortgageEventTBL), new(DBEthRedemptionEventTBL), new(DBEventStatsChangelogTBL), new(DBBlockNumberLogTBL))
@@ -211,7 +250,7 @@ func (w *WrapperSqlconn) DbGetEventByLockhash(etype int64, lockhash string) (tar
 	if etype == cchEventTypeMortgage {
 		info, err := w.DbGetNeoMortgageEventByLockhash(lockhash)
 		if err != nil {
-			w.logger.Debugf("DbGetEventByLockhash:get dbevent by lockhash failed")
+			//w.logger.Debugf("DbGetEventByLockhash:get dbevent by lockhash failed")
 			return nil, errors.New("bad lockhash")
 		}
 		event.Type = etype
@@ -233,7 +272,7 @@ func (w *WrapperSqlconn) DbGetEventByLockhash(etype int64, lockhash string) (tar
 	} else if etype == cchEventTypeRedemption {
 		info, err := w.DbGetEthRedemptionEventByLockhash(lockhash)
 		if err != nil {
-			w.logger.Debugf("DbGetEventByLockhash:get dbevent by lockhash failed")
+			//w.logger.Debugf("DbGetEventByLockhash:get dbevent by lockhash failed")
 			return nil, errors.New("bad lockhash")
 		}
 		event.Type = etype
@@ -381,13 +420,13 @@ func (w *WrapperSqlconn) DbEventUpdate(event *EventInfo) (id int64, err error) {
 	return -1, errors.New("bad event type")
 }
 
-//WsqlEventDbStatusUpdate db event status update
-func (w *WrapperSqlconn) WsqlEventDbStatusUpdate(etype, status, errno int64, lockhash string) (id int64, err error) {
-	//w.logger.Debugf("WsqlEventDbStatusUpdate,etype:%d,hash:%s,status：%d，errno:%d", etype, lockhash, status, errno)
+//WsqlEventDbStatusAndErrnoUpdate db event status and errno update
+func (w *WrapperSqlconn) WsqlEventDbStatusAndErrnoUpdate(etype, status, errno int64, lockhash string) (id int64, err error) {
+	//w.logger.Debugf("WsqlEventDbStatusAndErrnoUpdate,etype:%d,hash:%s,status：%d，errno:%d", etype, lockhash, status, errno)
 	if etype == cchEventTypeMortgage {
 		info, err := w.DbGetNeoMortgageEventByLockhash(lockhash)
 		if err != nil {
-			w.logger.Debugf("WsqlEventDbStatusUpdate:get dbevent by lockhash failed")
+			w.logger.Debugf("WsqlEventDbStatusAndErrnoUpdate:get dbevent by lockhash failed")
 			return -1, errors.New("bad lockhash")
 		}
 		if info.Status != status || info.Errno != errno {
@@ -399,12 +438,41 @@ func (w *WrapperSqlconn) WsqlEventDbStatusUpdate(etype, status, errno int64, loc
 	} else if etype == cchEventTypeRedemption {
 		info, err := w.DbGetEthRedemptionEventByLockhash(lockhash)
 		if err != nil {
-			w.logger.Debugf("WsqlEventDbStatusUpdate:get dbevent by lockhash failed")
+			w.logger.Debugf("WsqlEventDbStatusAndErrnoUpdate:get dbevent by lockhash failed")
 			return -1, errors.New("bad lockhash")
 		}
 		if info.Status != status || info.Errno != errno {
 			info.Status = status
 			info.Errno = errno
+			return w.DbEthRedemptionUpdate(info)
+		}
+		return info.ID, nil
+	}
+	return -1, errors.New("bad event type")
+}
+
+//WsqlEventDbStatusUpdate db event status update
+func (w *WrapperSqlconn) WsqlEventDbStatusUpdate(etype, status int64, lockhash string) (id int64, err error) {
+	//w.logger.Debugf("WsqlEventDbStatusUpdate,etype:%d,hash:%s,status：%d，errno:%d", etype, lockhash, status, errno)
+	if etype == cchEventTypeMortgage {
+		info, err := w.DbGetNeoMortgageEventByLockhash(lockhash)
+		if err != nil {
+			w.logger.Debugf("WsqlEventDbStatusUpdate:get dbevent by lockhash failed")
+			return -1, errors.New("bad lockhash")
+		}
+		if info.Status != status {
+			info.Status = status
+			return w.DbNeoMortgageUpdate(info)
+		}
+		return info.ID, nil
+	} else if etype == cchEventTypeRedemption {
+		info, err := w.DbGetEthRedemptionEventByLockhash(lockhash)
+		if err != nil {
+			w.logger.Debugf("WsqlEventDbStatusUpdate:get dbevent by lockhash failed")
+			return -1, errors.New("bad lockhash")
+		}
+		if info.Status != status {
+			info.Status = status
 			return w.DbEthRedemptionUpdate(info)
 		}
 		return info.ID, nil

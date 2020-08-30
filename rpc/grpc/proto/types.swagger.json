@@ -724,6 +724,9 @@
         },
         "addr": {
           "type": "string"
+        },
+        "source": {
+          "type": "string"
         }
       }
     },

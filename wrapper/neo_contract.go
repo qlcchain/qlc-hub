@@ -32,6 +32,7 @@ var (
 	OpRefundWrapper     = "refundWrapper"
 	OpGetLockInfo       = "getLockInfo"
 	OpGetApplicationLog = "getapplicationlog"
+	OpQuerySwapInfo     = "querySwapInfo"
 )
 
 const (
@@ -51,10 +52,12 @@ type Transaction struct {
 }
 
 type NeoTxNotification struct {
+	Amount   int64
+	Value    int64
 	Action   string
 	Fromaddr string
 	Toaddr   string
-	Amount   int64
+	HashKey  string
 }
 
 func NewTransaction(neoNode string, contract string, officialNode []string) *Transaction {
@@ -167,9 +170,9 @@ func (t *Transaction) GetApplicationLog(txID string) (interface{}, error) {
 
 func (t *Transaction) WaitApplicationLog(txID string) (interface{}, error) {
 	time.Sleep(15 * time.Second)
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
-	for i := 0; i < 300; i++ {
+	for i := 0; i < 30; i++ {
 		<-ticker.C
 		r, err := t.GetApplicationLog(txID)
 		if err == nil {
@@ -423,6 +426,7 @@ func getValue(i interface{}) (string, error) {
 }
 
 func (t *Transaction) Nep5ContractWrapperLock(amount, locknum int64, uaddr, lockhash string) (string, error) {
+	t.logger.Debugf("Nep5ContractWrapperLock  amount(%d) locknum(%d) uaddr(%s) lockhash(%s)", amount, locknum, uaddr, lockhash)
 	lh, err := hex.DecodeString(lockhash)
 	if err != nil {
 		t.logger.Error("Nep5ContractWrapperLock: lockhash decode err  %s", lockhash)
@@ -434,7 +438,8 @@ func (t *Transaction) Nep5ContractWrapperLock(amount, locknum int64, uaddr, lock
 		return "", err
 	}
 	wapaccount := wrapperkey.CreateBasicAddress()
-	amountWei := amount * WrapperGasWeiNum
+	//amountWei := amount * WrapperGasWeiNum
+	amountWei := amount //这里是因为从eth监听到的amount已经是转过的了
 	//param := []interface{}{neoutils.Reverse(lh),wapaccount.ScripHash,amountWei,uaccount.ScripHash,locknum}
 	param := []interface{}{lh, wapaccount.ScripHash, amountWei, uaddr, locknum}
 	//t.logger.Debugf("Nep5ContractWrapperLock  uaddr(%d:%v) wapAccount(%d:%v)", len(uaddr), uaddr, len(wapaccount.ScripHash), wapaccount.ScripHash)
@@ -450,20 +455,41 @@ func (t *Transaction) Nep5ContractWrapperLock(amount, locknum int64, uaddr, lock
 	return id, nil
 }
 
-func (t *Transaction) Nep5ContractWrapperUnlock(locksource, addr string) (string, error) {
-	uaccount, err := neotransaction.ParseAddress(addr)
+//Nep5ContractQuerySwapInfo
+func (t *Transaction) Nep5ContractQuerySwapInfo(lockhash string) (string, error) {
+	lh, err := hex.DecodeString(lockhash)
 	if err != nil {
-		t.logger.Error("Nep5ContractWrapperUnlock: uaddr ParseAddress err  %s", addr)
+		t.logger.Error("Nep5ContractQuerySwapInfo: lockhash decode err  %s", lockhash)
 		return "", err
 	}
-	//args := []interface{}{neoutils.Reverse([]byte(locksource)),uaccount.ScripHash}
-	args := []interface{}{locksource, uaccount.ScripHash}
+	wrapperkey, err := neotransaction.DecodeFromWif(WrapperNeoPrikey)
+	if err != nil {
+		t.logger.Error("Nep5ContractQuerySwapInfo: WrapperNeoAccount WrapperNeoPrikey err  %s", WrapperNeoPrikey)
+		return "", err
+	}
+	wapaccount := wrapperkey.CreateBasicAddress()
+	param := []interface{}{lh, wapaccount.ScripHash}
+	script, err := t.CreateScript(OpWrapperLock, param, true)
+	if err != nil {
+		return "", err
+	}
+	id, err := t.CreateTransaction(script, WrapperNeoPrikey)
+	if err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
+func (t *Transaction) Nep5ContractWrapperUnlock(locksource, addr string) (string, error) {
+	//args := []interface{}{neoutils.Reverse([]byte(locksource)),addr}
+	args := []interface{}{locksource, addr}
 	script, err := t.CreateScript(OpWrapperUnlock, args, true)
 	if err != nil {
 		t.logger.Error("Nep5ContractWrapperUnlock:failed", err)
 		return "", err
 	}
-	id, err := t.CreateTransactionWithAttr(script, WrapperNeoPrikey, OpWrapperUnlock, args)
+	//id, err := t.CreateTransactionWithAttr(script, WrapperNeoPrikey, OpWrapperUnlock, args)
+	id, err := t.CreateTransaction(script, WrapperNeoPrikey)
 	if err != nil {
 		t.logger.Error("CreateTransaction:failed", err)
 		return "", err
@@ -485,9 +511,10 @@ func (t *Transaction) Nep5ContractWrapperRefund(locksource string) (string, erro
 		t.logger.Error("Nep5ContractWrapperRefund: CreateScripterr  %s", err)
 		return "", err
 	}
-	id, err := t.CreateTransactionWithAttr(script, WrapperNeoPrikey, OpRefundWrapper, args)
+	//id, err := t.CreateTransactionWithAttr(script, WrapperNeoPrikey, OpRefundWrapper, args)
+	id, err := t.CreateTransaction(script, WrapperNeoPrikey)
 	if err != nil {
-		t.logger.Error("Nep5ContractWrapperRefund: CreateTransactionWithAttr  %s", err)
+		t.logger.Error("Nep5ContractWrapperRefund: CreateTransactio  %s", err)
 		return "", err
 	}
 	return id, nil
@@ -565,7 +592,8 @@ func (t *Transaction) parseTxNotification(i map[string]interface{}) (*NeoTxNotif
 	return nil, fmt.Errorf("data not found: %s ", i)
 }
 
-func (t *Transaction) parseTransactionNotification(i interface{}) (map[string]interface{}, error) {
+func (t *Transaction) parseTransactionNotification(i interface{}) (*NeoTxNotification, error) {
+	txInfo := new(NeoTxNotification)
 	r, ok := i.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("transaction data error: %s", i)
@@ -591,41 +619,126 @@ func (t *Transaction) parseTransactionNotification(i interface{}) (map[string]in
 	if !ok || len(na) < 1 {
 		return nil, errors.New("notifications data not found")
 	}
-	n, ok := na[0].(map[string]interface{})
+	n1, ok := na[0].(map[string]interface{})
 	if !ok {
-		return nil, errors.New("notifications data error")
+		return nil, errors.New("notifications data1 error")
 	}
-	state, ok := n["state"]
+	state1, ok := n1["state"]
 	if !ok {
 		return nil, errors.New("transaction data has no state")
 	}
-	vs, ok := state.(map[string]interface{})
-	if !ok || len(vs) < 1 {
+	vs1, ok := state1.(map[string]interface{})
+	if !ok || len(vs1) < 1 {
 		return nil, errors.New("value data error")
 	}
-	return vs, nil
-}
+	//t.logger.Debugf("get v1(%v)",vs1)
+	if v1, ok := vs1["value"]; ok {
+		if vs1, ok := v1.([]interface{}); ok && len(vs1) == 4 {
+			// action
+			value, err := getValue(vs1[0])
+			if err != nil {
+				return nil, err
+			}
+			b, err := hex.DecodeString(value)
+			if err != nil {
+				return nil, err
+			}
+			txInfo.Action = string(b)
+			// fromaddr
+			value, err = getValue(vs1[1])
+			if err != nil {
+				return nil, err
+			}
+			b, err = hex.DecodeString(value)
+			if err != nil {
+				return nil, err
+			}
+			faddr, err := neotransaction.ParseAddressHash(neoutils.HASH160(b))
+			if err != nil {
+				return nil, err
+			}
+			txInfo.Fromaddr = faddr.GetAddrString()
 
-func (t *Transaction) ParseTxNotificationResult(i interface{}) (*NeoTxNotification, error) {
-	m, err := t.parseTransactionNotification(i)
-	if err != nil {
-		return nil, err
+			// toaddr
+			if value, err = getValue(vs1[2]); err != nil {
+				return nil, err
+			}
+			c, err := hex.DecodeString(value)
+			if err != nil {
+				return nil, err
+			}
+			taddr, err := neotransaction.ParseAddressHash(neoutils.HASH160(c))
+			if err != nil {
+				return nil, err
+			}
+			txInfo.Toaddr = taddr.GetAddrString()
+
+			// Amount
+			if value, err = getValue(vs1[3]); err != nil {
+				return nil, err
+			}
+			if len(value) < 16 {
+				value = fmt.Sprintf("%s%s", value, strings.Repeat("0", 16-len(value)))
+			}
+			d, err := hex.DecodeString(value)
+			if err != nil {
+				return nil, err
+			}
+			u := binary.LittleEndian.Uint64(d)
+			txInfo.Amount = int64(u)
+		}
 	}
-	txinfo, err := t.parseTxNotification(m)
-	if err != nil {
-		return nil, err
+
+	n2, ok := na[1].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("notifications data1 error")
 	}
-	return txinfo, nil
+	state2, ok := n2["state"]
+	if !ok {
+		return nil, errors.New("state data2 has no state")
+	}
+	vs2, ok := state2.(map[string]interface{})
+	if !ok || len(vs2) < 1 {
+		return nil, errors.New("value vs2 error")
+	}
+	//t.logger.Debugf("get v2(%v)",vs2)
+	if v2, ok := vs2["value"]; ok {
+		if vs2, ok := v2.([]interface{}); ok && len(vs2) == 3 {
+			// action
+			value, err := getValue(vs2[0])
+			if err != nil {
+				return nil, err
+			}
+			b, err := hex.DecodeString(value)
+			if err != nil {
+				return nil, err
+			}
+			txInfo.Action = string(b)
+			// hashkey
+			value, err = getValue(vs2[1])
+			if err != nil {
+				return nil, err
+			}
+			txInfo.HashKey = value
+
+			// Value
+			if value, err = getValue(vs2[2]); err != nil {
+				return nil, err
+			}
+			txInfo.Value, _ = strconv.ParseInt(value, 10, 64)
+		}
+	}
+	t.logger.Debugf("get txInfo(%d:%d:%s:%s:%s:%s)", txInfo.Value, txInfo.Amount, txInfo.Action, txInfo.Fromaddr, txInfo.Toaddr, txInfo.HashKey)
+	return txInfo, nil
 }
 
 func (t *Transaction) Nep5GetTxInfo(txid string) (*NeoTxNotification, error) {
 	param := []interface{}{txid}
 	i, err := request.HttpRequest("getapplicationlog", param, neoEndPoint)
 	if err != nil {
-		t.logger.Error(err)
 		return nil, err
 	}
-	return t.ParseTxNotificationResult(i)
+	return t.parseTransactionNotification(i)
 }
 
 func (t *Transaction) Nep5VerifyByTxid(event *EventInfo) (ret int, err error) {
@@ -638,7 +751,7 @@ func (t *Transaction) Nep5VerifyByTxid(event *EventInfo) (ret int, err error) {
 	case cchEthRedemptionStatusWaitNeoLockVerify:
 		txid = event.NeoLockTxhash
 	case cchEthRedemptionStatusWaitNeoUnlockVerify:
-		txid = event.NeoRefundTxhash
+		txid = event.NeoUnlockTxhash
 	default:
 		return CchTxVerifyStatUnknown, errors.New("Nep5VerifyByTxid:bad event status")
 	}
@@ -646,9 +759,9 @@ func (t *Transaction) Nep5VerifyByTxid(event *EventInfo) (ret int, err error) {
 		t.logger.Error("Nep5VerifyByTxid bad txid:%s", txid)
 		return CchTxVerifyStatUnknown, errors.New("Nep5VerifyByTxid:bad txid")
 	}
-	time.Sleep(10 * time.Second)
-	ticker := time.NewTicker(1 * time.Second)
-	for i := 0; i < 300; i++ {
+	time.Sleep(3 * time.Second)
+	ticker := time.NewTicker(3 * time.Second)
+	for i := 0; i < 50; i++ {
 		<-ticker.C
 		txinfo, err := t.Nep5GetTxInfo(txid)
 		if err == nil {
@@ -657,11 +770,7 @@ func (t *Transaction) Nep5VerifyByTxid(event *EventInfo) (ret int, err error) {
 			case cchNep5MortgageStatusWaitNeoUnlockVerify:
 			case cchEthRedemptionStatusWaitNeoLockVerify:
 			case cchEthRedemptionStatusWaitNeoUnlockVerify:
-				if txinfo.Fromaddr != event.UserAccount {
-					t.logger.Debugf("Nep5VerifyByTxid: user(%s %s) check err", txinfo.Fromaddr, event.UserAccount)
-					return CchTxVerifyStatFailed, errors.New("user account check err")
-				}
-				if txinfo.Amount != event.Amount*WrapperGasWeiNum {
+				if txinfo.Amount != event.Amount {
 					t.logger.Debugf("Nep5VerifyByTxid: amount(%d %d) check err", txinfo.Amount, event.Amount)
 					return CchTxVerifyStatFailed, errors.New("amount check err")
 				}
@@ -716,5 +825,70 @@ func (w *WrapperServer) NeoUpdateBlockNumber() {
 			gWrapperStats.CurrentNeoBlocknum = int64(header)
 			w.sc.WsqlBlockNumberUpdateLogInsert(CchBlockTypeNeo, gWrapperStats.CurrentNeoBlocknum, "update neo blocknum")
 		}
+	}
+}
+
+//ParseNep5TransfersResult
+func (t *Transaction) ParseNep5TransfersResult(i interface{}) ([]*DBNeoEventLogTBL, error) {
+	//trans := make([]*DBNeoEventLogTBL, 0)
+	r, ok := i.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("transaction data error: %s", i)
+	}
+	res, ok := r["result"]
+	if !ok {
+		return nil, errors.New("transaction data has no result")
+	}
+	es, ok := res.([]interface{})
+	if !ok || len(es) < 1 {
+		return nil, errors.New("executions data not found")
+	}
+	e, ok := es[0].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("executions data error")
+	}
+	sent, ok := e["sent"]
+	if ok {
+		vs, ok := sent.(map[string]interface{})
+		if ok {
+			t.logger.Debugf("get sent(%v) vs(%v)", sent, vs)
+		}
+
+	}
+	return nil, nil
+}
+
+//NeoGetNep5Transfers
+func (t *Transaction) NeoGetNep5Transfers(starttime, endtime int64, addr string) ([]*DBNeoEventLogTBL, error) {
+	var param []interface{}
+	if starttime != 0 {
+		param = []interface{}{addr, starttime, endtime}
+	} else {
+		param = []interface{}{addr}
+	}
+
+	i, err := request.HttpRequest("getnep5transfers", param, neoEndPoint)
+	if err != nil {
+		return nil, err
+	}
+	return t.ParseNep5TransfersResult(i)
+}
+
+//NeoGetNep5Transfers
+func (t *Transaction) NeoGetNep5EventListen() {
+	endtime := time.Now().Unix()
+	starttime := endtime - 100000
+	lasttime := endtime
+	t.NeoGetNep5Transfers(starttime, endtime, WrapperNeoContract)
+	//定时查询最新块高度
+	//d := time.Duration(time.Second * 5)
+	timer := time.NewTicker(time.Second * 5)
+	defer timer.Stop()
+	for {
+		<-timer.C
+		starttime = lasttime
+		endtime = time.Now().Unix()
+		lasttime = endtime
+		t.NeoGetNep5Transfers(starttime, endtime, WrapperNeoContract)
 	}
 }

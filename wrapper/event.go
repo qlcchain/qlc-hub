@@ -55,9 +55,9 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 			} else {
 				event.Status = cchNep5MortgageStatusTryEthLock
 			}
-			err = w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 			if err != nil {
-				w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchNep5MortgageStatusTryEthLock: //准备调用eth contrack lock
 			_, txhash, err := w.WrapperEthIssueLock(event.Amount, event.LockHash)
@@ -70,9 +70,9 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 				event.EthLockTxhash = txhash
 				w.sc.DbEventUpdate(event)
 			}
-			err = w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 			if err != nil {
-				w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchNep5MortgageStatusWaitEthLockVerify: //等待eth链上lock数据确认,eth listen
 			//这里添加getethhashtimer的处理，是为了避免由于wrapper停掉漏掉监听日志
@@ -104,11 +104,21 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 				w.logger.Error("WrapperNep5WrapperUnlock failed")
 			} else {
 				event.NeoUnlockTxhash = txid
+				//先屏蔽neounlock的验证
+				//event.Status = cchNep5MortgageStatusWaitNeoUnlockVerify
+				event.Status = cchNep5MortgageStatusClaimOk
+			}
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchNep5MortgageStatusWaitNeoUnlockVerify: //等待neo链上unlock数据确认
 		case cchNep5MortgageStatusClaimOk: //用户正常换取erc20资产完成
 			event.Errno = CchEventRunErrEndingOk
-			w.sc.DbEventUpdate(event)
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
+			}
 			break
 		case cchNep5MortgageStatusTimeoutTryDestroy: //用户在正常时间内没有claim，wrapper尝试去eth上destroy对应的erc20资产
 			_, txhash, err := w.WrapperEthIssueFetch(event.LockHash)
@@ -120,9 +130,9 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 				event.EthUnlockTxhash = txhash
 				event.Status = cchNep5MortgageStatusTimeoutDestroyVerify
 			}
-			err = w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 			if err != nil {
-				w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchNep5MortgageStatusTimeoutDestroyVerify: //用户等待eth上destory数据确认,eth listen
 			w.EthVerifyByLockhash(event)
@@ -130,11 +140,24 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 			//检测fetch是否超时
 			w.FetchOutTimeCheck(event)
 			break
+		case cchNep5MortgageStatusTimeoutUserFetchOk:
+			event.Errno = event.Errno + CchEventRunErrEndingOk
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
+			}
 		case cchNep5MortgageStatusFailed: //本次抵押失败
 			//检测fetch是否超时
 			w.FetchOutTimeCheck(event)
 			break
 		case cchNep5MortgageStatusFailedFetchTimeout:
+			event.Errno = event.Errno + CchEventRunErrEndingOk
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
+			}
+			break
+		case cchNep5MortgageStatusButt: //终结状态，不处理
 			break
 		default:
 			break
@@ -152,10 +175,11 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 			} else {
 				event.NeoLockTxhash = txid
 				event.Status = cchEthRedemptionStatusWaitNeoLockVerify
+				//w.logger.Debugf("get txid(%s)",txid)
 			}
-			err = w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 			if err != nil {
-				w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchEthRedemptionStatusWaitNeoLockVerify: //等待neo链上lock数据确认
 			txstatus, err := w.nta.Nep5VerifyByTxid(event)
@@ -164,14 +188,27 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 				event.Errno = CchEventRunErrRedemptionNep5LockFailed
 				w.logger.Error("NeoLock: tx verify failed", err)
 			} else {
-				event.Status = cchNep5MortgageStatusTryEthLock
+				event.Status = cchEthRedemptionStatusWaitClaim
+			}
+			//event.Status = cchEthRedemptionStatusWaitClaim
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchEthRedemptionStatusWaitClaim: //neo lock完成，等待用户claim
 			//这里只是简单的计算claimout的blocknum
-			event.ClaimOutNum = event.WrapperLockNum + event.NeoLockNum
-			event.FetchOutNum = event.UserLockNum + event.EthLockNum
+			if event.NeoLockNum == 0 {
+				event.ClaimOutNum = event.WrapperLockNum + gWrapperStats.CurrentNeoBlocknum
+			} else {
+				event.ClaimOutNum = event.WrapperLockNum + event.NeoLockNum
+			}
+			if event.EthLockNum == 0 {
+				event.FetchOutNum = event.UserLockNum + gWrapperStats.CurrentEthBlocknum
+			} else {
+				event.ClaimOutNum = event.UserLockNum + event.EthLockNum
+			}
 			event.Status = cchNep5MortgageStatusWaitEthUnlockVerify
-			w.logger.Debug("Redemption event(%s) get ClaimOutNum(%d) FetchOutNum(%d)", event.LockHash, event.ClaimOutNum, event.FetchOutNum)
+			w.logger.Debugf("Redemption event(%s) get ClaimOutNum(%d) FetchOutNum(%d)", event.LockHash, event.ClaimOutNum, event.FetchOutNum)
 			w.sc.DbEventUpdate(event)
 			go w.eventStatusUpdateMsgPush(event, event.Status)
 		case cchEthRedemptionStatusWaitNeoUnlockVerify: //等待neo链上unlock数据确认
@@ -180,21 +217,41 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 		case cchEthRedemptionStatusTryEthBlackhole: //准备调用eth unlock 销毁之前锁定的用户erc20 token
 			_, txhash, err := w.WrapperEthDestoryUnlock(event.LockHash, event.HashSource)
 			if err != nil {
-				w.logger.Error("WrapperEthDestoryUnlock:err", err)
+				event.Status = cchEthRedemptionStatusFailed
+				event.Errno = CchEventRunErrRedemptionEthDestoryLockFailed
+				w.logger.Error("WrapperEthDestoryUnlock:err(%v)", err)
 			} else {
 				event.EthDestoryTxhash = txhash
+				event.Status = cchEthRedemptionStatusWaitEthUnlockVerify
+			}
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchEthRedemptionStatusWaitEthUnlockVerify: //eth unlock数据验证 走listen
+			//这里添加getethhashtimer的处理，是为了避免由于wrapper停掉漏掉监听日志
+			w.EthVerifyByLockhash(event)
 		case cchEthRedemptionStatusClaimOk: //用户正常赎回erc20资产完成
 			event.Errno = CchEventRunErrEndingOk
-			w.sc.DbEventUpdate(event)
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
+			}
 			break
 		case cchEthRedemptionStatusTimeoutTryUnlock: //用户在正常时间内没有claim，wrapper尝试去neo上refund对应的nep5 token
 			_, txid, _, err := w.WrapperNep5WrapperRefund(event.HashSource)
 			if err != nil {
+				event.Status = cchEthRedemptionStatusFailed
+				//event.Errno = CchEventRunErrRedemptionNep5RefundFailed
 				w.logger.Error("WrapperNep5WrapperRefund failed")
 			} else {
 				event.NeoRefundTxhash = txid
+				//event.Status = cchEthRedemptionStatusTimeoutUnlockVerify
+			}
+			event.Status = cchEthRedemptionStatusTimeoutUnlockVerify
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchEthRedemptionStatusTimeoutUnlockVerify: //用户等待neo上refund数据确认
 			txstatus, err := w.nta.Nep5VerifyByTxid(event)
@@ -203,16 +260,30 @@ func (w *WrapperServer) WrapperEventAction(oldstatus int64, event *EventInfo) {
 				event.Errno = CchEventRunErrRedemptionNep5RefundFailed
 				w.logger.Error("WrapperRefund: tx verify failed", err)
 			} else {
-				event.Status = cchNep5MortgageStatusTryEthLock
+				event.Status = cchEthRedemptionStatusTimeoutUnlockOk
+			}
+			err = w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
 			}
 		case cchEthRedemptionStatusTimeoutUnlockOk: //用户超时，eth上erc20资产正常释放
-			//检测fetch是否超时
-			w.FetchOutTimeCheck(event)
+			event.Errno = event.Errno + CchEventRunErrEndingOk
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
+			}
 		case cchEthRedemptionStatusFailed: //本次赎回失败 unused
 			//检测fetch是否超时
 			w.FetchOutTimeCheck(event)
 			break
 		case cchEthRedemptionStatusFailedFetchTimeout: //
+			event.Errno = event.Errno + CchEventRunErrEndingOk
+			err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+			if err != nil {
+				w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err(%v)", err)
+			}
+			break
+		case cchEthRedemptionStatusButt:
 			break
 		default:
 			break
@@ -232,7 +303,7 @@ func (w *WrapperServer) WrapperEventRunning(event *EventInfo) {
 		select {
 		case newstatus := <-event.EventChan:
 			w.logger.Debugf("WrapperEventRunning:event(%s) get newstatus(%d) oldstatus(%d)", event.LockHash, newstatus, oldstatus)
-			if newstatus < cchEthRedemptionStatusInit || newstatus > cchEthRedemptionStatusFailed {
+			if newstatus < cchEthRedemptionStatusInit || newstatus >= cchEthRedemptionStatusButt {
 				w.logger.Error("WrapperEventRunning: bad newstatus")
 			} else if oldstatus == newstatus {
 				w.logger.Debugf("WrapperEventRunning status repeat")
@@ -369,28 +440,31 @@ func (w *WrapperServer) ClaimOutTimeCheck(event *EventInfo) {
 	defer t.Stop()
 	for {
 		<-t.C
-		if event.Status == cchNep5MortgageStatusWaitEthUnlockVerify {
+		if event.Status == cchNep5MortgageStatusWaitEthUnlockVerify && event.Type == cchEventTypeMortgage {
 			//w.logger.Debugf("get CurrentEthBlocknum(%d) ClaimOutNum(%d)",gWrapperStats.CurrentEthBlocknum,event.ClaimOutNum)
 			if gWrapperStats.CurrentEthBlocknum > event.ClaimOutNum {
 				w.logger.Debugf("Mortgage event hash(%s) claim timeout in block(%d)", event.LockHash, gWrapperStats.CurrentEthBlocknum)
 				event.Status = cchNep5MortgageStatusTimeoutTryDestroy
-				err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+				err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 				if err != nil {
-					w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+					w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
 				}
+				return
 			}
-		} else if event.Status == cchEthRedemptionStatusWaitNeoUnlockVerify {
+		} else if event.Status == cchEthRedemptionStatusWaitNeoUnlockVerify && event.Type == cchEventTypeRedemption {
 			if gWrapperStats.CurrentNeoBlocknum > event.ClaimOutNum {
 				w.logger.Debugf("Redemption event hash(%s) claim timeout in block(%d)", event.LockHash, gWrapperStats.CurrentNeoBlocknum)
 				event.Status = cchEthRedemptionStatusTimeoutTryUnlock
-				err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+				err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 				if err != nil {
-					w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+					w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
 				}
+				return
 			}
+		} else {
+			//其他状态直接退出
+			return
 		}
-		//其他状态直接退出
-		return
 	}
 }
 
@@ -401,49 +475,52 @@ func (w *WrapperServer) FetchOutTimeCheck(event *EventInfo) {
 	defer t.Stop()
 	for {
 		<-t.C
+		//w.logger.Debugf("FetchOutTimeCheck status(%d) FetchOutNum(%d) CurrentNeoBlocknum(%d)",event.Status,event.FetchOutNum,gWrapperStats.CurrentNeoBlocknum)
 		if event.Status == cchNep5MortgageStatusTimeoutDestroyOk {
 			if gWrapperStats.CurrentNeoBlocknum > event.FetchOutNum {
 				w.logger.Debugf("Mortgage event hash(%s) fetch timeout in block(%d)", event.LockHash, gWrapperStats.CurrentNeoBlocknum)
 				event.Status = cchNep5MortgageStatusTimeoutUserFetchOk
-				event.Errno = CchEventRunErrEndingOk
-				err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+				err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 				if err != nil {
-					w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+					w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
 				}
+				return
 			}
 		} else if event.Status == cchEthRedemptionStatusClaimOk {
 			if gWrapperStats.CurrentEthBlocknum > event.FetchOutNum {
 				w.logger.Debugf("Redemption event hash(%s) fetch timeout in block(%d)", event.LockHash, gWrapperStats.CurrentEthBlocknum)
 				event.Status = cchEthRedemptionStatusTimeoutUserFetchOk
-				event.Errno = CchEventRunErrEndingOk
-				err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+				err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 				if err != nil {
-					w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+					w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
 				}
+				return
 			}
 		} else if event.Status == cchNep5MortgageStatusFailed && event.Type == cchEventTypeMortgage {
 			if gWrapperStats.CurrentNeoBlocknum > event.FetchOutNum {
 				w.logger.Debugf("Mortgage failedevent hash(%s) fetch timeout in block(%d)", event.LockHash, gWrapperStats.CurrentNeoBlocknum)
 				event.Status = cchNep5MortgageStatusFailedFetchTimeout
-				event.Errno = event.Errno + CchEventRunErrEndingOk
-				err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+				err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 				if err != nil {
-					w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+					w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
 				}
+				return
 			}
 		} else if event.Status == cchEthRedemptionStatusFailed && event.Type == cchEventTypeRedemption {
 			if gWrapperStats.CurrentEthBlocknum > event.FetchOutNum {
 				w.logger.Debugf("Redemption failedevent hash(%s) fetch timeout in block(%d)", event.LockHash, gWrapperStats.CurrentEthBlocknum)
 				event.Status = cchEthRedemptionStatusFailedFetchTimeout
-				event.Errno = event.Errno + CchEventRunErrEndingOk
-				err := w.WrapperEventUpdateStatByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
+				err := w.WrapperEventUpdateStatAndErrnoByLockhash(event.Type, event.Status, event.Errno, event.LockHash)
 				if err != nil {
-					w.logger.Error("WrapperEventUpdateStatByLockhash: err", err)
+					w.logger.Error("WrapperEventUpdateStatAndErrnoByLockhash: err", err)
 				}
+				return
 			}
+		} else {
+			//其他状态直接退出
+			return
 		}
-		//其他状态直接退出
-		return
+
 	}
 }
 
@@ -451,7 +528,9 @@ func (w *WrapperServer) eventStatusUpdateMsgPush(event *EventInfo, newstatus int
 	if event == nil {
 		return errors.New("bad event")
 	}
-	event.EventChan <- newstatus
-	w.logger.Debugf("event(%s) change status(%d)", event.LockHash, newstatus)
+	if event.Errno < CchEventRunErrEndingOk {
+		event.EventChan <- newstatus
+		w.logger.Debugf("event(%s) change status(%d)", event.LockHash, newstatus)
+	}
 	return nil
 }

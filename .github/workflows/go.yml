@@ -6,7 +6,22 @@ jobs:
     name: Check, Build and Publish snapshot artifacts 
     runs-on: ubuntu-18.04
     if: contains(github.event.head_commit.message, '[skip ci]') == false && contains(github.event.head_commit.message, '[ci skip]') == false
+    services:
+      mydb:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: wrapper
+          MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 13306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
+      - name: Verify MySQL connection from container 
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+          mysql --host 127.0.0.1 --port 13306 -uroot -ppassword -e "SHOW DATABASES"
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -27,6 +42,7 @@ jobs:
       - name: Check code style and calculate coverage 
         env:
           GO111MODULE: "on"
+          DB_PORT: ${{ job.services.mysql.ports[13306] }}
         run: |
           if [[ -n "$(gofmt -l .| grep -v ^vendor/)" ]]; then
             echo "Go code is not formatted:"

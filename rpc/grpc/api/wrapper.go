@@ -39,10 +39,10 @@ func (wa *WrapperAPI) Online(ctx context.Context, param *proto.OnlineRequest) (*
 
 //EventStatCheck wrapper event status check by lock_hash
 func (wa *WrapperAPI) EventStatCheck(ctx context.Context, param *proto.EventStatCheckRequest) (*proto.EventStatCheckResponse, error) {
-	wa.logger.Debugf("Exec EventStatCheck request %+v", param)
+	//wa.logger.Debugf("Exec EventStatCheck request %+v", param)
 	event, err := wa.wap.WrapperEventGetByLockhash(param.GetType(), param.GetHash())
 	if err != nil {
-		wa.logger.Debugf("get err", err)
+		wa.logger.Debugf("get err(%s)", err)
 		return &proto.EventStatCheckResponse{
 			Type:   param.GetType(),
 			Hash:   param.GetHash(),
@@ -50,7 +50,7 @@ func (wa *WrapperAPI) EventStatCheck(ctx context.Context, param *proto.EventStat
 			Errno:  wrapper.CchGetEventStatusRetNoTxhash,
 		}, nil
 	} else {
-		wa.logger.Debugf("get Status", event.Status)
+		//wa.logger.Debugf("get Status(%d)", event.Status)
 		return &proto.EventStatCheckResponse{
 			Type:   param.GetType(),
 			Hash:   param.GetHash(),
@@ -64,7 +64,7 @@ func (wa *WrapperAPI) EventStatCheck(ctx context.Context, param *proto.EventStat
 //Nep5LockNotice nep5 lock notice by app user
 func (wa *WrapperAPI) Nep5LockNotice(ctx context.Context, param *proto.Nep5LockNoticeRequest) (*proto.Nep5LockNoticeResponse, error) {
 	wa.logger.Debugf("Exec Nep5LockNotice request %+v", param)
-	result := wa.wap.WrapperNep5LockNotice(param.GetType(), param.GetAmount(), param.GetUserlocknum(), param.GetTxhash(), param.GetHash())
+	result := wa.wap.WrapperNep5LockNotice(param.GetType(), param.GetAmount(), param.GetUserlocknum(), param.GetTxhash(), param.GetHash(), param.GetSource())
 	return &proto.Nep5LockNoticeResponse{
 		Type:   param.GetType(),
 		Hash:   param.GetHash(),
@@ -154,17 +154,17 @@ func (wa *WrapperAPI) EthGetAccountInfo(ctx context.Context, param *proto.EthGet
 //EthGetHashTimer eth smartcontract get hashtimer info  by lockhash
 func (wa *WrapperAPI) EthGetHashTimer(ctx context.Context, param *proto.EthGetHashTimerRequest) (*proto.EthGetHashTimerResponse, error) {
 	wa.logger.Debugf("Exec EthGetHashTimer request %+v", param)
-	result, amount, locknum, unlocknum, account, locksource, err := wa.wap.WrapperEthGetHashTimer(param.GetLockhash())
+	result, elog, err := wa.wap.WrapperEthGetHashTimer(param.GetLockhash())
 	if err != nil {
 		wa.logger.Debugf("Exec EthGetGetHashTimer get ERR", err)
 	}
 	return &proto.EthGetHashTimerResponse{
 		Result:     result,
-		Amount:     amount,
-		Locknum:    locknum,
-		Unlocknum:  unlocknum,
-		Account:    account,
-		Locksource: locksource,
+		Amount:     elog.Amount,
+		Locknum:    elog.LockNum,
+		Unlocknum:  elog.UnlockNum,
+		Account:    elog.Account,
+		Locksource: elog.LockSource,
 	}, nil
 }
 

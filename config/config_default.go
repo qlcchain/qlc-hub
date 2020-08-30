@@ -31,8 +31,8 @@ func DefaultConfig(dir string) (*Config, error) {
 		SQLCFG: SqlConfig{
 			Url:    "127.0.0.1:13306",
 			DbName: "wrapper",
-			Uname:  "",
-			Upwd:   "",
+			Uname:  "root",
+			Upwd:   "password",
 		},
 	}
 	return &cfg, nil

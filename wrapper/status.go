@@ -20,6 +20,8 @@ const (
 	cchNep5MortgageStatusTimeoutUserFetchOk         = 12 //userlock timeout 用户可以赎回
 	cchNep5MortgageStatusFailed                     = 13 //本次抵押失败
 	cchNep5MortgageStatusFailedFetchTimeout         = 14 //本次抵押失败，fetch超时，用户可以赎回
+	cchNep5MortgageStatusUserFetched                = 15 //用户已取回
+	cchNep5MortgageStatusButt                       = 16 //状态值边界
 )
 
 const (
@@ -42,6 +44,8 @@ const (
 	cchEthRedemptionStatusTimeoutUserFetchOk        = 12 //userlock timeout 用户可以赎回
 	cchEthRedemptionStatusFailed                    = 13 //本次赎回失败
 	cchEthRedemptionStatusFailedFetchTimeout        = 14 //本次失败，fetch超时，用户可以赎回
+	cchEthRedemptionStatusUserFetched               = 15 //用户已取回
+	cchEthRedemptionStatusButt                      = 16 //状态边界值
 )
 
 const (
@@ -79,18 +83,20 @@ const (
 )
 
 const (
-	CchEventRunErrOk                      int64 = 0 //正常运行中状态
-	CchEventRunErrMortgageNep5LockFailed            //nep5 moregage trans verify failed
-	CchEventRunErrMortgageEthLockFailed             //eth lock failed
-	CchEventRunErrMortgageEthUnLockFailed           //eth unlock failed
-	CchEventRunErrMortgageEthFetchFailed
-	CchEventRunErrMortgageNep5VerifyFailed
-	CchEventRunErrMortgageNep5UnlockFailed
-	CchEventRunErrRedemptionNep5LockFailed
-	CchEventRunErrRedemptionNep5UnlockFailed
-	CchEventRunErrRedemptionNep5RefundFailed
-	CchEventRunErrnoUnknown
-	CchEventRunErrEndingOk = 10000 //正常结束
+	CchEventRunErrOk                               int64 = 0 //正常运行中状态
+	CchEventRunErrMortgageNep5LockFailed                 = 1 //nep5 moregage trans verify failed
+	CchEventRunErrMortgageEthLockFailed                  = 2 //eth lock failed
+	CchEventRunErrMortgageEthUnLockFailed                = 3 //eth unlock failed
+	CchEventRunErrMortgageEthFetchFailed                 = 4
+	CchEventRunErrMortgageNep5VerifyFailed               = 5
+	CchEventRunErrMortgageNep5UnlockFailed               = 6
+	CchEventRunErrRedemptionNep5LockFailed               = 7
+	CchEventRunErrRedemptionNep5UnlockFailed             = 8
+	CchEventRunErrRedemptionNep5RefundFailed             = 9
+	CchEventRunErrRedemptionEthDestoryLockFailed         = 10
+	CchEventRunErrRedemptionEthDestoryUnlockFailed       = 11
+	CchEventRunErrnoUnknown                              = 1000
+	CchEventRunErrEndingOk                               = 10000 //正常结束
 )
 
 const (

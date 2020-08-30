@@ -33,6 +33,7 @@ message Nep5LockNoticeRequest{
   string hash = 4;
   string txhash = 5;
   string addr = 6;
+  string source = 7;
 }
 
 message Nep5LockNoticeResponse {
