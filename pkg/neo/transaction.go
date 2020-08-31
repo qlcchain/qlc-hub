@@ -2,6 +2,7 @@ package neo
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -159,11 +160,14 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 }
 
 func (n *Transaction) querySwapInfo(rHash string) (*result.Invoke, error) {
-	//hash, err := util.Uint160DecodeStringLE(rHash)
+	hash, err := hex.DecodeString(rHash)
+	if err != nil {
+		return nil, err
+	}
 	params := []smartcontract.Parameter{
 		{
-			Type:  smartcontract.StringType,
-			Value: rHash,
+			Type:  smartcontract.ByteArrayType,
+			Value: hash,
 		},
 	}
 	r, err := n.client.InvokeFunction(n.contractAddr, "querySwapInfo", params, nil)
