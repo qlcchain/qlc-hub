@@ -7,13 +7,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
-	"go.uber.org/zap"
 )
 
 type DebugAPI struct {
@@ -34,7 +35,7 @@ func NewDebugAPI(ctx context.Context, cfg *config.Config) (*DebugAPI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("NewDebugAPI/GetAccountByPriKey: %s", err)
 	}
-	store, err := store.NewStore(cfg.DateDir)
+	store, err := store.NewStore(cfg.DataDir())
 	if err != nil {
 		return nil, err
 	}

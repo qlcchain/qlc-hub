@@ -6,10 +6,10 @@ import (
 	"io"
 	"sync"
 
-	"github.com/qlcchain/qlc-hub/config"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/log"
-	"go.uber.org/zap"
 )
 
 var (
@@ -24,19 +24,9 @@ type Store struct {
 	logger *zap.SugaredLogger
 }
 
-func getDefaultDir(dir string) string {
-	if dir != "" {
-		return dir
-	} else {
-		//todo set default path
-		return config.DefaultDataDir()
-	}
-}
-
 func NewStore(dir string) (*Store, error) {
 	lock.Lock()
 	defer lock.Unlock()
-	dir = getDefaultDir(dir)
 
 	if _, ok := lcache[dir]; !ok {
 		store, err := db.NewBadgerStore(dir)

@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/qlcchain/qlc-hub/pkg/util"
+
 	"gopkg.in/validator.v2"
 )
 
@@ -21,7 +23,6 @@ type Config struct {
 	NEOCfg      *NEOCfg      `json:"neo" validate:"nonnil"`
 	EthereumCfg *EthereumCfg `json:"ethereum" validate:"nonnil"`
 	RPCCfg      *RPCCfg      `json:"rpc" validate:"nonnil"`
-	DateDir     string       `json:"dateDir" validate:"nonnil"`
 }
 
 type NEOCfg struct {
@@ -47,6 +48,13 @@ type RPCCfg struct {
 
 func (c *Config) LogDir() string {
 	return filepath.Join(DefaultDataDir(), "log", time.Now().Format("2006-01-02T15-04"))
+}
+
+func (c *Config) DataDir() string {
+	dir := filepath.Join(DefaultDataDir(), "data")
+	_ = util.CreateDirIfNotExist(dir)
+
+	return dir
 }
 
 func (c *Config) Verify() error {

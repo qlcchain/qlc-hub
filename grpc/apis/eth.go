@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -12,7 +14,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
-	"go.uber.org/zap"
 )
 
 type EthAPI struct {
@@ -33,7 +34,7 @@ func NewEthAPI(ctx context.Context, cfg *config.Config) (*EthAPI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("eth client dail: %s", err)
 	}
-	store, err := store.NewStore(cfg.DateDir)
+	store, err := store.NewStore(cfg.DataDir())
 	if err != nil {
 		return nil, err
 	}
