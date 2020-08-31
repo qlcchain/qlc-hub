@@ -27,7 +27,7 @@ var (
 )
 
 func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
-	c, err := NewNeoTransaction(url, contractAddress)
+	c, err := NewTransaction(url, contractAddress)
 	if err != nil {
 		t.Fatal(err)
 	}

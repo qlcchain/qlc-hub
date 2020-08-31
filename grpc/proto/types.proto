@@ -25,6 +25,7 @@ message FetchNoticeRequest{
 message WithdrawUnlockRequest{
   string nep5TxHash = 1;
   string rOrigin    = 2;
+  string rHash      = 3;
 }
 
 message EventResponse {
@@ -34,17 +35,22 @@ message EventResponse {
   string txHash     = 4;
 }
 
-message StateInfo {
+message LockerStateResponse {
   int64  state        = 1;
   string stateStr     = 2;
   string rHash        = 3;
   string rOrigin      = 4;
-  string lockedNep5Hash    = 5;
-  string lockedErc20Hash   = 6;
-  string unlockedNep5Hash  = 7;
-  string unlockedErc20Hash = 8;
-  int64  lockedHeight      = 9;
-  int64  unlockedHeight    = 10;
+  int64  amount       = 5;
+  string userErc20Addr     = 6;
+  string userNep5Addr      = 7;
+  string lockedNep5Hash    = 8;
+  uint32 lockedNep5Height  = 9;
+  string lockedErc20Hash   = 10;
+  uint32 lockedErc20Height = 11;
+  string unlockedNep5Hash  = 12;
+  uint32 unlockedNep5Height  = 13;
+  string unlockedErc20Hash   = 14;
+  uint32 unlockedErc20Height = 15;
 }
 
 service EthAPI {
@@ -88,9 +94,9 @@ service DebugAPI {
         };
     }
 
-    rpc HashState(String) returns (StateInfo){
+    rpc LockerState(String) returns (LockerStateResponse){
         option (google.api.http) = {
-          get: "/debug/state"
+          get: "/debug/lockerState"
         };
     }
 }

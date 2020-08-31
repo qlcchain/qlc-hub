@@ -17,23 +17,24 @@ const (
 
 type Config struct {
 	Verbose     bool         `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
-	LogLevel    string       `json:"logLevel" short:"l" long:"level" description:"log level" default:"error"` //info,warn,debug.
+	LogLevel    string       `json:"logLevel" short:"l" long:"level" description:"log level" default:"debug"` //info,warn,debug.
 	NEOCfg      *NEOCfg      `json:"neo" validate:"nonnil"`
 	EthereumCfg *EthereumCfg `json:"ethereum" validate:"nonnil"`
 	RPCCfg      *RPCCfg      `json:"rpc" validate:"nonnil"`
+	DateDir     string       `json:"dateDir" validate:"nonnil"`
 }
 
 type NEOCfg struct {
-	EndPoint    string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" validate:"nonzero"`
+	EndPoint    string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" default:"http://seed2.ngd.network:20332" validate:"nonzero"`
 	Contract    string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"0533290f35572cd06e3667653255ffd6ee6430fb" validate:"nonzero"`
-	WIF         string `json:"wif" long:"wif" description:"NEO account WIF" validate:"nonzero"`
+	WIF         string `json:"wif" long:"wif" description:"NEO account WIF" default:"L2BAaQsPTDxGu1D9Q3x9ZS2ipabyzjBCNJAdP3D3NwZzL6KUqEkg" validate:"nonzero"`
 	WIFPassword string `json:"password" long:"password" description:"NEO account password"`
 }
 
 type EthereumCfg struct {
-	EndPoint string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" validate:"nonzero"`
+	EndPoint string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" default:"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57" validate:"nonzero"`
 	Contract string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address" default:"0x6d37597F0d9e917baeF2727ece52AEeb8B5294c7" validate:"nonzero"`
-	Account  string `json:"account" long:"account" description:"Ethereum account private key" validate:"nonzero"`
+	Account  string `json:"account" long:"account" description:"Ethereum account private key" default:"67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e" validate:"nonzero"`
 }
 
 type RPCCfg struct {

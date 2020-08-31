@@ -12,14 +12,14 @@ import (
 )
 
 type NeoAPI struct {
-	neoTransaction *neo.NeoTransaction
+	neoTransaction *neo.Transaction
 	cfg            *config.Config
 	ctx            context.Context
 	logger         *zap.SugaredLogger
 }
 
 func NewNeoAPI(ctx context.Context, cfg *config.Config) (*NeoAPI, error) {
-	nt, err := neo.NewNeoTransaction(cfg.NEOCfg.EndPoint, cfg.NEOCfg.Contract)
+	nt, err := neo.NewTransaction(cfg.NEOCfg.EndPoint, cfg.NEOCfg.Contract)
 	if err != nil {
 		return nil, fmt.Errorf("neo transaction: %s", err)
 	}
@@ -27,7 +27,7 @@ func NewNeoAPI(ctx context.Context, cfg *config.Config) (*NeoAPI, error) {
 		cfg:            cfg,
 		neoTransaction: nt,
 		ctx:            ctx,
-		logger:         log.NewLogger("api/deposit"),
+		logger:         log.NewLogger("api/neo"),
 	}, nil
 }
 

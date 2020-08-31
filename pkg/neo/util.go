@@ -27,7 +27,7 @@ func ArrayTypeParam(hexStr string) request.Param {
 	}
 }
 
-func IntegerTypeParam(v int) request.Param {
+func IntegerTypeParam(v int) request.Param { //todo int64
 	return request.Param{
 		Type: request.FuncParamT,
 		Value: request.FuncParam{

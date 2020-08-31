@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
-	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts"
@@ -21,7 +20,7 @@ const (
 	endPoint   = "https://rinkeby.infura.io/v3/0865b420656e4d70bcbbcc76e265fd57"
 	endPointws = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
 	mnemonic   = `lumber choice thing skull allow favorite light horse gun media treat peasant`
-	contract   = "0xCD60c41De542ebaF81040A1F50B6eFD4B1547d91"
+	contract   = "0x6d37597F0d9e917baeF2727ece52AEeb8B5294c7"
 
 	wrapperPrikey = "67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e"
 	userEthPrikey = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
@@ -29,49 +28,42 @@ const (
 
 func TestNewQLCChain(t *testing.T) {
 	client, err := ethclient.Dial(endPointws)
-	defer func() {
-		client.Close()
-	}()
-	instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer client.Close()
+	//instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	bigAmount := big.NewInt(12 * 100000000)
-	rHashBytes, err := util.HexStringToBytes32(rHash)
+	tx, err := WrapperLock(rHash, wrapperPrikey, contract, 100000000, client)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tx, err := instance.IssueLock(opts, rHashBytes, bigAmount)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(tx.Hash().Hex())
+	fmt.Println("Wrapper Lock: ", tx)
 
-	time.Sleep(30 * time.Second)
-	instance2, opts2, err := GetTransactor(client, userEthPrikey, contract)
-	if err != nil {
-		t.Fatal(err)
+	b, i, err := TxVerifyAndConfirmed(tx, 0, client)
+	if !b || err != nil {
+		t.Fatal(b, i, err)
 	}
+	//time.Sleep(30 * time.Second)
 
-	rOriginBytes, err := util.StringToBytes32(rOrigin)
+	tx2, err := UserUnlock(rHash, rOrigin, userEthPrikey, contract, client)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tx2, err := instance2.IssueUnlock(opts2, rHashBytes, rOriginBytes)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(tx2.Hash().Hex())
+	fmt.Println("User Unlock: ", tx2)
 }
 
 func TestNewQLCChain2(t *testing.T) {
 	client, err := ethclient.Dial(endPointws)
-	defer func() {
-		client.Close()
-	}()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
 	instance, err := GetTransactorSession(client, wrapperPrikey, contract)
 	if err != nil {
 		t.Fatal(err)
@@ -89,6 +81,19 @@ func TestNewQLCChain2(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(tx.Hash().Hex())
+}
+
+func TestGetHashTimer(t *testing.T) {
+	client, err := ethclient.Dial(endPointws)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	r, err := GetHashTimer(client, contract, "3315e92b49957eeeb75cdb1e57560b00ca0b2ec1240d2af194cef580ca188a02")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(util.ToIndentString(r))
 }
 
 func TestQLCChainTransactorSession_IssueLock(t *testing.T) {

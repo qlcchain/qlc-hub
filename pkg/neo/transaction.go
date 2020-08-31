@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"time"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
@@ -21,7 +22,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type NeoTransaction struct {
+type Transaction struct {
 	url          string
 	client       *client.Client
 	contractLE   util.Uint160
@@ -29,7 +30,7 @@ type NeoTransaction struct {
 	logger       *zap.SugaredLogger
 }
 
-func NewNeoTransaction(url, contractAddr string) (*NeoTransaction, error) {
+func NewTransaction(url, contractAddr string) (*Transaction, error) {
 	c, err := client.New(context.Background(), url, client.Options{})
 	if err != nil {
 		return nil, err
@@ -38,7 +39,7 @@ func NewNeoTransaction(url, contractAddr string) (*NeoTransaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &NeoTransaction{
+	return &Transaction{
 		url:          url,
 		client:       c,
 		contractLE:   contract,
@@ -56,7 +57,7 @@ type TransactionParam struct {
 	FuncName string
 }
 
-func (n *NeoTransaction) CreateTransaction(param TransactionParam) (string, error) {
+func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) {
 	account, err := wallet.NewAccountFromWIF(param.Wif)
 	if err != nil {
 		return "", fmt.Errorf("NewAccountFromWIF: %s", err)
@@ -69,11 +70,11 @@ func (n *NeoTransaction) CreateTransaction(param TransactionParam) (string, erro
 	if err != nil {
 		return "", fmt.Errorf("SignAndPushInvocationTx: %s", err)
 	}
-	n.logger.Debugf("transaction successfully: %s", re.StringLE())
+	//n.logger.Debugf("transaction successfully: %s", re.StringLE())
 	return re.StringLE(), nil
 }
 
-func (n *NeoTransaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
+func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
 	account, err := wallet.NewAccountFromWIF(param.Wif)
 	if err != nil {
 		return "", fmt.Errorf("new account: %s", err)
@@ -135,7 +136,7 @@ func remark() []byte {
 	return remark
 }
 
-func (n *NeoTransaction) Client() *client.Client {
+func (n *Transaction) Client() *client.Client {
 	return n.client
 }
 
@@ -146,7 +147,7 @@ type SwapInfo struct {
 	amount  *big.Int
 }
 
-func (n *NeoTransaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
+func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 	_, err := n.querySwapInfo(rHash)
 	if err != nil {
 		return nil, err
@@ -156,7 +157,7 @@ func (n *NeoTransaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 	return &SwapInfo{}, nil
 }
 
-func (n *NeoTransaction) querySwapInfo(rHash string) (*result.Invoke, error) {
+func (n *Transaction) querySwapInfo(rHash string) (*result.Invoke, error) {
 	//hash, err := util.Uint160DecodeStringLE(rHash)
 	params := []smartcontract.Parameter{
 		{
@@ -169,4 +170,50 @@ func (n *NeoTransaction) querySwapInfo(rHash string) (*result.Invoke, error) {
 		return nil, err
 	}
 	return r, nil
+}
+
+func TxVerifyAndConfirmed(txHash string, interval int, c *Transaction) (bool, uint32, error) {
+	//todo verify tx successfully
+
+	var txHeight uint32
+	cTicker := time.NewTicker(6 * time.Second)
+	cTimer := time.NewTimer(300 * time.Second)
+	for {
+		select {
+		case <-cTicker.C:
+			hash, err := util.Uint256DecodeStringLE(txHash)
+			if err != nil {
+				return false, 0, fmt.Errorf("tx verify decode hash: %s", err)
+			}
+			txHeight, err = c.client.GetTransactionHeight(hash)
+			if err != nil {
+				fmt.Println("======= ", err)
+			} else {
+				goto HeightConfirmed
+			}
+		case <-cTimer.C:
+			return false, 0, fmt.Errorf("neo tx by hash timeout: %s", txHash)
+		}
+	}
+
+HeightConfirmed:
+	nTicker := time.NewTicker(6 * time.Second)
+	nTimer := time.NewTimer(300 * time.Second)
+	for {
+		select {
+		case <-nTicker.C:
+			nHeight, err := c.Client().GetStateHeight()
+			if err != nil {
+				return false, 0, err
+			} else {
+				nh := nHeight.BlockHeight
+				fmt.Println("===== ", txHeight, nh)
+				if nh-txHeight >= uint32(interval) {
+					return true, txHeight, nil
+				}
+			}
+		case <-nTimer.C:
+			return false, 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
+		}
+	}
 }

@@ -45,7 +45,7 @@ func RandomHexString(length int) string {
 
 func HexStringToBytes32(str string) ([32]byte, error) {
 	if len(str) != 64 {
-		return [32]byte{}, fmt.Errorf("hex str length %d is not right", len(str))
+		return [32]byte{}, fmt.Errorf("hex str %s length %d is not right", str, len(str))
 	}
 	var bs [32]byte
 	lock, err := hex.DecodeString(str)
@@ -58,7 +58,7 @@ func HexStringToBytes32(str string) ([32]byte, error) {
 
 func StringToBytes32(str string) ([32]byte, error) {
 	if len(str) != 32 {
-		return [32]byte{}, fmt.Errorf("str length %d is not right", len(str))
+		return [32]byte{}, fmt.Errorf("str %s length %d is not right", str, len(str))
 	}
 	strBytes := []byte(str)
 	var bs [32]byte

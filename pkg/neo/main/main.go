@@ -32,57 +32,86 @@ var (
 )
 
 func main() {
-	neo2eth()
+	//neo2eth()
 	//neo2ethRefund()
-	//eth2neo()
+	eth2neo()
 	//eth2neoRefund()
 }
 
 func neo2eth() {
 	log.Println("====neo2eth====")
-	c, err := neo.NewNeoTransaction(url, contractAddress)
+	c, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	userLock(rHash, c)
-	sleepForHashTimer(3, c)
-	wrapperUnlock(rOrigin, c)
+	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 180000000, c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user lock: ", tx)
+
+	b, _, err := neo.TxVerifyAndConfirmed(tx, 3, c)
+	if err != nil {
+		log.Fatal(b, err)
+	}
+	tx, err = neo.WrapperUnlock(rOrigin, wrapperWif, userEthAddress, c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("wrapper unlock: ", tx)
 }
 
 func neo2ethRefund() {
 	log.Println("====neo2ethRefund====")
-	c, err := neo.NewNeoTransaction(url, contractAddress)
+	c, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	userLock(rHash, c)
+	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 130000000, c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user lock: ", tx)
 	sleepForHashTimer(40, c)
 	refundUser(rOrigin, c)
 }
 
 func eth2neo() {
 	log.Println("====eth2neo====")
-	c, err := neo.NewNeoTransaction(url, contractAddress)
+	c, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	wrapperLock(rHash, c)
-	sleepForHashTimer(3, c)
-	userUnlock(rOrigin, c)
+	tx, err := neo.WrapperLock(wrapperWif, userEthAddress, rHash, 140000000, c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("wrapper lock: ", tx)
+
+	b, _, err := neo.TxVerifyAndConfirmed(tx, 3, c)
+	if err != nil {
+		log.Fatal(b, err)
+	}
+
+	tx, err = neo.UserUnlock(rOrigin, userWif, c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user unlock: ", tx)
 }
 
 func eth2neoRefund() {
 	log.Println("====eth2neoRefund====")
-	c, err := neo.NewNeoTransaction(url, contractAddress)
+	c, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,7 +123,7 @@ func eth2neoRefund() {
 	refundWrapper(rOrigin, c)
 }
 
-func sleepForHashTimer(n uint32, c *neo.NeoTransaction) {
+func sleepForHashTimer(n uint32, c *neo.Transaction) {
 	log.Printf("waiting for %d block confirmed ... \n", n)
 	cHeight, err := c.Client().GetStateHeight()
 	if err != nil {
@@ -115,7 +144,7 @@ func sleepForHashTimer(n uint32, c *neo.NeoTransaction) {
 	}
 }
 
-func wrapperLock(rHash string, c *neo.NeoTransaction) {
+func wrapperLock(rHash string, c *neo.Transaction) {
 	params := []request.Param{
 		neo.FunctionName("wrapperLock"),
 		neo.ArrayParams([]request.Param{
@@ -136,7 +165,7 @@ func wrapperLock(rHash string, c *neo.NeoTransaction) {
 	log.Println("wrapper lock hash ==> ", fmt.Sprintf("0x%s", r))
 }
 
-func userUnlock(rOrigin string, c *neo.NeoTransaction) {
+func userUnlock(rOrigin string, c *neo.Transaction) {
 	params := []request.Param{
 		neo.FunctionName("userUnlock"),
 		neo.ArrayParams([]request.Param{
@@ -156,7 +185,7 @@ func userUnlock(rOrigin string, c *neo.NeoTransaction) {
 	log.Println("user unlock hash ==> ", fmt.Sprintf("0x%s", r))
 }
 
-func refundWrapper(rOrigin string, c *neo.NeoTransaction) {
+func refundWrapper(rOrigin string, c *neo.Transaction) {
 	params := []request.Param{
 		neo.FunctionName("refundWrapper"),
 		neo.ArrayParams([]request.Param{
@@ -176,28 +205,7 @@ func refundWrapper(rOrigin string, c *neo.NeoTransaction) {
 	log.Println("refund wrapper hash ==> ", fmt.Sprintf("0x%s", r))
 }
 
-func userLock(rHash string, c *neo.NeoTransaction) {
-	params := []request.Param{
-		neo.FunctionName("userLock"),
-		neo.ArrayParams([]request.Param{
-			neo.ArrayTypeParam(rHash),
-			neo.AddressParam(userAccount.Address),
-			neo.IntegerTypeParam(130000000),
-			neo.AddressParam(wrapperAccount.Address),
-			neo.IntegerTypeParam(10),
-		}),
-	}
-	r, err := c.CreateTransaction(neo.TransactionParam{
-		Params: params,
-		Wif:    userWif,
-	})
-	if err != nil {
-		log.Fatal("tx error: ", err)
-	}
-	log.Println("user lock hash ==> ", fmt.Sprintf("0x%s", r))
-}
-
-func wrapperUnlock(rOrigin string, c *neo.NeoTransaction) {
+func wrapperUnlock(rOrigin string, c *neo.Transaction) {
 	params := []request.Param{
 		neo.FunctionName("wrapperUnlock"),
 		neo.ArrayParams([]request.Param{
@@ -218,7 +226,7 @@ func wrapperUnlock(rOrigin string, c *neo.NeoTransaction) {
 	log.Println("wrapper unlock hash ==> ", fmt.Sprintf("0x%s", r))
 }
 
-func refundUser(rOrigin string, c *neo.NeoTransaction) {
+func refundUser(rOrigin string, c *neo.Transaction) {
 	params := []request.Param{
 		neo.FunctionName("refundUser"),
 		neo.ArrayParams([]request.Param{

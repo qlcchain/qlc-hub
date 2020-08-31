@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/pkg/log"
@@ -50,8 +49,8 @@ func main() {
 	logger := log.NewLogger("main")
 	logger.Debug(util.ToIndentString(cfg))
 
-	server := grpc.NewGRPCServer()
-	if err := server.Start(cfg); err != nil {
+	server := grpc.NewServer(cfg)
+	if err := server.Start(); err != nil {
 		logger.Fatal(err)
 	}
 
