@@ -7,14 +7,13 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"go.uber.org/zap"
 )
 
 type DebugAPI struct {
@@ -59,8 +58,10 @@ func (d *DebugAPI) LockerState(ctx context.Context, s *pb.String) (*pb.LockerSta
 
 func (d *DebugAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		Nep5Address:  d.nep5Account.Address,
-		Erc20Address: d.erc20Account.String(),
+		NeoContract: d.cfg.NEOCfg.Contract,
+		NeoAddress:  d.nep5Account.Address,
+		EthContract: d.cfg.EthereumCfg.Contract,
+		EthAddress:  d.erc20Account.String(),
 	}, nil
 }
 

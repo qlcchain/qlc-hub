@@ -3,10 +3,10 @@ package db
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/dgraph-io/badger/v2/options"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -57,6 +57,7 @@ type BadgerStore struct {
 
 // NewBadgerStore initializes/opens a badger database in the given directory.
 func NewBadgerStore(dir string) (Store, error) {
+	fmt.Println("===== ", dir)
 	opts := badger.DefaultOptions(dir)
 
 	opts.MaxTableSize = int64(64 << 20)

@@ -1,13 +1,12 @@
 package config
 
 import (
+	"github.com/qlcchain/qlc-hub/pkg/util"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
 	"time"
-
-	"github.com/qlcchain/qlc-hub/pkg/util"
 
 	"gopkg.in/validator.v2"
 )
@@ -23,6 +22,7 @@ type Config struct {
 	NEOCfg      *NEOCfg      `json:"neo" validate:"nonnil"`
 	EthereumCfg *EthereumCfg `json:"ethereum" validate:"nonnil"`
 	RPCCfg      *RPCCfg      `json:"rpc" validate:"nonnil"`
+	DateDir     string       `json:"dateDir" validate:"nonnil"`
 }
 
 type NEOCfg struct {
@@ -34,7 +34,7 @@ type NEOCfg struct {
 
 type EthereumCfg struct {
 	EndPoint string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" default:"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57" validate:"nonzero"`
-	Contract string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address" default:"0x6d37597F0d9e917baeF2727ece52AEeb8B5294c7" validate:"nonzero"`
+	Contract string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address" default:"0x9a36F711133188EDb3952b3A6ee29c6a3d2e3836" validate:"nonzero"`
 	Account  string `json:"account" long:"account" description:"Ethereum account private key" default:"67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e" validate:"nonzero"`
 }
 

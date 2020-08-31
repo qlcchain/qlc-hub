@@ -11,36 +11,14 @@
     "application/json"
   ],
   "paths": {
-    "/debug/ping": {
+    "/debug/lockerState": {
       "get": {
-        "operationId": "DebugAPI_Ping",
+        "operationId": "DebugAPI_LockerState",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoPingResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/state": {
-      "get": {
-        "operationId": "DebugAPI_HashState",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoStateInfo"
+              "$ref": "#/definitions/protoLockerStateResponse"
             }
           },
           "default": {
@@ -63,9 +41,63 @@
         ]
       }
     },
-    "/eth/depositLock": {
+    "/debug/ping": {
+      "get": {
+        "operationId": "DebugAPI_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoPingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
+    "/deposit/fetchNotice": {
       "post": {
-        "operationId": "EthAPI_DepositLock",
+        "operationId": "DepositAPI_FetchNotice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoFetchNoticeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DepositAPI"
+        ]
+      }
+    },
+    "/deposit/lock": {
+      "post": {
+        "operationId": "DepositAPI_Lock",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -91,39 +123,7 @@
           }
         ],
         "tags": [
-          "EthAPI"
-        ]
-      }
-    },
-    "/eth/withdrawUnlock": {
-      "post": {
-        "operationId": "EthAPI_WithdrawUnlock",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoBoolean"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoWithdrawUnlockRequest"
-            }
-          }
-        ],
-        "tags": [
-          "EthAPI"
+          "DepositAPI"
         ]
       }
     },
@@ -158,9 +158,9 @@
         ]
       }
     },
-    "/neo/depositFetchNotice": {
+    "/withdraw/unlock": {
       "post": {
-        "operationId": "NeoAPI_DepositFetchNotice",
+        "operationId": "WithdrawAPI_Unlock",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -181,12 +181,12 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoFetchNoticeRequest"
+              "$ref": "#/definitions/protoWithdrawUnlockRequest"
             }
           }
         ],
         "tags": [
-          "NeoAPI"
+          "WithdrawAPI"
         ]
       }
     }
@@ -248,18 +248,7 @@
         }
       }
     },
-    "protoPingResponse": {
-      "type": "object",
-      "properties": {
-        "nep5Address": {
-          "type": "string"
-        },
-        "erc20Address": {
-          "type": "string"
-        }
-      }
-    },
-    "protoStateInfo": {
+    "protoLockerStateResponse": {
       "type": "object",
       "properties": {
         "state": {
@@ -275,25 +264,60 @@
         "rOrigin": {
           "type": "string"
         },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userErc20Addr": {
+          "type": "string"
+        },
+        "userNep5Addr": {
+          "type": "string"
+        },
         "lockedNep5Hash": {
           "type": "string"
+        },
+        "lockedNep5Height": {
+          "type": "integer",
+          "format": "int64"
         },
         "lockedErc20Hash": {
           "type": "string"
         },
+        "lockedErc20Height": {
+          "type": "integer",
+          "format": "int64"
+        },
         "unlockedNep5Hash": {
           "type": "string"
+        },
+        "unlockedNep5Height": {
+          "type": "integer",
+          "format": "int64"
         },
         "unlockedErc20Hash": {
           "type": "string"
         },
-        "lockedHeight": {
-          "type": "string",
+        "unlockedErc20Height": {
+          "type": "integer",
           "format": "int64"
+        }
+      }
+    },
+    "protoPingResponse": {
+      "type": "object",
+      "properties": {
+        "ethContract": {
+          "type": "string"
         },
-        "unlockedHeight": {
-          "type": "string",
-          "format": "int64"
+        "ethAddress": {
+          "type": "string"
+        },
+        "neoContract": {
+          "type": "string"
+        },
+        "neoAddress": {
+          "type": "string"
         }
       }
     },
@@ -304,6 +328,9 @@
           "type": "string"
         },
         "rOrigin": {
+          "type": "string"
+        },
+        "rHash": {
           "type": "string"
         }
       }

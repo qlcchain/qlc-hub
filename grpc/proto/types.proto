@@ -6,8 +6,10 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
 message PingResponse {
-   string nep5Address  =1;
-   string erc20Address =2;
+   string ethContract  = 1;
+   string ethAddress   = 2;
+   string neoContract  = 3;
+   string neoAddress   = 4;
 }
 
 message DepositLockRequest{
@@ -53,29 +55,29 @@ message LockerStateResponse {
   uint32 unlockedErc20Height = 15;
 }
 
-service EthAPI {
-    rpc DepositLock(DepositLockRequest) returns (Boolean){
+service DepositAPI {
+    rpc Lock(DepositLockRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/eth/depositLock"
+          post: "/deposit/lock"
           body: "*"
         };
     }
 
-   rpc WithdrawUnlock(WithdrawUnlockRequest) returns (Boolean){
+    rpc FetchNotice(FetchNoticeRequest) returns (Boolean){
        option (google.api.http) = {
-         post: "/eth/withdrawUnlock"
-         body: "*"
-       };
+           post: "/deposit/fetchNotice"
+           body: "*"
+        };
     }
 }
 
-service NeoAPI {
-   rpc DepositFetchNotice(FetchNoticeRequest) returns (Boolean){
+service WithdrawAPI {
+   rpc Unlock(WithdrawUnlockRequest) returns (Boolean){
        option (google.api.http) = {
-           post: "/neo/depositFetchNotice"
-           body: "*"
-        };
-   }
+         post: "/withdraw/unlock"
+         body: "*"
+       };
+    }
 }
 
 service EventAPI {

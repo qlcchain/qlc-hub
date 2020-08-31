@@ -8,22 +8,25 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"google.golang.org/grpc"
-
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -41,7 +44,7 @@ var (
 
 	// eth setting
 	ethEndPointws    = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
-	ethContract      = "0x6d37597F0d9e917baeF2727ece52AEeb8B5294c7"
+	ethContract      = "0x9a36F711133188EDb3952b3A6ee29c6a3d2e3836"
 	ethWrapperPrikey = "67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e"
 	ethUserPrikey    = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 	userEthPrikey    = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
@@ -49,11 +52,14 @@ var (
 
 func main() {
 	withdraw()
+	//deposit()
+	//ping()
 }
 
-func depositFetch() {
-
-}
+//
+//func depositFetch() {
+//
+//}
 
 func withdraw() {
 	neoTrasaction, err := neo.NewTransaction(url, contractAddress)
@@ -85,13 +91,13 @@ func withdraw() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tx, err := eth.UserLock(rHash, userEthPrikey, address.String(), ethContract, 220000000, ethClient)
+	tx, err := eth.UserLock(rHash, userEthPrikey, address.String(), ethContract, 120000000, ethClient)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("eth user lock hash: ", tx)
 
-	time.Sleep(40 * time.Second)
+	time.Sleep(10 * time.Second)
 	waitForLockerState(rHash, types.WithDrawNeoLockedDone, grpcClient)
 
 	tx, err = neo.UserUnlock(rOrigin, userWif, neoTrasaction)
@@ -99,20 +105,20 @@ func withdraw() {
 		log.Fatal(err)
 	}
 	log.Println("neo user unlock hash: ", tx)
-	r, err := pb.NewEthAPIClient(grpcClient).WithdrawUnlock(context.Background(), &pb.WithdrawUnlockRequest{
-		Nep5TxHash: tx,
-		ROrigin:    rOrigin,
-		RHash:      rHash,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	if !r.GetValue() {
-		log.Fatal("fail")
+
+	paras := fmt.Sprintf(`{
+		"nep5TxHash": "%s",
+		"rOrigin": "%s",
+		"rHash": "%s"
+	}`, tx, rOrigin, rHash)
+	re, err := post(paras, "http://127.0.0.1:19745/withdraw/unlock")
+	if err != nil || !re {
+		log.Fatal(re, err)
 	}
 }
 
 func deposit() {
+
 	neoTrasaction, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
@@ -135,26 +141,24 @@ func deposit() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(r.GetNep5Address(), r.GetErc20Address())
+	fmt.Println(r.GetNeoAddress(), r.GetEthAddress())
 
 	// user lock (neo)
 	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 130000000, neoTrasaction)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("UserLock hash: ", tx)
-	// wrapper lock (eth)
-	er, err := pb.NewEthAPIClient(grpcClient).DepositLock(context.Background(), &pb.DepositLockRequest{
-		Nep5TxHash: tx,
-		Amount:     130000000,
-		RHash:      rHash,
-		Addr:       wrapperAccount.Address,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	if !er.GetValue() {
-		log.Fatal("deposit fail")
+	log.Println("neo UserLock hash: ", tx)
+
+	paras := fmt.Sprintf(`{
+		"nep5TxHash": "%s",
+		"amount": %d,
+		"rHash": "%s",
+		"addr": "%s"
+	}`, tx, 130000000, rHash, wrapperAccount.Address)
+	re, err := post(paras, "http://127.0.0.1:19745/deposit/lock")
+	if err != nil || !re {
+		log.Fatal(re, err)
 	}
 
 	waitForLockerState(rHash, types.DepositEthLockedDone, grpcClient)
@@ -164,7 +168,7 @@ func deposit() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("UserUnlock hash: ", etx)
+	fmt.Println("UserUnlock eth hash: ", etx)
 }
 
 func waitForLockerState(rHash string, state types.LockerState, client *grpc.ClientConn) {
@@ -175,7 +179,8 @@ func waitForLockerState(rHash string, state types.LockerState, client *grpc.Clie
 			Value: rHash,
 		})
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			continue
 		}
 		fmt.Println("====== ", er.StateStr)
 		if er.StateStr == types.LockerStateToString(state) {
@@ -183,4 +188,74 @@ func waitForLockerState(rHash string, state types.LockerState, client *grpc.Clie
 		}
 	}
 	log.Fatal("timeout")
+}
+
+func ping() {
+	jsonStr := []byte("{ }")
+	ioBody := bytes.NewBuffer(jsonStr)
+	request, err := http.NewRequest("GET", "http://127.0.0.1:19745/debug/ping", ioBody)
+	if err != nil {
+		log.Fatal("request ", err)
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Fatal("do ", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode > 200 {
+		log.Fatal("code: ", response.StatusCode)
+	}
+
+	bs, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal("do ", err)
+	}
+
+	ret := make(map[string]interface{})
+	err = json.Unmarshal(bs, &ret)
+	if err != nil {
+		log.Fatal("do ", err)
+	}
+	fmt.Println("response: ", string(bs))
+}
+
+func post(paras string, url string) (bool, error) {
+	jsonStr := []byte(paras)
+	ioBody := bytes.NewBuffer(jsonStr)
+	request, err := http.NewRequest("POST", url, ioBody)
+	if err != nil {
+		log.Fatal("request ", err)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Fatal("do ", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode > 200 {
+		log.Fatalf("%d status code returned ", response.StatusCode)
+	}
+	bytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ret := make(map[string]interface{})
+	err = json.Unmarshal(bytes, &ret)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if r, ok := ret["value"]; ok != false {
+		return r.(bool), nil
+	} else {
+		if e, ok := ret["error"]; ok != false {
+			return false, fmt.Errorf("%s", e)
+		}
+		return false, fmt.Errorf("response has no result")
+	}
 }

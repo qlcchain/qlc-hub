@@ -32,11 +32,11 @@ func TestDepositAPI(t *testing.T) {
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	api, err := NewEthAPI(context.Background(), cfg)
+	api, err := NewDepositAPI(context.Background(), cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = api.DepositLock(context.Background(), &pb.DepositLockRequest{
+	_, err = api.Lock(context.Background(), &pb.DepositLockRequest{
 		Nep5TxHash: "",
 		Amount:     100000,
 		RHash:      rHash,

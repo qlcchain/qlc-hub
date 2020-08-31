@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -14,9 +12,10 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"go.uber.org/zap"
 )
 
-type EthAPI struct {
+type DepositAPI struct {
 	contractAddr   string
 	ethClient      *ethclient.Client
 	neoTransaction *neo.Transaction
@@ -26,7 +25,7 @@ type EthAPI struct {
 	logger         *zap.SugaredLogger
 }
 
-func NewEthAPI(ctx context.Context, cfg *config.Config) (*EthAPI, error) {
+func NewDepositAPI(ctx context.Context, cfg *config.Config) (*DepositAPI, error) {
 	//todo check address validity
 
 	//todo close client
@@ -42,19 +41,19 @@ func NewEthAPI(ctx context.Context, cfg *config.Config) (*EthAPI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("neo transaction: %s", err)
 	}
-	api := &EthAPI{
+	api := &DepositAPI{
 		cfg:            cfg,
 		contractAddr:   cfg.EthereumCfg.Contract,
 		neoTransaction: nt,
 		ethClient:      ethClient,
 		ctx:            ctx,
 		store:          store,
-		logger:         log.NewLogger("api/eth"),
+		logger:         log.NewLogger("api/deposit"),
 	}
 	return api, nil
 }
 
-func (w *EthAPI) DepositLock(ctx context.Context, request *pb.DepositLockRequest) (*pb.Boolean, error) {
+func (w *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (*pb.Boolean, error) {
 	w.logger.Info("deposit lock: ", request.String())
 	//todo check params
 
@@ -89,7 +88,7 @@ func (w *EthAPI) DepositLock(ctx context.Context, request *pb.DepositLockRequest
 			w.logger.Error(err)
 			return
 		}
-		w.logger.Infof("deposit/wrapper lock: %s[%s]", request.GetRHash(), tx)
+		w.logger.Infof("deposit/wrapper eth lock: %s [%s]", request.GetRHash(), tx)
 		info.State = types.DepositEthLockedPending
 		info.LockedErc20Hash = tx
 		if err := w.store.UpdateLockerInfo(info); err != nil {
@@ -100,45 +99,8 @@ func (w *EthAPI) DepositLock(ctx context.Context, request *pb.DepositLockRequest
 	return toBoolean(true), nil
 }
 
-func (w *EthAPI) WithdrawUnlock(ctx context.Context, request *pb.WithdrawUnlockRequest) (*pb.Boolean, error) {
-	w.logger.Info("withdraw unlock: ", request.String())
-	//todo check params
-
-	rHash := request.GetRHash()
-	info, err := w.store.GetLockerInfo(rHash)
-	if err != nil {
-		return nil, err
-	}
-	go func() {
-		b, height, err := neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight, w.neoTransaction)
-		if !b || err != nil {
-			w.logger.Errorf("neo tx confirmed: %s, %v [%s]", err, b, rHash)
-			return
-		}
-		info.State = types.WithDrawNeoUnLockedDone
-		info.UnlockedNep5Height = height
-		info.UnlockedNep5Hash = request.GetNep5TxHash()
-		info.ROrigin = request.GetROrigin()
-		if err := w.store.UpdateLockerInfo(info); err != nil {
-			return
-		}
-		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
-
-		tx, err := eth.WrapperUnlock(rHash, request.GetROrigin(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, w.ethClient)
-		if err != nil {
-			w.logger.Errorf("eth wrapper unlock: %s [%s]", err, rHash)
-			return
-		}
-		w.logger.Info("withdraw wrapper eth unlock: ", tx)
-		info.State = types.WithDrawEthUnlockPending
-		info.UnlockedErc20Hash = tx
-		if err := w.store.UpdateLockerInfo(info); err != nil {
-			return
-		}
-		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))
-	}()
-
-	return toBoolean(true), nil
+func (w *DepositAPI) FetchNotice(ctx context.Context, request *pb.FetchNoticeRequest) (*pb.Boolean, error) {
+	panic("implement me")
 }
 
 func toBoolean(b bool) *pb.Boolean {

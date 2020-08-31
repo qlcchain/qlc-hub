@@ -128,7 +128,7 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 	if err := n.client.SendRawTransaction(tx); err != nil {
 		return "", fmt.Errorf("sendRawTransaction: %s", err)
 	}
-	n.logger.Debugf("transaction successfully: %s", tx.Hash().StringLE())
+	//n.logger.Debugf("transaction successfully: %s", tx.Hash().StringLE())
 	return tx.Hash().StringLE(), nil
 }
 
