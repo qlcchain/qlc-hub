@@ -7,7 +7,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.14.7
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c
-	github.com/nspcc-dev/neo-go v0.77.0
+	github.com/nspcc-dev/neo-go v0.91.0
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/tinylib/msgp v1.1.2
 	go.uber.org/zap v1.15.0
