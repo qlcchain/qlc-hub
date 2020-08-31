@@ -1,0 +1,111 @@
+syntax = "proto3";
+package proto;
+option go_package = ".;proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+message PingResponse {
+   string nep5Address  =1;
+   string erc20Address =2;
+}
+
+message DepositLockRequest{
+   string nep5TxHash = 1;
+   int64  amount     = 2;
+   string rHash      = 3;
+   string addr       = 4;
+}
+
+message FetchNoticeRequest{
+   string rHash      = 1;
+   string nep5TxHash = 2;
+}
+
+message WithdrawUnlockRequest{
+  string nep5TxHash = 1;
+  string rOrigin    = 2;
+  string rHash      = 3;
+}
+
+message EventResponse {
+  int64  state      = 1;
+  string stateStr   = 2;
+  string rHash      = 3;
+  string txHash     = 4;
+}
+
+message LockerStateResponse {
+  int64  state        = 1;
+  string stateStr     = 2;
+  string rHash        = 3;
+  string rOrigin      = 4;
+  int64  amount       = 5;
+  string userErc20Addr     = 6;
+  string userNep5Addr      = 7;
+  string lockedNep5Hash    = 8;
+  uint32 lockedNep5Height  = 9;
+  string lockedErc20Hash   = 10;
+  uint32 lockedErc20Height = 11;
+  string unlockedNep5Hash  = 12;
+  uint32 unlockedNep5Height  = 13;
+  string unlockedErc20Hash   = 14;
+  uint32 unlockedErc20Height = 15;
+}
+
+service EthAPI {
+    rpc DepositLock(DepositLockRequest) returns (Boolean){
+        option (google.api.http) = {
+          post: "/eth/depositLock"
+          body: "*"
+        };
+    }
+
+   rpc WithdrawUnlock(WithdrawUnlockRequest) returns (Boolean){
+       option (google.api.http) = {
+         post: "/eth/withdrawUnlock"
+         body: "*"
+       };
+    }
+}
+
+service NeoAPI {
+   rpc DepositFetchNotice(FetchNoticeRequest) returns (Boolean){
+       option (google.api.http) = {
+           post: "/neo/depositFetchNotice"
+           body: "*"
+        };
+   }
+}
+
+service EventAPI {
+    rpc Event(google.protobuf.Empty) returns (stream EventResponse){
+       option (google.api.http) = {
+         get: "/event/state"
+       };
+    }
+}
+
+
+service DebugAPI {
+    rpc Ping(google.protobuf.Empty) returns (PingResponse){
+        option (google.api.http) = {
+          get: "/debug/ping"
+        };
+    }
+
+    rpc LockerState(String) returns (LockerStateResponse){
+        option (google.api.http) = {
+          get: "/debug/lockerState"
+        };
+    }
+}
+
+
+message Boolean {
+    bool value = 1;
+}
+
+message String {
+    string value = 1;
+}

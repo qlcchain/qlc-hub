@@ -1,0 +1,370 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "types.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/debug/ping": {
+      "get": {
+        "operationId": "DebugAPI_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoPingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
+    "/debug/state": {
+      "get": {
+        "operationId": "DebugAPI_HashState",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoStateInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
+    "/eth/depositLock": {
+      "post": {
+        "operationId": "EthAPI_DepositLock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoDepositLockRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EthAPI"
+        ]
+      }
+    },
+    "/eth/withdrawUnlock": {
+      "post": {
+        "operationId": "EthAPI_WithdrawUnlock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoWithdrawUnlockRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EthAPI"
+        ]
+      }
+    },
+    "/event/state": {
+      "get": {
+        "operationId": "EventAPI_Event",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/protoEventResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/runtimeStreamError"
+                }
+              },
+              "title": "Stream result of protoEventResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "EventAPI"
+        ]
+      }
+    },
+    "/neo/depositFetchNotice": {
+      "post": {
+        "operationId": "NeoAPI_DepositFetchNotice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoFetchNoticeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "NeoAPI"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protoBoolean": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "protoDepositLockRequest": {
+      "type": "object",
+      "properties": {
+        "nep5TxHash": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "rHash": {
+          "type": "string"
+        },
+        "addr": {
+          "type": "string"
+        }
+      }
+    },
+    "protoEventResponse": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stateStr": {
+          "type": "string"
+        },
+        "rHash": {
+          "type": "string"
+        },
+        "txHash": {
+          "type": "string"
+        }
+      }
+    },
+    "protoFetchNoticeRequest": {
+      "type": "object",
+      "properties": {
+        "rHash": {
+          "type": "string"
+        },
+        "nep5TxHash": {
+          "type": "string"
+        }
+      }
+    },
+    "protoPingResponse": {
+      "type": "object",
+      "properties": {
+        "nep5Address": {
+          "type": "string"
+        },
+        "erc20Address": {
+          "type": "string"
+        }
+      }
+    },
+    "protoStateInfo": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stateStr": {
+          "type": "string"
+        },
+        "rHash": {
+          "type": "string"
+        },
+        "rOrigin": {
+          "type": "string"
+        },
+        "lockedNep5Hash": {
+          "type": "string"
+        },
+        "lockedErc20Hash": {
+          "type": "string"
+        },
+        "unlockedNep5Hash": {
+          "type": "string"
+        },
+        "unlockedErc20Hash": {
+          "type": "string"
+        },
+        "lockedHeight": {
+          "type": "string",
+          "format": "int64"
+        },
+        "unlockedHeight": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protoWithdrawUnlockRequest": {
+      "type": "object",
+      "properties": {
+        "nep5TxHash": {
+          "type": "string"
+        },
+        "rOrigin": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpc_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "http_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "http_status": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
