@@ -1,12 +1,13 @@
 package config
 
 import (
-	"github.com/qlcchain/qlc-hub/pkg/util"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/qlcchain/qlc-hub/pkg/util"
 
 	"gopkg.in/validator.v2"
 )

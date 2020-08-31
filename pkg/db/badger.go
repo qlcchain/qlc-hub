@@ -7,6 +7,7 @@ import (
 
 	"github.com/dgraph-io/badger/v2"
 	"github.com/dgraph-io/badger/v2/options"
+
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
