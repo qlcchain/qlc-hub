@@ -112,8 +112,9 @@ func StackToSwapInfo(stack []smartcontract.Parameter) (map[string]interface{}, e
 func bytesTo(key string, v []byte) interface{} {
 	if t, ok := types[key]; ok {
 		switch t {
-		case "bigint":
-			return big.NewInt(0).SetBytes(v)
+		case "amount":
+			d2 := util.ArrayReverse(v)
+			return big.NewInt(0).SetBytes(d2)
 		case "int":
 			return emit.BytesToInt(v).Int64()
 		case "neo":
@@ -140,7 +141,7 @@ var (
 		"userNeoAddress":    "neo",
 		"wrapperNeoAddress": "neo",
 		"userEthAddress":    "eth",
-		"amount":            "bigint",
+		"amount":            "amount",
 		"lockTimestamp":     "time",
 		"unLockTimestamp":   "time",
 		"refundTimestamp":   "time",
