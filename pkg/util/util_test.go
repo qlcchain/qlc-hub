@@ -3,6 +3,8 @@ package util
 import (
 	"os"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 type StringTag struct {
@@ -28,4 +30,40 @@ func TestToIndentString(t *testing.T) {
 	s.StrStr = "xzbit"
 	st := ToIndentString(s)
 	t.Log(st)
+}
+
+func TestIsvalidNEOAddress(t *testing.T) {
+	type args struct {
+		addr string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "ok",
+			args: args{
+				addr: "ARNpaFJhp6SHziRomrK4cenWw66C8VVFyv",
+			},
+			want: true,
+		}, {
+			name: "fail",
+			args: args{
+				addr: "ARNpaFJhp6SHziRomrK4cenWw66C8VVFyv1",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if r := IsvalidNEOAddress(tt.args.addr); r != tt.want {
+				t.Errorf("IsvalidNEOAddress() got = %v, want %v", r, tt.want)
+			}
+		})
+	}
+}
+
+func TestEthAddress(t *testing.T) {
+	t.Log(common.IsHexAddress("0x2e1ac6242bb084029a9eb29dfb083757d27fced4"))
 }
