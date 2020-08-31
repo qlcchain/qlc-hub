@@ -8,14 +8,13 @@ import (
 	"net/url"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Server struct {
@@ -107,16 +106,16 @@ func scheme(endpoint string) (string, string, error) {
 }
 
 func (g *Server) registerApi() error {
-	eth, err := apis.NewEthAPI(g.ctx, g.cfg)
+	eth, err := apis.NewDepositAPI(g.ctx, g.cfg)
 	if err != nil {
 		return err
 	}
-	pb.RegisterEthAPIServer(g.rpc, eth)
-	neo, err := apis.NewNeoAPI(g.ctx, g.cfg)
+	pb.RegisterDepositAPIServer(g.rpc, eth)
+	neo, err := apis.NewWithdrawAPI(g.ctx, g.cfg)
 	if err != nil {
 		return err
 	}
-	pb.RegisterNeoAPIServer(g.rpc, neo)
+	pb.RegisterWithdrawAPIServer(g.rpc, neo)
 	event, err := apis.NewEventAPI(g.ctx, g.cfg)
 	if err != nil {
 		return err
@@ -131,10 +130,10 @@ func (g *Server) registerApi() error {
 }
 
 func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
-	if err := pb.RegisterEthAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
+	if err := pb.RegisterDepositAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := pb.RegisterNeoAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
+	if err := pb.RegisterWithdrawAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := pb.RegisterDebugAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {

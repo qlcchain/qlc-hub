@@ -11,7 +11,6 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -33,9 +32,9 @@ var (
 )
 
 func main() {
-	//neo2eth()
+	neo2eth()
 	//neo2ethRefund()
-	eth2neo()
+	//eth2neo()
 	//eth2neoRefund()
 }
 

@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -32,7 +31,10 @@ func TestNewQLCChain(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	r, err := client.BlockByNumber(context.Background(), nil)
+	fmt.Println(r.Number())
 	defer client.Close()
+
 	//instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
 	//if err != nil {
 	//	t.Fatal(err)
