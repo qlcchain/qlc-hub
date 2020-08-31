@@ -1,12 +1,13 @@
 package neo
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
-	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 	"github.com/nspcc-dev/neo-go/pkg/util"
+
+	u "github.com/qlcchain/qlc-hub/pkg/util"
+
+	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 )
 
@@ -31,15 +32,11 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	rHash := "6c428bbdb7b7a3c235f16d241916337d457b2e52147cb213853f1316aff2e3d3"
-	r, err := c.querySwapInfo(rHash)
+	r, err := c.QuerySwapInfo(rHash)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println(toString(r))
-}
-
-func toString(v interface{}) string {
-	data, _ := json.MarshalIndent(v, "", "\t")
-	return string(data)
+	t.Log(u.ToIndentString(r))
 }

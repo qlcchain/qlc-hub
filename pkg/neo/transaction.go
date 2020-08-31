@@ -3,8 +3,8 @@ package neo
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"math/big"
 	"math/rand"
 	"time"
 
@@ -142,21 +142,16 @@ func (n *Transaction) Client() *client.Client {
 	return n.client
 }
 
-type SwapInfo struct {
-	rHash   string
-	rOrigin string
-	state   string
-	amount  *big.Int
-}
-
-func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
-	_, err := n.querySwapInfo(rHash)
+func (n *Transaction) QuerySwapInfo(rHash string) (map[string]interface{}, error) {
+	r, err := n.querySwapInfo(rHash)
 	if err != nil {
 		return nil, err
 	}
-
-	// convert result to SwapInfo
-	return &SwapInfo{}, nil
+	if info, err := StackToSwapInfo(r.Stack); err == nil {
+		return info, nil
+	} else {
+		return nil, err
+	}
 }
 
 func (n *Transaction) querySwapInfo(rHash string) (*result.Invoke, error) {
@@ -173,6 +168,8 @@ func (n *Transaction) querySwapInfo(rHash string) (*result.Invoke, error) {
 	r, err := n.client.InvokeFunction(n.contractAddr, "querySwapInfo", params, nil)
 	if err != nil {
 		return nil, err
+	} else if r.State != "HALT" || len(r.Stack) == 0 {
+		return nil, errors.New("invalid VM state")
 	}
 	return r, nil
 }
