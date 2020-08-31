@@ -6,6 +6,7 @@ import (
 	"io"
 	"sync"
 
+	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
@@ -28,7 +29,7 @@ func getDefaultDir(dir string) string {
 		return dir
 	} else {
 		//todo set default path
-		return "/Users/sidney/Documents/qlink/ledger"
+		return config.DefaultDataDir()
 	}
 }
 
