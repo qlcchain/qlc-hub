@@ -6,7 +6,7 @@ require (
 	github.com/dgraph-io/badger/v2 v2.2007.1
 	github.com/ethereum/go-ethereum v1.9.20
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/go-kit/kit v0.9.0
+	github.com/go-kit/kit v0.10.0
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1 // indirect
