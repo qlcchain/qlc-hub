@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/qlcchain/qlc-hub/pkg/eth"
-	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -31,7 +30,7 @@ func Withdraw() {
 	waitForLockerState(rHash, types.WithDrawNeoLockedDone)
 
 	// neo - user unlock
-	tx, err = neo.UserUnlock(rOrigin, userWif, neoTrasaction)
+	tx, err = neoTrasaction.UserUnlock(rOrigin, userWif)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,7 +78,7 @@ func waitForNeoIntervalTimerOut(txHash string) {
 
 	for i := 0; i < neoIntervalHeight*12; i++ {
 		time.Sleep(10 * time.Second)
-		b := neo.IsConfirmedOverHeightInterval(ch, int64(ethIntervalHeight), neoTrasaction)
+		b := neoTrasaction.IsConfirmedOverHeightInterval(ch, int64(ethIntervalHeight))
 		if b {
 			return
 		}

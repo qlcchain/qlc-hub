@@ -2,7 +2,6 @@ package apis
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/qlcchain/qlc-hub/config"
@@ -24,24 +23,16 @@ type WithdrawAPI struct {
 	logger *zap.SugaredLogger
 }
 
-func NewWithdrawAPI(ctx context.Context, cfg *config.Config) (*WithdrawAPI, error) {
-	nt, err := neo.NewTransaction(cfg.NEOCfg.EndPoint, cfg.NEOCfg.Contract)
-	if err != nil {
-		return nil, fmt.Errorf("neo transaction: %s", err)
-	}
+func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *ethclient.Client) (*WithdrawAPI, error) {
 	store, err := store.NewStore(cfg.DataDir())
 	if err != nil {
 		return nil, err
 	}
-	ethClient, err := ethclient.Dial(cfg.EthereumCfg.EndPoint)
-	if err != nil {
-		return nil, fmt.Errorf("eth client dail: %s", err)
-	}
 	return &WithdrawAPI{
 		cfg:    cfg,
-		neo:    nt,
+		neo:    neo,
 		store:  store,
-		eth:    ethClient,
+		eth:    eth,
 		ctx:    ctx,
 		logger: log.NewLogger("api/withdraw"),
 	}, nil

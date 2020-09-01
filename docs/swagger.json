@@ -130,6 +130,36 @@
     },
     "/info/lockerState": {
       "get": {
+        "operationId": "InfoAPI_LockerState",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoLockerStateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/lockerStates": {
+      "get": {
         "operationId": "InfoAPI_LockerStates",
         "responses": {
           "200": {

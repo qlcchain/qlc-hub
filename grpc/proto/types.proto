@@ -64,6 +64,12 @@ message Offset {
     int32   offset     = 2;
 }
 
+message ParamAndOffset {
+    string  param      = 1;
+    int32   count      = 2;
+    int32   offset     = 3;
+}
+
 message LockerStatesResponse {
     repeated LockerStateResponse lockers = 1;
 }
@@ -102,15 +108,6 @@ service EventAPI {
     }
 }
 
-
-service DebugAPI {
-    rpc Debug(google.protobuf.Empty) returns (String){
-        option (google.api.http) = {
-          get: "/debug/debug"
-        };
-    }
-}
-
 service InfoAPI {
     rpc Ping(google.protobuf.Empty) returns (PingResponse){
         option (google.api.http) = {
@@ -118,15 +115,45 @@ service InfoAPI {
         };
     }
 
-    rpc LockerState(String) returns (LockerStateResponse){
+    rpc LockerInfo(String) returns (LockerStateResponse){
         option (google.api.http) = {
-          get: "/info/lockerState"
+          get: "/info/lockerInfo"
         };
     }
 
-    rpc LockerStates(Offset) returns (LockerStatesResponse){
+    rpc LockerInfosByErc20Addr(ParamAndOffset) returns (LockerStatesResponse){
         option (google.api.http) = {
-          get: "/info/lockerState"
+          get: "/info/lockerInfosByErc20Addr"
+        };
+    }
+
+    rpc LockerInfosByNep5Addr(ParamAndOffset) returns (LockerStatesResponse){
+        option (google.api.http) = {
+          get: "/info/lockerInfosByNep5Addr"
+        };
+    }
+
+    rpc LockerInfos(Offset) returns (LockerStatesResponse){
+        option (google.api.http) = {
+          get: "/info/lockerInfos"
+        };
+    }
+}
+
+message lockerInfosCountResponse  {
+    map<string, int32> counts = 1;
+}
+
+service DebugAPI {
+    rpc LockerInfosCount(google.protobuf.Empty) returns (lockerInfosCountResponse){
+        option (google.api.http) = {
+          get: "/debug/lockerInfosCount"
+        };
+    }
+
+    rpc LockerInfosByState(ParamAndOffset) returns (LockerStatesResponse){
+        option (google.api.http) = {
+          get: "/debug/lockerInfosByState"
         };
     }
 }

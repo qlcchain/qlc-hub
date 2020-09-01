@@ -18,7 +18,7 @@ func Deposit() {
 	logger.Info("hash: ", rOrigin, "==>", rHash)
 
 	// user lock (neo)
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, depositAmount, neoTrasaction)
+	tx, err := neoTrasaction.UserLock(userWif, wrapperAccount.Address, rHash, depositAmount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func DepositFetch() {
 	logger.Info("hash: ", rOrigin, "==>", rHash)
 
 	// user lock (neo)
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, depositAmount, neoTrasaction)
+	tx, err := neoTrasaction.UserLock(userWif, wrapperAccount.Address, rHash, depositAmount)
 	if err != nil {
 		log.Fatal(err)
 	}

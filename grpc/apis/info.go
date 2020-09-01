@@ -3,9 +3,9 @@ package apis
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"github.com/qlcchain/qlc-hub/config"
@@ -18,47 +18,43 @@ import (
 )
 
 type InfoAPI struct {
-	cfg          *config.Config
-	ctx          context.Context
-	nep5Account  *wallet.Account
-	erc20Account common.Address
-	store        *store.Store
-	logger       *zap.SugaredLogger
+	cfg    *config.Config
+	ctx    context.Context
+	store  *store.Store
+	logger *zap.SugaredLogger
 }
 
 func NewInfoAPI(ctx context.Context, cfg *config.Config) (*InfoAPI, error) {
-	nep5Account, err := wallet.NewAccountFromWIF(cfg.NEOCfg.WIF)
-	if err != nil {
-		return nil, fmt.Errorf("NewDebugAPI/NewAccountFromWIF: %s", err)
-	}
-	_, address, err := eth.GetAccountByPriKey(cfg.EthereumCfg.Account)
-	if err != nil {
-		return nil, fmt.Errorf("NewDebugAPI/GetAccountByPriKey: %s", err)
-	}
 	store, err := store.NewStore(cfg.DataDir())
 	if err != nil {
 		return nil, err
 	}
 	return &InfoAPI{
-		ctx:          ctx,
-		cfg:          cfg,
-		nep5Account:  nep5Account,
-		erc20Account: address,
-		store:        store,
-		logger:       log.NewLogger("api/debug"),
+		ctx:    ctx,
+		cfg:    cfg,
+		store:  store,
+		logger: log.NewLogger("api/info"),
 	}, nil
 }
 
 func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, error) {
+	nep5Account, err := wallet.NewAccountFromWIF(i.cfg.NEOCfg.WIF)
+	if err != nil {
+		return nil, err
+	}
+	_, address, err := eth.GetAccountByPriKey(i.cfg.EthereumCfg.Account)
+	if err != nil {
+		return nil, err
+	}
 	return &pb.PingResponse{
 		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoAddress:  i.nep5Account.Address,
+		NeoAddress:  nep5Account.Address,
 		EthContract: i.cfg.EthereumCfg.Contract,
-		EthAddress:  i.erc20Account.String(),
+		EthAddress:  address.String(),
 	}, nil
 }
 
-func (i *InfoAPI) LockerState(ctx context.Context, s *pb.String) (*pb.LockerStateResponse, error) {
+func (i *InfoAPI) LockerInfo(ctx context.Context, s *pb.String) (*pb.LockerStateResponse, error) {
 	r, err := i.store.GetLockerInfo(s.GetValue())
 	if err != nil {
 		return nil, err
@@ -66,8 +62,89 @@ func (i *InfoAPI) LockerState(ctx context.Context, s *pb.String) (*pb.LockerStat
 	return toLockerState(r), nil
 }
 
-func (i *InfoAPI) LockerStates(ctx context.Context, offset *pb.Offset) (*pb.LockerStatesResponse, error) {
-	panic("implement me")
+func (i *InfoAPI) LockerInfosByErc20Addr(ctx context.Context, offset *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
+	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
+	}
+	as := make([]*pb.LockerStateResponse, 0)
+	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
+		if info.Erc20Addr == offset.GetParam() {
+			as = append(as, toLockerState(info))
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(as, func(i, j int) bool {
+		return as[i].LastModifyTime > as[j].LastModifyTime
+	})
+	states := getStateByOffset(as, offset.GetCount(), offset.GetOffset())
+	return &pb.LockerStatesResponse{
+		Lockers: states,
+	}, nil
+}
+
+func (i *InfoAPI) LockerInfosByNep5Addr(ctx context.Context, offset *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
+	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
+	}
+	as := make([]*pb.LockerStateResponse, 0)
+	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
+		if info.Nep5Addr == offset.GetParam() {
+			as = append(as, toLockerState(info))
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(as, func(i, j int) bool {
+		return as[i].LastModifyTime > as[j].LastModifyTime
+	})
+	states := getStateByOffset(as, offset.GetCount(), offset.GetOffset())
+	return &pb.LockerStatesResponse{
+		Lockers: states,
+	}, nil
+}
+
+func (i *InfoAPI) LockerInfos(ctx context.Context, offset *pb.Offset) (*pb.LockerStatesResponse, error) {
+	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
+	}
+	as := make([]*pb.LockerStateResponse, 0)
+	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
+		as = append(as, toLockerState(info))
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(as, func(i, j int) bool {
+		return as[i].LastModifyTime > as[j].LastModifyTime
+	})
+	states := getStateByOffset(as, offset.GetCount(), offset.GetOffset())
+	return &pb.LockerStatesResponse{
+		Lockers: states,
+	}, nil
+}
+
+func getStateByOffset(states []*pb.LockerStateResponse, count, offset int32) []*pb.LockerStateResponse {
+	length := int32(len(states))
+	if length == 0 {
+		return make([]*pb.LockerStateResponse, 0)
+	}
+	if count == 0 && offset == 0 {
+		return states
+	}
+	if length < offset {
+		return make([]*pb.LockerStateResponse, 0)
+	}
+	if length < offset+count {
+		return states[offset:length]
+	} else {
+		return states[offset : offset+count]
+	}
 }
 
 func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {

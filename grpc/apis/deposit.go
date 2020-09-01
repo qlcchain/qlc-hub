@@ -2,8 +2,6 @@ package apis
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
@@ -25,27 +23,16 @@ type DepositAPI struct {
 	logger       *zap.SugaredLogger
 }
 
-func NewDepositAPI(ctx context.Context, cfg *config.Config) (*DepositAPI, error) {
-	//todo check address validity
-
-	//todo close client
-	ethClient, err := ethclient.Dial(cfg.EthereumCfg.EndPoint)
-	if err != nil {
-		return nil, fmt.Errorf("eth client dail: %s", err)
-	}
+func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *ethclient.Client) (*DepositAPI, error) {
 	store, err := store.NewStore(cfg.DataDir())
 	if err != nil {
 		return nil, err
 	}
-	nt, err := neo.NewTransaction(cfg.NEOCfg.EndPoint, cfg.NEOCfg.Contract)
-	if err != nil {
-		return nil, fmt.Errorf("neo transaction: %s", err)
-	}
 	api := &DepositAPI{
 		cfg:          cfg,
 		contractAddr: cfg.EthereumCfg.Contract,
-		neo:          nt,
-		eth:          ethClient,
+		neo:          neo,
+		eth:          eth,
 		ctx:          ctx,
 		store:        store,
 		logger:       log.NewLogger("api/deposit"),
@@ -61,7 +48,6 @@ func (w *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 	info := &types.LockerInfo{
 		State:          types.DepositInit,
 		RHash:          request.GetRHash(),
-		Amount:         request.GetAmount(),
 		LockedNep5Hash: request.GetNep5TxHash(),
 	}
 	if err := w.store.AddLockerInfo(info); err != nil {
@@ -88,6 +74,7 @@ func (w *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			return
 		}
 		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
+
 		// wrapper to eth lock
 		tx, err := eth.WrapperLock(request.GetRHash(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, swapInfo.Amount, w.eth)
 		if err != nil {

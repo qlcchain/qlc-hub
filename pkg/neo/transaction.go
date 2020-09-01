@@ -352,3 +352,7 @@ func (n *Transaction) IsConfirmedOverHeightInterval(txHeight uint32, interval in
 	nh := nHeight.BlockHeight
 	return nh-txHeight > uint32(interval)
 }
+
+func (n *Transaction) ValidateAddress(addr string) error {
+	return n.client.ValidateAddress(addr)
+}

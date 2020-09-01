@@ -27,15 +27,7 @@ type EventAPI struct {
 	logger      *zap.SugaredLogger
 }
 
-func NewEventAPI(ctx context.Context, cfg *config.Config) (*EventAPI, error) {
-	ethClient, err := ethclient.Dial(cfg.EthereumCfg.EndPoint)
-	if err != nil {
-		return nil, fmt.Errorf("eth client dail: %s", err)
-	}
-	nt, err := neo.NewTransaction(cfg.NEOCfg.EndPoint, cfg.NEOCfg.Contract)
-	if err != nil {
-		return nil, fmt.Errorf("neo transaction: %s", err)
-	}
+func NewEventAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *ethclient.Client) (*EventAPI, error) {
 	nep5Account, err := wallet.NewAccountFromWIF(cfg.NEOCfg.WIF)
 	if err != nil {
 		return nil, fmt.Errorf("NewAccountFromWIF: %s", err)
@@ -47,8 +39,8 @@ func NewEventAPI(ctx context.Context, cfg *config.Config) (*EventAPI, error) {
 	api := &EventAPI{
 		cfg:         cfg,
 		ethContract: cfg.EthereumCfg.Contract,
-		eth:         ethClient,
-		neo:         nt,
+		eth:         eth,
+		neo:         neo,
 		nep5Account: nep5Account,
 		store:       store,
 		ctx:         ctx,

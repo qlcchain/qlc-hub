@@ -3,6 +3,10 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	"github.com/qlcchain/qlc-hub/pkg/eth"
+	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"net"
 	"net/http"
 	"net/url"
@@ -25,6 +29,8 @@ type Server struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 	cfg    *config.Config
+	eth    *ethclient.Client
+	neo    *neo.Transaction
 	logger *zap.SugaredLogger
 }
 
@@ -43,6 +49,10 @@ func NewServer(cfg *config.Config) *Server {
 }
 
 func (g *Server) Start() error {
+	if err := g.checkBaseInfo(); err != nil {
+		return err
+	}
+
 	network, address, err := scheme(g.cfg.RPCCfg.GRPCListenAddress)
 	if err != nil {
 		return err
@@ -67,6 +77,36 @@ func (g *Server) Start() error {
 			g.logger.Errorf("gateway listen err: %s", err)
 		}
 	}()
+	return nil
+}
+
+func (g *Server) checkBaseInfo() error {
+	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint)
+	if err != nil {
+		return fmt.Errorf("eth dail: %s", err)
+	}
+	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
+		return fmt.Errorf("eth node connect timeout: %s", err)
+	}
+	g.eth = eClient
+
+	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract)
+	if err != nil {
+		return fmt.Errorf("neo transaction: %s", err)
+	}
+	if err := nTransaction.Client().Ping(); err != nil {
+		return fmt.Errorf("neo node connect timeout: %s", err)
+	}
+	g.neo = nTransaction
+
+	_, err = wallet.NewAccountFromWIF(g.cfg.NEOCfg.WIF)
+	if err != nil {
+		return fmt.Errorf("invalid nep5 wif: %s [%s]", err, g.cfg.NEOCfg.WIF)
+	}
+	_, _, err = eth.GetAccountByPriKey(g.cfg.EthereumCfg.Account)
+	if err != nil {
+		return fmt.Errorf("invalid erc20 account: %s [%s]", err, g.cfg.EthereumCfg.Account)
+	}
 	return nil
 }
 
@@ -115,7 +155,7 @@ func (g *Server) Stop() {
 			g.logger.Errorf("RESTful server shutdown failed:%+v", err)
 		}
 	}
-
+	g.eth.Close()
 	g.rpc.Stop()
 }
 
@@ -128,17 +168,17 @@ func scheme(endpoint string) (string, string, error) {
 }
 
 func (g *Server) registerApi() error {
-	eth, err := apis.NewDepositAPI(g.ctx, g.cfg)
+	eth, err := apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.eth)
 	if err != nil {
 		return err
 	}
 	pb.RegisterDepositAPIServer(g.rpc, eth)
-	neo, err := apis.NewWithdrawAPI(g.ctx, g.cfg)
+	neo, err := apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth)
 	if err != nil {
 		return err
 	}
 	pb.RegisterWithdrawAPIServer(g.rpc, neo)
-	event, err := apis.NewEventAPI(g.ctx, g.cfg)
+	event, err := apis.NewEventAPI(g.ctx, g.cfg, g.neo, g.eth)
 	if err != nil {
 		return err
 	}
