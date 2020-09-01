@@ -79,7 +79,7 @@ func WrapperLock(wrapperWif, userEthAddress, rHash string, amount int, c *Transa
 		Wif:    wrapperWif,
 	})
 	if err != nil {
-		return "", fmt.Errorf("WrapperLock/CreateTransaction: %s", err)
+		return "", fmt.Errorf("wrapperLock/createTransaction: %s", err)
 	}
 	return r, nil
 }
@@ -103,12 +103,12 @@ func UserUnlock(rOrigin, userWif string, c *Transaction) (string, error) {
 		FuncName: "userUnlock",
 	})
 	if err != nil {
-		return "", fmt.Errorf("UserUnlock/CreateTransaction: %s", err)
+		return "", fmt.Errorf("userUnlock/createTransaction: %s", err)
 	}
 	return r, nil
 }
 
-func RefundWrapper(rOrigin, wrapperWif string, c *Transaction) (string, error) {
+func WrapperFetch(rOrigin, wrapperWif string, c *Transaction) (string, error) {
 	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
 	if err != nil {
 		return "", err
@@ -128,7 +128,7 @@ func RefundWrapper(rOrigin, wrapperWif string, c *Transaction) (string, error) {
 		FuncName: "refundWrapper",
 	})
 	if err != nil {
-		return "", fmt.Errorf("UserUnlock/CreateTransaction: %s", err)
+		return "", fmt.Errorf("wrapperFetch/createTransaction: %s", err)
 	}
 	return r, nil
 }

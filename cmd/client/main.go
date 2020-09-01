@@ -7,11 +7,10 @@
 
 package main
 
-import (
-	"github.com/qlcchain/qlc-hub/cmd/client/commands"
-)
+import "github.com/qlcchain/qlc-hub/cmd/client/commands"
 
 func main() {
-	commands.Deposit()
-	//commands.Withdraw()
+	//commands.Deposit()
+	//commands.DepositFetch()
+	commands.Withdraw()
 }

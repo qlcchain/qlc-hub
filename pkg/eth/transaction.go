@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -109,18 +110,27 @@ func GetHashTimer(client *ethclient.Client, contract string, rHash string) (*Has
 		return nil, fmt.Errorf("eth/HexStringToBytes32: %s", err)
 	}
 	var callops = bind.CallOpts{}
-	rOrigin, amount, _, lockno, unlockno, err := instance.HashTimer(&callops, rHashByte32)
+	rOrigin, amount, addr, lockno, unlockno, err := instance.HashTimer(&callops, rHashByte32)
 	if err != nil {
 		return nil, fmt.Errorf("get hashTimer: %s", err)
 	}
 	return &HashTimer{
-		RHash:   rHash,
-		Amount:  amount,
-		ROrigin: string(rOrigin[:]),
-		//UserAddr: addr., //todo
+		RHash:          rHash,
+		Amount:         amount,
+		ROrigin:        string(rOrigin[:]),
+		UserAddr:       removeHexPrefix(addr.String()),
 		LockedHeight:   uint32(lockno.Int64()),
 		UnlockedHeight: uint32(unlockno.Int64()),
 	}, nil
+}
+
+func removeHexPrefix(str string) string {
+	if strings.HasPrefix(str, "0x") {
+		s := strings.TrimLeft(str, "0x")
+		fmt.Println("========= ", str, s)
+		return s
+	}
+	return str
 }
 
 type HashTimer struct {
@@ -137,7 +147,7 @@ func (h *HashTimer) String() string {
 	return string(v)
 }
 
-func TxVerifyAndConfirmed(txHash string, interval int, client *ethclient.Client) (bool, uint32, error) {
+func TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64, client *ethclient.Client) (bool, error) {
 	cTicker := time.NewTicker(6 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
@@ -145,25 +155,52 @@ func TxVerifyAndConfirmed(txHash string, interval int, client *ethclient.Client)
 		case <-cTicker.C:
 			_, p, err := client.TransactionByHash(context.Background(), common.HexToHash(txHash))
 			if err != nil {
-				return false, 0, fmt.Errorf("eth tx by hash: %s", err)
+				return false, fmt.Errorf("eth tx by hash: %s", err)
 			}
 			fmt.Println("======== ", p)
 			if !p {
 				goto HeightConfirmed
 			}
 		case <-cTimer.C:
-			return false, 0, fmt.Errorf("eth tx by hash timeout: %s", txHash)
+			return false, fmt.Errorf("eth tx by hash timeout: %s", txHash)
 		}
 	}
 
 HeightConfirmed:
 
-	//todo how to get tx height
-	time.Sleep(20 * time.Second)
-
-	return true, 0, nil
+	vTicker := time.NewTicker(6 * time.Second)
+	vTimer := time.NewTimer(300 * time.Second)
+	for {
+		select {
+		case <-vTicker.C:
+			b := IsConfirmedOverHeightInterval(txHeight, interval, client)
+			if b {
+				return true, nil
+			}
+		case <-vTimer.C:
+			return false, fmt.Errorf("eth tx by hash timeout: %s", txHash)
+		}
+	}
 }
 
-func GetBestBlockHeight() uint32 {
-	return 0
+func GetBestBlockHeight(client *ethclient.Client) (int64, error) {
+	block, err := client.BlockByNumber(context.Background(), nil)
+	if err != nil {
+		return 0, fmt.Errorf("BlockByNumber: %s", err)
+	}
+	return block.Number().Int64(), nil
+}
+
+func IsConfirmedOverHeightInterval(txHeight int64, interval int64, client *ethclient.Client) bool {
+	bestHeight, err := GetBestBlockHeight(client)
+	if err != nil {
+		return false
+	}
+	fmt.Println("======== bestHeight,txHeight ", bestHeight, txHeight)
+	if bestHeight-txHeight >= interval {
+		return true
+	} else {
+		return false
+	}
+
 }

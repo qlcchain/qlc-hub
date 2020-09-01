@@ -49,11 +49,10 @@ func TestNewQLCChain(t *testing.T) {
 	}
 	fmt.Println("Wrapper Lock: ", tx)
 
-	b, i, err := TxVerifyAndConfirmed(tx, 0, client)
+	b, err := TxVerifyAndConfirmed(tx, 0, 0, client)
 	if !b || err != nil {
-		t.Fatal(b, i, err)
+		t.Fatal(b, err)
 	}
-	//time.Sleep(30 * time.Second)
 
 	tx2, err := UserUnlock(rHash, rOrigin, userEthPrikey, contract, client)
 	if err != nil {
@@ -208,4 +207,17 @@ func TestQLCChainTransactorSession_IssueLock(t *testing.T) {
 
 		// for logs
 	}
+}
+
+func TestGetBestBlockHeight(t *testing.T) {
+	client, err := ethclient.Dial(endPointws)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	r, err := GetBestBlockHeight(client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(r)
 }

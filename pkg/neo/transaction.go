@@ -219,3 +219,16 @@ HeightConfirmed:
 		}
 	}
 }
+
+func IsConfirmedOverHeightInterval(txHeight uint32, interval int64, c *Transaction) bool {
+	nHeight, err := c.Client().GetStateHeight()
+	if err != nil {
+		return false
+	}
+	nh := nHeight.BlockHeight
+	if nh-txHeight >= uint32(interval) {
+		return true
+	} else {
+		return false
+	}
+}

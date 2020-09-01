@@ -101,7 +101,28 @@ func (w *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 }
 
 func (w *DepositAPI) FetchNotice(ctx context.Context, request *pb.FetchNoticeRequest) (*pb.Boolean, error) {
-	panic("implement me")
+	w.logger.Info("deposit fetchNotice: ", request.String())
+	//todo param verify
+
+	info, err := w.store.GetLockerInfo(request.GetRHash())
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		b, height, err := neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight, w.neoTransaction)
+		if !b || err != nil {
+			w.logger.Errorf("processEthEvent: %s, %v [%s]", err, b, request.GetRHash())
+			return
+		}
+		info.State = types.DepositNeoFetchDone
+		info.UnlockedNep5Height = height
+		info.UnlockedNep5Hash = request.GetNep5TxHash()
+		if err := w.store.UpdateLockerInfo(info); err != nil {
+			return
+		}
+		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
+	}()
+	return toBoolean(true), nil
 }
 
 func toBoolean(b bool) *pb.Boolean {

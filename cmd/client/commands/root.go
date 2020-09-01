@@ -10,8 +10,11 @@ import (
 )
 
 var (
-	// neo setting
+	// hub
+	//hubUrl = "https://hub-test.qlcchain.online"
+	hubUrl = "http://127.0.0.1:19745"
 
+	// neo setting
 	neoUrl        = "http://seed2.ngd.network:20332"
 	neoContract   string
 	neoContractLE util.Uint160
@@ -20,8 +23,7 @@ var (
 	userAccount, _    = wallet.NewAccountFromWIF(userWif)
 	wrapperWif        = "L2BAaQsPTDxGu1D9Q3x9ZS2ipabyzjBCNJAdP3D3NwZzL6KUqEkg"
 	wrapperAccount, _ = wallet.NewAccountFromWIF(wrapperWif)
-
-	userEthAddress = "2e1ac6242bb084029a9eb29dfb083757d27fced4"
+	userEthAddress    = "2e1ac6242bb084029a9eb29dfb083757d27fced4"
 
 	// eth setting
 	ethUrl           = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
@@ -30,9 +32,7 @@ var (
 	ethUserPrikey    = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 	userEthPrikey    = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 
-	// hub
-	//hubUrl = "https://hub-test.qlcchain.online"
-	hubUrl = "http://127.0.0.1:19745"
+	ethIntervalHeight = 20
 )
 
 var (
@@ -62,4 +62,6 @@ func init() {
 	}
 	//defer ethClient.Close()
 
+	logger.Info("neo contract: ", neoContract)
+	logger.Info("eth contract: ", ethContract)
 }

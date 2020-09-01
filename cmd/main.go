@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/qlcchain/qlc-hub/pkg/store"
 	"os"
 	"os/signal"
 	"syscall"
@@ -61,6 +62,7 @@ func main() {
 
 	if server != nil {
 		server.Stop()
+		store.CloseLedger() //todo wait all server stop
 	}
 }
 

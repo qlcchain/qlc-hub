@@ -15,33 +15,28 @@ func waitForLockerState(rHash string, lockerState types.LockerState) {
 	cTicker := time.NewTicker(6 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
-		state, err := getHashTimerState(rHash)
+		state, err := getLockerState(rHash)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Println("====== ", state)
-		if state == types.LockerStateToString(lockerState) {
+		fmt.Println("====== ", state["stateStr"])
+		if state["stateStr"].(string) == types.LockerStateToString(lockerState) {
 			return
 		}
 	}
 	logger.Fatal("timeout")
 }
 
-func getHashTimerState(rHash string) (string, error) {
-	bs, err := get(fmt.Sprintf("%s/debug/lockerState?value=%s", hubUrl, rHash))
+func getLockerState(rHash string) (map[string]interface{}, error) {
+	ret, err := get(fmt.Sprintf("%s/debug/lockerState?value=%s", hubUrl, rHash))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	ret := make(map[string]interface{})
-	err = json.Unmarshal(bs, &ret)
-	if err != nil {
-		return "", err
-	}
-	return ret["stateStr"].(string), nil
+	return ret, nil
 }
 
-func get(url string) ([]byte, error) {
+func get(url string) (map[string]interface{}, error) {
 	request, err := http.NewRequest("GET", fmt.Sprintf("%s", url), nil)
 	if err != nil {
 		return nil, fmt.Errorf("request: %s", err)
@@ -63,7 +58,12 @@ func get(url string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ReadAll : %s", err)
 	}
-	return bs, nil
+	ret := make(map[string]interface{})
+	err = json.Unmarshal(bs, &ret)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 func post(paras string, url string) (bool, error) {
@@ -104,15 +104,9 @@ func post(paras string, url string) (bool, error) {
 }
 
 func getContractAddress() (string, string) {
-	bs, err := get(fmt.Sprintf("%s/debug/ping", hubUrl))
+	ret, err := get(fmt.Sprintf("%s/debug/ping", hubUrl))
 	if err != nil {
 		logger.Fatal(err)
 	}
-	ret := make(map[string]string)
-	err = json.Unmarshal(bs, &ret)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	fmt.Println(ret)
-	return ret["ethContract"], ret["neoContract"]
+	return ret["ethContract"].(string), ret["neoContract"].(string)
 }
