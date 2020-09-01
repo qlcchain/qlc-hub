@@ -15,7 +15,6 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/io"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
-	"github.com/nspcc-dev/neo-go/pkg/rpc/response/result"
 	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
@@ -202,19 +201,7 @@ func (n *Transaction) Client() *client.Client {
 	return n.client
 }
 
-func (n *Transaction) QuerySwapInfo(rHash string) (map[string]interface{}, error) {
-	r, err := n.querySwapInfo(rHash)
-	if err != nil {
-		return nil, err
-	}
-	if info, err := StackToSwapInfo(r.Stack); err == nil {
-		return info, nil
-	} else {
-		return nil, err
-	}
-}
-
-func (n *Transaction) querySwapInfo(rHash string) (*result.Invoke, error) {
+func (n *Transaction) QuerySwapData(rHash string) (map[string]interface{}, error) {
 	hash, err := hex.DecodeString(rHash)
 	if err != nil {
 		return nil, err
@@ -231,10 +218,87 @@ func (n *Transaction) querySwapInfo(rHash string) (*result.Invoke, error) {
 	} else if r.State != "HALT" || len(r.Stack) == 0 {
 		return nil, errors.New("invalid VM state")
 	}
-	return r, nil
+
+	return StackToSwapInfo(r.Stack)
 }
 
-func TxVerifyAndConfirmed(txHash string, interval int, c *Transaction) (bool, uint32, error) {
+type SwapInfo struct {
+	Amount   int64
+	UserAddr string
+	rHash    string
+	rOrigin  string
+	OverTime int64
+}
+
+func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
+	data, err := n.QuerySwapData(rHash)
+	if err != nil {
+		return nil, err
+	}
+	info := new(SwapInfo)
+	amount, err := getAmount(data)
+	if err != nil {
+		return nil, err
+	}
+	info.Amount = amount
+	overTime, err := getIntValue("overtimeBlocks", data)
+	if err != nil {
+		return nil, err
+	}
+	info.OverTime = overTime
+	//origin, err := getStringValue("origin", data)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//info.rOrigin = origin
+	return info, nil
+}
+
+func getAmount(data map[string]interface{}) (int64, error) {
+	amount, err := getValue("amount", data)
+	if err != nil {
+		return 0, err
+	}
+	if r, ok := amount.(*big.Int); ok {
+		return r.Int64(), nil
+	} else {
+		return 0, errors.New("invalid amount")
+	}
+}
+
+func getIntValue(key string, data map[string]interface{}) (int64, error) {
+	if v, err := getValue(key, data); err != nil {
+		return 0, err
+	} else {
+		if r, ok := v.(int64); ok {
+			return r, nil
+		} else {
+			return 0, errors.New("invalid string")
+		}
+	}
+}
+
+func getStringValue(key string, data map[string]interface{}) (string, error) {
+	if v, err := getValue(key, data); err != nil {
+		return "", err
+	} else {
+		if r, ok := v.(string); ok {
+			return r, nil
+		} else {
+			return "", errors.New("invalid string")
+		}
+	}
+}
+
+func getValue(key string, data map[string]interface{}) (interface{}, error) {
+	if r, ok := data[key]; ok {
+		return r, nil
+	} else {
+		return 0, fmt.Errorf("can not get key %s [%s]", key, u.ToIndentString(data))
+	}
+}
+
+func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, uint32, error) {
 	//todo verify tx successfully
 
 	var txHeight uint32
@@ -247,7 +311,7 @@ func TxVerifyAndConfirmed(txHash string, interval int, c *Transaction) (bool, ui
 			if err != nil {
 				return false, 0, fmt.Errorf("tx verify decode hash: %s", err)
 			}
-			txHeight, err = c.client.GetTransactionHeight(hash)
+			txHeight, err = n.client.GetTransactionHeight(hash)
 			if err != nil {
 				fmt.Println("======= ", txHash, err)
 			} else {
@@ -264,7 +328,7 @@ HeightConfirmed:
 	for {
 		select {
 		case <-nTicker.C:
-			nHeight, err := c.Client().GetStateHeight()
+			nHeight, err := n.Client().GetStateHeight()
 			if err != nil {
 				return false, 0, err
 			} else {
@@ -280,15 +344,11 @@ HeightConfirmed:
 	}
 }
 
-func IsConfirmedOverHeightInterval(txHeight uint32, interval int64, c *Transaction) bool {
-	nHeight, err := c.Client().GetStateHeight()
+func (n *Transaction) IsConfirmedOverHeightInterval(txHeight uint32, interval int64) bool {
+	nHeight, err := n.Client().GetStateHeight()
 	if err != nil {
 		return false
 	}
 	nh := nHeight.BlockHeight
-	if nh-txHeight >= uint32(interval) {
-		return true
-	} else {
-		return false
-	}
+	return nh-txHeight > uint32(interval)
 }

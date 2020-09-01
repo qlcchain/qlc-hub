@@ -17,14 +17,14 @@ import (
 )
 
 type EventAPI struct {
-	ethContract    string
-	ethClient      *ethclient.Client
-	neoTransaction *neo.Transaction
-	nep5Account    *wallet.Account
-	store          *store.Store
-	cfg            *config.Config
-	ctx            context.Context
-	logger         *zap.SugaredLogger
+	ethContract string
+	eth         *ethclient.Client
+	neo         *neo.Transaction
+	nep5Account *wallet.Account
+	store       *store.Store
+	cfg         *config.Config
+	ctx         context.Context
+	logger      *zap.SugaredLogger
 }
 
 func NewEventAPI(ctx context.Context, cfg *config.Config) (*EventAPI, error) {
@@ -45,14 +45,14 @@ func NewEventAPI(ctx context.Context, cfg *config.Config) (*EventAPI, error) {
 		return nil, err
 	}
 	api := &EventAPI{
-		cfg:            cfg,
-		ethContract:    cfg.EthereumCfg.Contract,
-		ethClient:      ethClient,
-		neoTransaction: nt,
-		nep5Account:    nep5Account,
-		store:          store,
-		ctx:            ctx,
-		logger:         log.NewLogger("api/event"),
+		cfg:         cfg,
+		ethContract: cfg.EthereumCfg.Contract,
+		eth:         ethClient,
+		neo:         nt,
+		nep5Account: nep5Account,
+		store:       store,
+		ctx:         ctx,
+		logger:      log.NewLogger("api/event"),
 	}
 	go api.ethEventLister()
 	go api.loopLockerState()

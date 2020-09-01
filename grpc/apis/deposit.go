@@ -16,13 +16,13 @@ import (
 )
 
 type DepositAPI struct {
-	contractAddr   string
-	ethClient      *ethclient.Client
-	neoTransaction *neo.Transaction
-	store          *store.Store
-	cfg            *config.Config
-	ctx            context.Context
-	logger         *zap.SugaredLogger
+	contractAddr string
+	eth          *ethclient.Client
+	neo          *neo.Transaction
+	store        *store.Store
+	cfg          *config.Config
+	ctx          context.Context
+	logger       *zap.SugaredLogger
 }
 
 func NewDepositAPI(ctx context.Context, cfg *config.Config) (*DepositAPI, error) {
@@ -42,13 +42,13 @@ func NewDepositAPI(ctx context.Context, cfg *config.Config) (*DepositAPI, error)
 		return nil, fmt.Errorf("neo transaction: %s", err)
 	}
 	api := &DepositAPI{
-		cfg:            cfg,
-		contractAddr:   cfg.EthereumCfg.Contract,
-		neoTransaction: nt,
-		ethClient:      ethClient,
-		ctx:            ctx,
-		store:          store,
-		logger:         log.NewLogger("api/deposit"),
+		cfg:          cfg,
+		contractAddr: cfg.EthereumCfg.Contract,
+		neo:          nt,
+		eth:          ethClient,
+		ctx:          ctx,
+		store:        store,
+		logger:       log.NewLogger("api/deposit"),
 	}
 	return api, nil
 }
@@ -69,21 +69,27 @@ func (w *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 	}
 	w.logger.Infof("[%s] add state to [%s]", info.RHash, types.LockerStateToString(types.DepositInit))
 	go func() {
-		b, height, err := neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight, w.neoTransaction)
+		b, height, err := w.neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight)
 		if !b || err != nil {
 			w.logger.Errorf("neo tx confirmed: %s, %v [%s]", err, b, request.GetRHash())
 			return
 		}
 
+		swapInfo, err := w.neo.QuerySwapInfo(request.GetRHash())
+		if err != nil {
+			w.logger.Errorf("query swap info: %s", err)
+		}
+
 		// init info
 		info.State = types.DepositNeoLockedDone
 		info.LockedNep5Height = height
+		info.Amount = swapInfo.Amount
 		if err := w.store.UpdateLockerInfo(info); err != nil {
 			return
 		}
 		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
 		// wrapper to eth lock
-		tx, err := eth.WrapperLock(request.GetRHash(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, request.GetAmount(), w.ethClient)
+		tx, err := eth.WrapperLock(request.GetRHash(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, swapInfo.Amount, w.eth)
 		if err != nil {
 			w.logger.Error(err)
 			return
@@ -108,7 +114,7 @@ func (w *DepositAPI) FetchNotice(ctx context.Context, request *pb.FetchNoticeReq
 		return nil, err
 	}
 	go func() {
-		b, height, err := neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight, w.neoTransaction)
+		b, height, err := w.neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight)
 		if !b || err != nil {
 			w.logger.Errorf("processEthEvent: %s, %v [%s]", err, b, request.GetRHash())
 			return

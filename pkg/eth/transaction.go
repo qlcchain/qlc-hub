@@ -186,10 +186,6 @@ func IsConfirmedOverHeightInterval(txHeight int64, interval int64, client *ethcl
 		return false
 	}
 	fmt.Println("======== bestHeight,txHeight ", bestHeight, txHeight)
-	if bestHeight-txHeight >= interval {
-		return true
-	} else {
-		return false
-	}
+	return bestHeight-txHeight > interval
 
 }

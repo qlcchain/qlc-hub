@@ -16,12 +16,12 @@ import (
 )
 
 type WithdrawAPI struct {
-	neoTransaction *neo.Transaction
-	ethClient      *ethclient.Client
-	store          *store.Store
-	cfg            *config.Config
-	ctx            context.Context
-	logger         *zap.SugaredLogger
+	neo    *neo.Transaction
+	eth    *ethclient.Client
+	store  *store.Store
+	cfg    *config.Config
+	ctx    context.Context
+	logger *zap.SugaredLogger
 }
 
 func NewWithdrawAPI(ctx context.Context, cfg *config.Config) (*WithdrawAPI, error) {
@@ -38,12 +38,12 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config) (*WithdrawAPI, erro
 		return nil, fmt.Errorf("eth client dail: %s", err)
 	}
 	return &WithdrawAPI{
-		cfg:            cfg,
-		neoTransaction: nt,
-		store:          store,
-		ethClient:      ethClient,
-		ctx:            ctx,
-		logger:         log.NewLogger("api/withdraw"),
+		cfg:    cfg,
+		neo:    nt,
+		store:  store,
+		eth:    ethClient,
+		ctx:    ctx,
+		logger: log.NewLogger("api/withdraw"),
 	}, nil
 }
 
@@ -57,7 +57,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		return nil, err
 	}
 	go func() {
-		b, height, err := neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight, w.neoTransaction)
+		b, height, err := w.neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight)
 		if !b || err != nil {
 			w.logger.Errorf("neo tx confirmed: %s, %v [%s]", err, b, rHash)
 			return
@@ -71,7 +71,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		}
 		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
 
-		tx, err := eth.WrapperUnlock(rHash, request.GetROrigin(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, w.ethClient)
+		tx, err := eth.WrapperUnlock(rHash, request.GetROrigin(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, w.eth)
 		if err != nil {
 			w.logger.Errorf("eth wrapper unlock: %s [%s]", err, rHash)
 			return

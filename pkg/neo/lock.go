@@ -7,7 +7,7 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 )
 
-func UserLock(userWif, wrapperAddress, rHash string, amount int, c *Transaction) (string, error) {
+func (n *Transaction) UserLock(userWif, wrapperAddress, rHash string, amount int) (string, error) {
 	userAccount, err := wallet.NewAccountFromWIF(userWif)
 	if err != nil {
 		return "", err
@@ -22,7 +22,7 @@ func UserLock(userWif, wrapperAddress, rHash string, amount int, c *Transaction)
 			IntegerTypeParam(10), //todo
 		}),
 	}
-	r, err := c.CreateTransaction(TransactionParam{
+	r, err := n.CreateTransaction(TransactionParam{
 		Params: params,
 		Wif:    userWif,
 	})
@@ -32,7 +32,7 @@ func UserLock(userWif, wrapperAddress, rHash string, amount int, c *Transaction)
 	return r, nil
 }
 
-func WrapperUnlock(rOrigin, wrapperWif, userEthAddress string, c *Transaction) (string, error) {
+func (n *Transaction) WrapperUnlock(rOrigin, wrapperWif, userEthAddress string) (string, error) {
 	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
 	if err != nil {
 		return "", err
@@ -45,7 +45,7 @@ func WrapperUnlock(rOrigin, wrapperWif, userEthAddress string, c *Transaction) (
 			ArrayTypeParam(userEthAddress),
 		}),
 	}
-	r, err := c.CreateTransactionAppendWitness(TransactionParam{
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
 		Params:   params,
 		Wif:      wrapperWif,
 		ROrigin:  rOrigin,
@@ -59,7 +59,7 @@ func WrapperUnlock(rOrigin, wrapperWif, userEthAddress string, c *Transaction) (
 
 // withdraw
 
-func WrapperLock(wrapperWif, userEthAddress, rHash string, amount int, c *Transaction) (string, error) { //todo set int64
+func (n *Transaction) WrapperLock(wrapperWif, userEthAddress, rHash string, amount int) (string, error) { //todo set int64
 	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
 	if err != nil {
 		return "", err
@@ -74,7 +74,7 @@ func WrapperLock(wrapperWif, userEthAddress, rHash string, amount int, c *Transa
 			IntegerTypeParam(10), //todo setting
 		}),
 	}
-	r, err := c.CreateTransaction(TransactionParam{
+	r, err := n.CreateTransaction(TransactionParam{
 		Params: params,
 		Wif:    wrapperWif,
 	})
@@ -84,7 +84,7 @@ func WrapperLock(wrapperWif, userEthAddress, rHash string, amount int, c *Transa
 	return r, nil
 }
 
-func UserUnlock(rOrigin, userWif string, c *Transaction) (string, error) {
+func (n *Transaction) UserUnlock(rOrigin, userWif string) (string, error) {
 	userAccount, err := wallet.NewAccountFromWIF(userWif)
 	if err != nil {
 		return "", err
@@ -96,7 +96,7 @@ func UserUnlock(rOrigin, userWif string, c *Transaction) (string, error) {
 			AddressParam(userAccount.Address),
 		}),
 	}
-	r, err := c.CreateTransactionAppendWitness(TransactionParam{
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
 		Params:   params,
 		Wif:      userWif,
 		ROrigin:  rOrigin,
@@ -108,7 +108,7 @@ func UserUnlock(rOrigin, userWif string, c *Transaction) (string, error) {
 	return r, nil
 }
 
-func WrapperFetch(rHash, wrapperWif string, c *Transaction) (string, error) {
+func (n *Transaction) WrapperFetch(rHash, wrapperWif string) (string, error) {
 	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
 	if err != nil {
 		return "", err
@@ -121,7 +121,7 @@ func WrapperFetch(rHash, wrapperWif string, c *Transaction) (string, error) {
 			AddressParam(wrapperAccount.Address),
 		}),
 	}
-	r, err := c.CreateTransactionAppendWitness(TransactionParam{
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
 		Params:   params,
 		Wif:      wrapperWif,
 		RHash:    rHash,
