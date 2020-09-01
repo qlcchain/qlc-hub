@@ -10,18 +10,19 @@ import (
 	"sort"
 	"time"
 
+	"github.com/nspcc-dev/neo-go/pkg/io"
+	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
+
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
-	"github.com/nspcc-dev/neo-go/pkg/io"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/response/result"
 	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
-	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"go.uber.org/zap"
 
@@ -80,6 +81,19 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 	return re.StringLE(), nil
 }
 
+type witnessWrapper struct {
+	transaction.Witness
+	ScriptHash *util.Uint160
+}
+
+func (w witnessWrapper) GetScriptHash() *util.Uint160 {
+	if w.ScriptHash == nil {
+		hash := w.Witness.ScriptHash()
+		w.ScriptHash = &hash
+	}
+	return w.ScriptHash
+}
+
 func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
 	account, err := wallet.NewAccountFromWIF(param.Wif)
 	if err != nil {
@@ -108,32 +122,57 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 			Data:  accountUint.BytesBE(),
 		})
 		r := remark()
+		//r, _ := hex.DecodeString("00000174483c1ff2d76670ab")
 		tx.Attributes = append(tx.Attributes, transaction.Attribute{
 			Usage: transaction.Remark,
 			Data:  r,
 		})
 	}
 
+	if err := account.SignTx(tx); err != nil {
+		return "", fmt.Errorf("signTx: %s", err)
+	}
+
+	var tmp []*witnessWrapper
+	// sign
+	tmp = append(tmp, &witnessWrapper{
+		Witness: transaction.Witness{
+			InvocationScript:   tx.Scripts[0].InvocationScript,
+			VerificationScript: tx.Scripts[0].VerificationScript,
+		},
+		ScriptHash: nil,
+	})
 	// add witness
 	script := io.NewBufBinWriter()
 	emit.String(script.BinWriter, param.ROrigin)
 	emit.Int(script.BinWriter, 1)
 	emit.Opcode(script.BinWriter, opcode.PACK)
 	emit.String(script.BinWriter, param.FuncName)
-	tx.Scripts = append(tx.Scripts, transaction.Witness{
-		InvocationScript:   script.Bytes(),
-		VerificationScript: []byte{},
+	tmp = append(tmp, &witnessWrapper{
+		Witness: transaction.Witness{
+			InvocationScript:   script.Bytes(),
+			VerificationScript: []byte{},
+		},
+		ScriptHash: &n.contractLE,
 	})
 
-	if err := account.SignTx(tx); err != nil {
-		return "", fmt.Errorf("signTx: %s", err)
+	sort.Slice(tmp, func(i, j int) bool {
+		h1 := tmp[i].GetScriptHash()
+		h2 := tmp[j].GetScriptHash()
+
+		return big.NewInt(0).SetBytes(h1.BytesLE()).Cmp(big.NewInt(0).SetBytes(h2.BytesLE())) < 0
+	})
+
+	size := len(tmp)
+	witness := make([]transaction.Witness, size)
+	for i := 0; i < size; i++ {
+		witness[i] = transaction.Witness{
+			InvocationScript:   tmp[i].InvocationScript,
+			VerificationScript: tmp[i].VerificationScript,
+		}
 	}
 
-	sort.Slice(tx.Scripts, func(i, j int) bool {
-		b1 := util.ArrayReverse(tx.Scripts[i].VerificationScript)
-		b2 := util.ArrayReverse(tx.Scripts[j].VerificationScript)
-		return big.NewInt(0).SetBytes(b1).Cmp(big.NewInt(0).SetBytes(b2)) > 0
-	})
+	tx.Scripts = witness
 
 	n.logger.Debug(hex.EncodeToString(tx.Bytes()))
 	n.logger.Debug(u.ToIndentString(tx))

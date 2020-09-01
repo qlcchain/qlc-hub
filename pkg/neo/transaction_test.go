@@ -1,12 +1,7 @@
 package neo
 
 import (
-	"encoding/hex"
-	"math/big"
-	"sort"
 	"testing"
-
-	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 
 	"github.com/nspcc-dev/neo-go/pkg/util"
 
@@ -44,24 +39,4 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(u.ToIndentString(r))
-}
-
-func TestSortWitness(t *testing.T) {
-	var scripts []transaction.Witness
-	scripts = append(scripts, transaction.Witness{
-		InvocationScript:   nil,
-		VerificationScript: []byte{},
-	})
-	data, _ := hex.DecodeString("2103d0b9bfd890adc27663534b7c08131392fc67cf2e3a63e0eccc9f0a2f6d7b3e84ac")
-	scripts = append(scripts, transaction.Witness{
-		InvocationScript:   nil,
-		VerificationScript: data,
-	})
-	t.Log(u.ToIndentString(scripts))
-	sort.Slice(scripts, func(i, j int) bool {
-		b1 := util.ArrayReverse(scripts[i].VerificationScript)
-		b2 := util.ArrayReverse(scripts[j].VerificationScript)
-		return big.NewInt(0).SetBytes(b1).Cmp(big.NewInt(0).SetBytes(b2)) > 0
-	})
-	t.Log(u.ToIndentString(scripts))
 }
