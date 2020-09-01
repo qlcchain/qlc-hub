@@ -3,18 +3,18 @@ package apis
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"go.uber.org/zap"
 )
 
 type InfoAPI struct {
@@ -87,6 +87,8 @@ func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
 		UnlockedNep5Height:  s.UnlockedNep5Height,
 		UnlockedErc20Hash:   s.UnlockedErc20Hash,
 		UnlockedErc20Height: s.UnlockedErc20Height,
+		StartTime:           time.Unix(s.StartTime, 0).Format(time.RFC3339),
+		LastModifyTime:      time.Unix(s.LastModifyTime, 0).Format(time.RFC3339),
 		Fail:                s.Fail,
 		Remark:              s.Remark,
 	}

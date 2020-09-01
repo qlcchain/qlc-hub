@@ -16,6 +16,8 @@ type LockerInfo struct {
 	UnlockedNep5Height  uint32      `msg:"unHeight" json:"unlockedNep5Height"`
 	UnlockedErc20Hash   string      `msg:"ueHash" json:"unlockedErc20Hash"`
 	UnlockedErc20Height uint32      `msg:"ueHeight" json:"unlockedErc20Height"`
+	StartTime           int64       `msg:"startTime" json:"startTime"`
+	LastModifyTime      int64       `msg:"lastModifyTime" json:"lastModifyTime"`
 	Fail                bool        `msg:"fail" json:"fail"`
 	Remark              string      `msg:"remark" json:"remark"`
 }

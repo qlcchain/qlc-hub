@@ -4,10 +4,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
+	"go.uber.org/zap"
 )
 
 var (
@@ -34,6 +33,7 @@ var (
 	userEthPrikey    = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 
 	ethIntervalHeight = 20
+	neoIntervalHeight = 20
 )
 
 var (

@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -14,6 +12,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"go.uber.org/zap"
 )
 
 type WithdrawAPI struct {
@@ -49,7 +48,7 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config) (*WithdrawAPI, erro
 }
 
 func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequest) (*pb.Boolean, error) {
-	w.logger.Info("withdraw unlock: ", request.String())
+	w.logger.Info("api - withdraw unlock: ", request.String())
 	//todo check params
 
 	rHash := request.GetRHash()
@@ -70,7 +69,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		if err := w.store.UpdateLockerInfo(info); err != nil {
 			return
 		}
-		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
+		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
 
 		tx, err := eth.WrapperUnlock(rHash, request.GetROrigin(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, w.ethClient)
 		if err != nil {
@@ -83,7 +82,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		if err := w.store.UpdateLockerInfo(info); err != nil {
 			return
 		}
-		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))
+		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))
 	}()
 
 	return toBoolean(true), nil

@@ -53,8 +53,10 @@ message LockerStateResponse {
   uint32 unlockedNep5Height  = 13;
   string unlockedErc20Hash   = 14;
   uint32 unlockedErc20Height = 15;
-  bool   fail                = 16;
-  string remark              = 17;
+  string startTime           = 16;
+  string lastModifyTime      = 17;
+  bool   fail                = 18;
+  string remark              = 19;
 }
 
 message Offset {

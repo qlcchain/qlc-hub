@@ -11,14 +11,13 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 var (
 	url             = "http://seed2.ngd.network:20332"
-	contractAddress = "0533290f35572cd06e3667653255ffd6ee6430fb"
+	contractAddress = "e0abb5fde5a0b870c13f3e60258856e38a939187"
 	contractLE, _   = util.Uint160DecodeStringLE(contractAddress)
 
 	userWif            = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
@@ -48,13 +47,13 @@ func neo2eth() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 3147483647, c)
+	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 230000000, c)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user lock: ", tx)
 
-	b, _, err := neo.TxVerifyAndConfirmed(tx, 3, c)
+	b, _, err := neo.TxVerifyAndConfirmed(tx, 2, c)
 	if err != nil {
 		log.Fatal(b, err)
 	}
@@ -79,8 +78,8 @@ func neo2ethRefund() {
 		log.Fatal(err)
 	}
 	log.Println("user lock: ", tx)
-	sleepForHashTimer(40, c)
-	refundUser(rOrigin, c)
+	//sleepForHashTimer(40, c)
+	//refundUser(rOrigin, c)
 }
 
 func eth2neo() {
@@ -116,12 +115,12 @@ func eth2neoRefund() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rOrigin, rHash := hubUtil.Sha256Hash()
-	log.Println("hash: ", rOrigin, "==>", rHash)
-
-	wrapperLock(rHash, c)
-	sleepForHashTimer(20, c)
-	refundWrapper(rOrigin, c)
+	//rOrigin, rHash := hubUtil.Sha256Hash()
+	//log.Println("hash: ", rOrigin, "==>", rHash)
+	//
+	//wrapperLock(rHash, c)
+	//sleepForHashTimer(20, c)
+	refundWrapper("3a985606e258becc169b1bfcb87ce443d9e546f22b0d069fe0cc4caf17afde89", c)
 }
 
 func sleepForHashTimer(n uint32, c *neo.Transaction) {
@@ -186,18 +185,18 @@ func userUnlock(rOrigin string, c *neo.Transaction) {
 	log.Println("user unlock hash ==> ", fmt.Sprintf("0x%s", r))
 }
 
-func refundWrapper(rOrigin string, c *neo.Transaction) {
+func refundWrapper(rHash string, c *neo.Transaction) {
 	params := []request.Param{
 		neo.FunctionName("refundWrapper"),
 		neo.ArrayParams([]request.Param{
-			neo.StringTypeParam(rOrigin),
+			neo.ArrayTypeParam(rHash),
 			neo.AddressParam(wrapperAccount.Address),
 		}),
 	}
 	r, err := c.CreateTransactionAppendWitness(neo.TransactionParam{
 		Params:   params,
 		Wif:      wrapperWif,
-		ROrigin:  rOrigin,
+		RHash:    rHash,
 		FuncName: "refundWrapper",
 	})
 	if err != nil {

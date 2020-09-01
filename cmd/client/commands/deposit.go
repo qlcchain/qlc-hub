@@ -73,10 +73,10 @@ func DepositFetch() {
 
 	// wait for wrapper state
 	waitForLockerState(rHash, types.DepositEthLockedDone)
-	waitForTimerOut(rHash)
+	waitForEthIntervalTimerOut(rHash)
 }
 
-func waitForTimerOut(rHash string) {
+func waitForEthIntervalTimerOut(rHash string) {
 	log.Printf("waiting for timeout, %s  ... \n", rHash)
 	r, err := getLockerState(rHash)
 	if err != nil {

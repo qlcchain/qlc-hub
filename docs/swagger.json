@@ -332,6 +332,12 @@
           "type": "integer",
           "format": "int64"
         },
+        "startTime": {
+          "type": "string"
+        },
+        "lastModifyTime": {
+          "type": "string"
+        },
         "fail": {
           "type": "boolean",
           "format": "boolean"

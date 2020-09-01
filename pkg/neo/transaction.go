@@ -10,23 +10,20 @@ import (
 	"sort"
 	"time"
 
-	"github.com/nspcc-dev/neo-go/pkg/io"
-	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
-
-	u "github.com/qlcchain/qlc-hub/pkg/util"
-
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
+	"github.com/nspcc-dev/neo-go/pkg/io"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/response/result"
 	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
+	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	u "github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -61,6 +58,7 @@ type TransactionParam struct {
 	Sysfee   util.Fixed8
 	Netfee   util.Fixed8
 	ROrigin  string
+	RHash    string
 	FuncName string
 }
 
@@ -144,7 +142,17 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 	})
 	// add witness
 	script := io.NewBufBinWriter()
-	emit.String(script.BinWriter, param.ROrigin)
+	if param.ROrigin != "" && param.RHash == "" {
+		emit.String(script.BinWriter, param.ROrigin)
+	} else if param.ROrigin == "" && param.RHash != "" {
+		rHex, err := hex.DecodeString(param.RHash)
+		if err != nil {
+			return "", fmt.Errorf("decode error: %s", err)
+		}
+		emit.Bytes(script.BinWriter, rHex)
+	} else {
+		return "", errors.New("invalid r text")
+	}
 	emit.Int(script.BinWriter, 1)
 	emit.Opcode(script.BinWriter, opcode.PACK)
 	emit.String(script.BinWriter, param.FuncName)
@@ -241,7 +249,7 @@ func TxVerifyAndConfirmed(txHash string, interval int, c *Transaction) (bool, ui
 			}
 			txHeight, err = c.client.GetTransactionHeight(hash)
 			if err != nil {
-				fmt.Println("======= ", err)
+				fmt.Println("======= ", txHash, err)
 			} else {
 				goto HeightConfirmed
 			}

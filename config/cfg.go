@@ -7,9 +7,8 @@ import (
 	"runtime"
 	"time"
 
-	"gopkg.in/validator.v2"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"gopkg.in/validator.v2"
 )
 
 const (
@@ -19,7 +18,7 @@ const (
 
 type Config struct {
 	Verbose     bool         `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
-	LogLevel    string       `json:"logLevel" short:"l" long:"level" description:"log level" default:"debug"` //info,warn,debug.
+	LogLevel    string       `json:"logLevel" short:"l" long:"level" description:"log level" default:"info"` //info,warn,debug.
 	NEOCfg      *NEOCfg      `json:"neo" validate:"nonnil"`
 	EthereumCfg *EthereumCfg `json:"ethereum" validate:"nonnil"`
 	RPCCfg      *RPCCfg      `json:"rpc" validate:"nonnil"`
@@ -28,7 +27,7 @@ type Config struct {
 
 type NEOCfg struct {
 	EndPoint    string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" default:"http://seed2.ngd.network:20332" validate:"nonzero"`
-	Contract    string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"0533290f35572cd06e3667653255ffd6ee6430fb" validate:"nonzero"`
+	Contract    string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"e0abb5fde5a0b870c13f3e60258856e38a939187" validate:"nonzero"`
 	WIF         string `json:"wif" long:"wif" description:"NEO account WIF" default:"L2BAaQsPTDxGu1D9Q3x9ZS2ipabyzjBCNJAdP3D3NwZzL6KUqEkg" validate:"nonzero"`
 	WIFPassword string `json:"password" long:"password" description:"NEO account password"`
 }

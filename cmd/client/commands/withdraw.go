@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
@@ -48,4 +49,40 @@ func Withdraw() {
 	}
 	waitForLockerState(rHash, types.WithDrawEthUnlockDone)
 	logger.Info("successfully")
+}
+
+func WithdrawFetch() {
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	logger.Info("hash: ", rOrigin, "==>", rHash)
+
+	// eth - user lock
+	_, address, err := eth.GetAccountByPriKey(ethWrapperPrikey)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	tx, err := eth.UserLock(rHash, userEthPrikey, address.String(), ethContract, int64(withdrawAmount), ethClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logger.Info("eth user lock hash: ", tx)
+
+	waitForNeoIntervalTimerOut(tx)
+}
+
+func waitForNeoIntervalTimerOut(txHash string) {
+	log.Printf("waiting for timeout  ... \n")
+	cHeight, err := neoTrasaction.Client().GetStateHeight()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ch := cHeight.BlockHeight
+
+	for i := 0; i < neoIntervalHeight*12; i++ {
+		time.Sleep(10 * time.Second)
+		b := neo.IsConfirmedOverHeightInterval(ch, int64(ethIntervalHeight), neoTrasaction)
+		if b {
+			return
+		}
+	}
+	logger.Fatal("timeout ")
 }

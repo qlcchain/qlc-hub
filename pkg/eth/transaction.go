@@ -7,14 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -118,19 +116,10 @@ func GetHashTimer(client *ethclient.Client, contract string, rHash string) (*Has
 		RHash:          rHash,
 		Amount:         amount,
 		ROrigin:        string(rOrigin[:]),
-		UserAddr:       removeHexPrefix(addr.String()),
+		UserAddr:       util.RemoveHexPrefix(addr.String()),
 		LockedHeight:   uint32(lockno.Int64()),
 		UnlockedHeight: uint32(unlockno.Int64()),
 	}, nil
-}
-
-func removeHexPrefix(str string) string {
-	if strings.HasPrefix(str, "0x") {
-		s := strings.TrimLeft(str, "0x")
-		fmt.Println("========= ", str, s)
-		return s
-	}
-	return str
 }
 
 type HashTimer struct {

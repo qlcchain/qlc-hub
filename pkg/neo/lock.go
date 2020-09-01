@@ -108,7 +108,7 @@ func UserUnlock(rOrigin, userWif string, c *Transaction) (string, error) {
 	return r, nil
 }
 
-func WrapperFetch(rOrigin, wrapperWif string, c *Transaction) (string, error) {
+func WrapperFetch(rHash, wrapperWif string, c *Transaction) (string, error) {
 	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
 	if err != nil {
 		return "", err
@@ -117,14 +117,14 @@ func WrapperFetch(rOrigin, wrapperWif string, c *Transaction) (string, error) {
 	params := []request.Param{
 		FunctionName("refundWrapper"),
 		ArrayParams([]request.Param{
-			StringTypeParam(rOrigin),
+			ArrayTypeParam(rHash),
 			AddressParam(wrapperAccount.Address),
 		}),
 	}
 	r, err := c.CreateTransactionAppendWitness(TransactionParam{
 		Params:   params,
 		Wif:      wrapperWif,
-		ROrigin:  rOrigin,
+		RHash:    rHash,
 		FuncName: "refundWrapper",
 	})
 	if err != nil {
