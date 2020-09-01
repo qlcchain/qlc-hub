@@ -16,7 +16,8 @@ type LockerInfo struct {
 	UnlockedNep5Height  uint32      `msg:"unHeight" json:"unlockedNep5Height"`
 	UnlockedErc20Hash   string      `msg:"ueHash" json:"unlockedErc20Hash"`
 	UnlockedErc20Height uint32      `msg:"ueHeight" json:"unlockedErc20Height"`
-	Mark                string      `msg:"mark" json:"mark"`
+	Fail                bool        `msg:"fail" json:"fail"`
+	Remark              string      `msg:"remark" json:"remark"`
 }
 
 func (b *LockerInfo) Serialize() ([]byte, error) {

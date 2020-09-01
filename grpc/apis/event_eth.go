@@ -57,20 +57,20 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 	var err error
 	if eth.State(state) != eth.DestroyLock {
 		if info, err = e.store.GetLockerInfo(rHash); err != nil {
-			e.logger.Errorf("ethEvent/getLockerInfo: %s [%s]", err, rHash)
+			e.logger.Errorf("ethEvent/getLockerInfo: %s, rHash[%s], state[%d], txHash[%s]", err, rHash, state, tx)
 			return
 		}
 	}
 
 	var b bool
 	if b, err = eth.TxVerifyAndConfirmed(tx, int64(txHeight), int64(ethConfirmedHeight), e.ethClient); !b || err != nil {
-		e.logger.Errorf("ethEvent/txVerify(eth): %s, %v [%s]", err, b, rHash)
+		e.logger.Errorf("ethEvent/txVerify(eth): %s, %v, rHash[%s], txHash[%s]", err, b, rHash, tx)
 		return
 	}
 
 	var hashTimer *eth.HashTimer
 	if hashTimer, err = eth.GetHashTimer(e.ethClient, e.ethContract, rHash); err != nil {
-		e.logger.Errorf("ethEvent/getHashTimer: %s [%s]", err, rHash)
+		e.logger.Errorf("ethEvent/getHashTimer: %s, rHash[%s], txHash[%s]", err, rHash, tx)
 		return
 	}
 

@@ -148,6 +148,11 @@ func (g *Server) registerApi() error {
 		return err
 	}
 	pb.RegisterDebugAPIServer(g.rpc, debug)
+	info, err := apis.NewInfoAPI(g.ctx, g.cfg)
+	if err != nil {
+		return err
+	}
+	pb.RegisterInfoAPIServer(g.rpc, info)
 	return nil
 }
 
@@ -156,6 +161,9 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 		return err
 	}
 	if err := pb.RegisterWithdrawAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := pb.RegisterInfoAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := pb.RegisterDebugAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {

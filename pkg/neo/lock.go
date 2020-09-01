@@ -52,7 +52,7 @@ func WrapperUnlock(rOrigin, wrapperWif, userEthAddress string, c *Transaction) (
 		FuncName: "wrapperUnlock",
 	})
 	if err != nil {
-		return "", fmt.Errorf("WrapperUnlock/CreateTransaction: %s", err)
+		return "", fmt.Errorf("wrapperUnlock/createTransaction: %s", err)
 	}
 	return r, nil
 }

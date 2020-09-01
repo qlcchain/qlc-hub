@@ -29,7 +29,7 @@ func waitForLockerState(rHash string, lockerState types.LockerState) {
 }
 
 func getLockerState(rHash string) (map[string]interface{}, error) {
-	ret, err := get(fmt.Sprintf("%s/debug/lockerState?value=%s", hubUrl, rHash))
+	ret, err := get(fmt.Sprintf("%s/info/lockerState?value=%s", hubUrl, rHash))
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func post(paras string, url string) (bool, error) {
 }
 
 func getContractAddress() (string, string) {
-	ret, err := get(fmt.Sprintf("%s/debug/ping", hubUrl))
+	ret, err := get(fmt.Sprintf("%s/info/ping", hubUrl))
 	if err != nil {
 		logger.Fatal(err)
 	}

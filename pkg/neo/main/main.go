@@ -48,7 +48,7 @@ func neo2eth() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 180000000, c)
+	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 3147483647, c)
 	if err != nil {
 		log.Fatal(err)
 	}
