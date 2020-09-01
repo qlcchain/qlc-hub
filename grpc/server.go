@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"go.uber.org/zap"
@@ -20,6 +21,7 @@ import (
 
 type Server struct {
 	rpc    *grpc.Server
+	srv    *http.Server
 	ctx    context.Context
 	cancel context.CancelFunc
 	cfg    *config.Config
@@ -62,15 +64,14 @@ func (g *Server) Start() error {
 	}()
 	go func() {
 		if err := g.newGateway(address, g.cfg.RPCCfg.ListenAddress); err != nil {
-			g.logger.Errorf("start gateway: %s", err)
+			g.logger.Errorf("gateway listen err: %s", err)
 		}
 	}()
 	return nil
 }
 
 func (g *Server) newGateway(grpcAddress, gwAddress string) error {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	gwmux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName: true, EmitDefaults: true}))
@@ -88,13 +89,33 @@ func (g *Server) newGateway(grpcAddress, gwAddress string) error {
 	if err != nil {
 		return err
 	}
-	if err := http.ListenAndServe(address, gwmux); err != nil {
-		g.logger.Error(err)
+	g.srv = &http.Server{
+		Addr:    address,
+		Handler: gwmux,
+	}
+
+	g.srv.RegisterOnShutdown(func() {
+		g.logger.Debug("RESEful server shutdown")
+	})
+
+	if err := g.srv.ListenAndServe(); err != http.ErrServerClosed {
+		return err
 	}
 	return nil
 }
 
 func (g *Server) Stop() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	if g.srv != nil {
+		if err := g.srv.Shutdown(ctx); err != nil {
+			g.logger.Errorf("RESTful server shutdown failed:%+v", err)
+		}
+	}
+
 	g.rpc.Stop()
 }
 
@@ -127,6 +148,11 @@ func (g *Server) registerApi() error {
 		return err
 	}
 	pb.RegisterDebugAPIServer(g.rpc, debug)
+	info, err := apis.NewInfoAPI(g.ctx, g.cfg)
+	if err != nil {
+		return err
+	}
+	pb.RegisterInfoAPIServer(g.rpc, info)
 	return nil
 }
 
@@ -135,6 +161,9 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 		return err
 	}
 	if err := pb.RegisterWithdrawAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := pb.RegisterInfoAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := pb.RegisterDebugAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {

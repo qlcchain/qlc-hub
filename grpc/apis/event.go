@@ -54,7 +54,8 @@ func NewEventAPI(ctx context.Context, cfg *config.Config) (*EventAPI, error) {
 		ctx:            ctx,
 		logger:         log.NewLogger("api/event"),
 	}
-	api.ethEventLister()
+	go api.ethEventLister()
+	go api.loopLockerState()
 	return api, nil
 }
 

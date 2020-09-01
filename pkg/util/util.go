@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 )
 
 //CreateDirIfNotExist create given folder
@@ -89,4 +92,17 @@ func Sha256Hash() (string, string) {
 	h := sha256.Sum256([]byte(rOrigin))
 	rHash := hex.EncodeToString(h[:])
 	return rOrigin, rHash
+}
+
+func RemoveHexPrefix(str string) string {
+	if strings.HasPrefix(str, "0x") {
+		s := strings.TrimLeft(str, "0x")
+		return s
+	}
+	return str
+}
+
+func IsvalidNEOAddress(addr string) bool {
+	_, err := address.StringToUint160(addr)
+	return err == nil
 }

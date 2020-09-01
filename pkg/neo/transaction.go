@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"math/rand"
+	"sort"
 	"time"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
@@ -19,9 +21,9 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	u "github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -56,6 +58,7 @@ type TransactionParam struct {
 	Sysfee   util.Fixed8
 	Netfee   util.Fixed8
 	ROrigin  string
+	RHash    string
 	FuncName string
 }
 
@@ -74,6 +77,19 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 	}
 	//n.logger.Debugf("transaction successfully: %s", re.StringLE())
 	return re.StringLE(), nil
+}
+
+type witnessWrapper struct {
+	transaction.Witness
+	ScriptHash *util.Uint160
+}
+
+func (w witnessWrapper) GetScriptHash() *util.Uint160 {
+	if w.ScriptHash == nil {
+		hash := w.Witness.ScriptHash()
+		w.ScriptHash = &hash
+	}
+	return w.ScriptHash
 }
 
 func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
@@ -104,26 +120,70 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 			Data:  accountUint.BytesBE(),
 		})
 		r := remark()
+		//r, _ := hex.DecodeString("00000174483c1ff2d76670ab")
 		tx.Attributes = append(tx.Attributes, transaction.Attribute{
 			Usage: transaction.Remark,
 			Data:  r,
 		})
 	}
 
-	// add witness
-	script := io.NewBufBinWriter()
-	emit.String(script.BinWriter, param.ROrigin)
-	emit.Int(script.BinWriter, 1)
-	emit.Opcode(script.BinWriter, opcode.PACK)
-	emit.String(script.BinWriter, param.FuncName)
-	tx.Scripts = append(tx.Scripts, transaction.Witness{
-		InvocationScript:   script.Bytes(),
-		VerificationScript: []byte{},
-	})
-
 	if err := account.SignTx(tx); err != nil {
 		return "", fmt.Errorf("signTx: %s", err)
 	}
+
+	var tmp []*witnessWrapper
+	// sign
+	tmp = append(tmp, &witnessWrapper{
+		Witness: transaction.Witness{
+			InvocationScript:   tx.Scripts[0].InvocationScript,
+			VerificationScript: tx.Scripts[0].VerificationScript,
+		},
+		ScriptHash: nil,
+	})
+	// add witness
+	script := io.NewBufBinWriter()
+	if param.ROrigin != "" && param.RHash == "" {
+		emit.String(script.BinWriter, param.ROrigin)
+	} else if param.ROrigin == "" && param.RHash != "" {
+		rHex, err := hex.DecodeString(param.RHash)
+		if err != nil {
+			return "", fmt.Errorf("decode error: %s", err)
+		}
+		emit.Bytes(script.BinWriter, rHex)
+	} else {
+		return "", errors.New("invalid r text")
+	}
+	emit.Int(script.BinWriter, 1)
+	emit.Opcode(script.BinWriter, opcode.PACK)
+	emit.String(script.BinWriter, param.FuncName)
+	tmp = append(tmp, &witnessWrapper{
+		Witness: transaction.Witness{
+			InvocationScript:   script.Bytes(),
+			VerificationScript: []byte{},
+		},
+		ScriptHash: &n.contractLE,
+	})
+
+	sort.Slice(tmp, func(i, j int) bool {
+		h1 := tmp[i].GetScriptHash()
+		h2 := tmp[j].GetScriptHash()
+
+		return big.NewInt(0).SetBytes(h1.BytesLE()).Cmp(big.NewInt(0).SetBytes(h2.BytesLE())) < 0
+	})
+
+	size := len(tmp)
+	witness := make([]transaction.Witness, size)
+	for i := 0; i < size; i++ {
+		witness[i] = transaction.Witness{
+			InvocationScript:   tmp[i].InvocationScript,
+			VerificationScript: tmp[i].VerificationScript,
+		}
+	}
+
+	tx.Scripts = witness
+
+	n.logger.Debug(hex.EncodeToString(tx.Bytes()))
+	n.logger.Debug(u.ToIndentString(tx))
 
 	if err := n.client.SendRawTransaction(tx); err != nil {
 		return "", fmt.Errorf("sendRawTransaction: %s", err)
@@ -189,7 +249,7 @@ func TxVerifyAndConfirmed(txHash string, interval int, c *Transaction) (bool, ui
 			}
 			txHeight, err = c.client.GetTransactionHeight(hash)
 			if err != nil {
-				fmt.Println("======= ", err)
+				fmt.Println("======= ", txHash, err)
 			} else {
 				goto HeightConfirmed
 			}
@@ -217,5 +277,18 @@ HeightConfirmed:
 		case <-nTimer.C:
 			return false, 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
 		}
+	}
+}
+
+func IsConfirmedOverHeightInterval(txHeight uint32, interval int64, c *Transaction) bool {
+	nHeight, err := c.Client().GetStateHeight()
+	if err != nil {
+		return false
+	}
+	nh := nHeight.BlockHeight
+	if nh-txHeight >= uint32(interval) {
+		return true
+	} else {
+		return false
 	}
 }

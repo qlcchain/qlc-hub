@@ -11,44 +11,14 @@
     "application/json"
   ],
   "paths": {
-    "/debug/lockerState": {
+    "/debug/debug": {
       "get": {
-        "operationId": "DebugAPI_LockerState",
+        "operationId": "DebugAPI_Debug",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoLockerStateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/ping": {
-      "get": {
-        "operationId": "DebugAPI_Ping",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoPingResponse"
+              "$ref": "#/definitions/protoString"
             }
           },
           "default": {
@@ -155,6 +125,66 @@
         },
         "tags": [
           "EventAPI"
+        ]
+      }
+    },
+    "/info/lockerState": {
+      "get": {
+        "operationId": "InfoAPI_LockerStates",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoLockerStatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/ping": {
+      "get": {
+        "operationId": "InfoAPI_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoPingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InfoAPI"
         ]
       }
     },
@@ -301,6 +331,30 @@
         "unlockedErc20Height": {
           "type": "integer",
           "format": "int64"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "lastModifyTime": {
+          "type": "string"
+        },
+        "fail": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "remark": {
+          "type": "string"
+        }
+      }
+    },
+    "protoLockerStatesResponse": {
+      "type": "object",
+      "properties": {
+        "lockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protoLockerStateResponse"
+          }
         }
       }
     },
@@ -317,6 +371,14 @@
           "type": "string"
         },
         "neoAddress": {
+          "type": "string"
+        }
+      }
+    },
+    "protoString": {
+      "type": "object",
+      "properties": {
+        "value": {
           "type": "string"
         }
       }

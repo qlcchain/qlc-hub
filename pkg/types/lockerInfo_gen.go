@@ -92,8 +92,23 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 			if err != nil {
 				return
 			}
-		case "mark":
-			z.Mark, err = dc.ReadString()
+		case "startTime":
+			z.StartTime, err = dc.ReadInt64()
+			if err != nil {
+				return
+			}
+		case "lastModifyTime":
+			z.LastModifyTime, err = dc.ReadInt64()
+			if err != nil {
+				return
+			}
+		case "fail":
+			z.Fail, err = dc.ReadBool()
+			if err != nil {
+				return
+			}
+		case "remark":
+			z.Remark, err = dc.ReadString()
 			if err != nil {
 				return
 			}
@@ -109,9 +124,9 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 15
+	// map header, size 18
 	// write "state"
-	err = en.Append(0x8f, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	err = en.Append(0xde, 0x0, 0x12, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	if err != nil {
 		return
 	}
@@ -236,12 +251,39 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	// write "mark"
-	err = en.Append(0xa4, 0x6d, 0x61, 0x72, 0x6b)
+	// write "startTime"
+	err = en.Append(0xa9, 0x73, 0x74, 0x61, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65)
 	if err != nil {
 		return
 	}
-	err = en.WriteString(z.Mark)
+	err = en.WriteInt64(z.StartTime)
+	if err != nil {
+		return
+	}
+	// write "lastModifyTime"
+	err = en.Append(0xae, 0x6c, 0x61, 0x73, 0x74, 0x4d, 0x6f, 0x64, 0x69, 0x66, 0x79, 0x54, 0x69, 0x6d, 0x65)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt64(z.LastModifyTime)
+	if err != nil {
+		return
+	}
+	// write "fail"
+	err = en.Append(0xa4, 0x66, 0x61, 0x69, 0x6c)
+	if err != nil {
+		return
+	}
+	err = en.WriteBool(z.Fail)
+	if err != nil {
+		return
+	}
+	// write "remark"
+	err = en.Append(0xa6, 0x72, 0x65, 0x6d, 0x61, 0x72, 0x6b)
+	if err != nil {
+		return
+	}
+	err = en.WriteString(z.Remark)
 	if err != nil {
 		return
 	}
@@ -251,9 +293,9 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 // MarshalMsg implements msgp.Marshaler
 func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 15
+	// map header, size 18
 	// string "state"
-	o = append(o, 0x8f, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	o = append(o, 0xde, 0x0, 0x12, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	o, err = z.State.MarshalMsg(o)
 	if err != nil {
 		return
@@ -297,9 +339,18 @@ func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	// string "ueHeight"
 	o = append(o, 0xa8, 0x75, 0x65, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74)
 	o = msgp.AppendUint32(o, z.UnlockedErc20Height)
-	// string "mark"
-	o = append(o, 0xa4, 0x6d, 0x61, 0x72, 0x6b)
-	o = msgp.AppendString(o, z.Mark)
+	// string "startTime"
+	o = append(o, 0xa9, 0x73, 0x74, 0x61, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65)
+	o = msgp.AppendInt64(o, z.StartTime)
+	// string "lastModifyTime"
+	o = append(o, 0xae, 0x6c, 0x61, 0x73, 0x74, 0x4d, 0x6f, 0x64, 0x69, 0x66, 0x79, 0x54, 0x69, 0x6d, 0x65)
+	o = msgp.AppendInt64(o, z.LastModifyTime)
+	// string "fail"
+	o = append(o, 0xa4, 0x66, 0x61, 0x69, 0x6c)
+	o = msgp.AppendBool(o, z.Fail)
+	// string "remark"
+	o = append(o, 0xa6, 0x72, 0x65, 0x6d, 0x61, 0x72, 0x6b)
+	o = msgp.AppendString(o, z.Remark)
 	return
 }
 
@@ -389,8 +440,23 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 			if err != nil {
 				return
 			}
-		case "mark":
-			z.Mark, bts, err = msgp.ReadStringBytes(bts)
+		case "startTime":
+			z.StartTime, bts, err = msgp.ReadInt64Bytes(bts)
+			if err != nil {
+				return
+			}
+		case "lastModifyTime":
+			z.LastModifyTime, bts, err = msgp.ReadInt64Bytes(bts)
+			if err != nil {
+				return
+			}
+		case "fail":
+			z.Fail, bts, err = msgp.ReadBoolBytes(bts)
+			if err != nil {
+				return
+			}
+		case "remark":
+			z.Remark, bts, err = msgp.ReadStringBytes(bts)
 			if err != nil {
 				return
 			}
@@ -407,6 +473,6 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *LockerInfo) Msgsize() (s int) {
-	s = 1 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 10 + msgp.StringPrefixSize + len(z.Erc20Addr) + 9 + msgp.StringPrefixSize + len(z.Nep5Addr) + 7 + msgp.StringPrefixSize + len(z.LockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedErc20Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedErc20Hash) + 9 + msgp.Uint32Size + 5 + msgp.StringPrefixSize + len(z.Mark)
+	s = 3 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 10 + msgp.StringPrefixSize + len(z.Erc20Addr) + 9 + msgp.StringPrefixSize + len(z.Nep5Addr) + 7 + msgp.StringPrefixSize + len(z.LockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedErc20Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedErc20Hash) + 9 + msgp.Uint32Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 5 + msgp.BoolSize + 7 + msgp.StringPrefixSize + len(z.Remark)
 	return
 }

@@ -3,6 +3,7 @@ package store
 import (
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/types"
@@ -25,6 +26,10 @@ func (s *Store) AddLockerInfo(info *types.LockerInfo) error {
 		s.logger.Errorf("getLockerInfoKey: %s [%s]", err, info.RHash)
 		return err
 	}
+
+	info.StartTime = time.Now().Unix()
+	info.LastModifyTime = time.Now().Unix()
+
 	v, err := info.Serialize()
 	if err != nil {
 		s.logger.Errorf("Serialize: %s [%s]", err, info.RHash)
@@ -97,6 +102,7 @@ func (l *Store) UpdateLockerInfo(info *types.LockerInfo) error {
 		return err
 	}
 
+	info.LastModifyTime = time.Now().Unix()
 	v, err := info.Serialize()
 	if err != nil {
 		l.logger.Errorf("info Serialize: %s  [%s]", err, info.RHash)
