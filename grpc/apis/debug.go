@@ -3,11 +3,13 @@ package apis
 import (
 	"context"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"go.uber.org/zap"
+
+	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/eth"

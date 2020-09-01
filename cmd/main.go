@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/qlcchain/qlc-hub/pkg/store"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/qlcchain/qlc-hub/pkg/store"
 
 	flag "github.com/jessevdk/go-flags"
 

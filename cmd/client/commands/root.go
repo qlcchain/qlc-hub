@@ -4,9 +4,10 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
-	"go.uber.org/zap"
 )
 
 var (

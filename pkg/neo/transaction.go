@@ -5,8 +5,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"math/rand"
+	"sort"
 	"time"
+
+	u "github.com/qlcchain/qlc-hub/pkg/util"
 
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
@@ -124,6 +128,15 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 	if err := account.SignTx(tx); err != nil {
 		return "", fmt.Errorf("signTx: %s", err)
 	}
+
+	sort.Slice(tx.Scripts, func(i, j int) bool {
+		b1 := util.ArrayReverse(tx.Scripts[i].VerificationScript)
+		b2 := util.ArrayReverse(tx.Scripts[j].VerificationScript)
+		return big.NewInt(0).SetBytes(b1).Cmp(big.NewInt(0).SetBytes(b2)) > 0
+	})
+
+	n.logger.Debug(hex.EncodeToString(tx.Bytes()))
+	n.logger.Debug(u.ToIndentString(tx))
 
 	if err := n.client.SendRawTransaction(tx); err != nil {
 		return "", fmt.Errorf("sendRawTransaction: %s", err)

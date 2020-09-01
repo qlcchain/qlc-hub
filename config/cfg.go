@@ -7,8 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/qlcchain/qlc-hub/pkg/util"
 	"gopkg.in/validator.v2"
+
+	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 const (
