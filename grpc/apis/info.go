@@ -24,17 +24,13 @@ type InfoAPI struct {
 	logger *zap.SugaredLogger
 }
 
-func NewInfoAPI(ctx context.Context, cfg *config.Config) (*InfoAPI, error) {
-	store, err := store.NewStore(cfg.DataDir())
-	if err != nil {
-		return nil, err
-	}
+func NewInfoAPI(ctx context.Context, cfg *config.Config, s *store.Store) *InfoAPI {
 	return &InfoAPI{
 		ctx:    ctx,
 		cfg:    cfg,
-		store:  store,
+		store:  s,
 		logger: log.NewLogger("api/info"),
-	}, nil
+	}
 }
 
 func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, error) {

@@ -30,7 +30,7 @@ func Withdraw() {
 	waitForLockerState(rHash, types.WithDrawNeoLockedDone)
 
 	// neo - user unlock
-	tx, err = neoTrasaction.UserUnlock(rOrigin, userWif)
+	tx, err = neoTrasaction.UserUnlock(rOrigin, neoUserWif)
 	if err != nil {
 		log.Fatal(err)
 	}

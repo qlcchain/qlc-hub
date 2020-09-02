@@ -3,6 +3,7 @@ package neo
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -355,4 +356,18 @@ func (n *Transaction) IsConfirmedOverHeightInterval(txHeight uint32, interval in
 
 func (n *Transaction) ValidateAddress(addr string) error {
 	return n.client.ValidateAddress(addr)
+}
+
+func (n *Transaction) RHashFromApplicationLog(hash string) (string, error) {
+	if h, err := util.Uint256DecodeStringLE(hash); err == nil {
+		if l, err := n.client.GetApplicationLog(h); err == nil {
+			data, _ := json.MarshalIndent(l, "", "\t")
+			fmt.Println(string(data))
+			return "l", nil
+		} else {
+			return "", fmt.Errorf("get applicationLog: %s", err)
+		}
+	} else {
+		return "", fmt.Errorf("decode string: %s", err)
+	}
 }

@@ -6,8 +6,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/qlcchain/qlc-hub/pkg/store"
-
 	flag "github.com/jessevdk/go-flags"
 
 	"github.com/qlcchain/qlc-hub/config"
@@ -63,7 +61,6 @@ func main() {
 
 	if server != nil {
 		server.Stop()
-		store.CloseLedger() //todo wait all server stop
 	}
 }
 

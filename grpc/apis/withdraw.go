@@ -2,6 +2,7 @@ package apis
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/qlcchain/qlc-hub/config"
@@ -23,30 +24,30 @@ type WithdrawAPI struct {
 	logger *zap.SugaredLogger
 }
 
-func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *ethclient.Client) (*WithdrawAPI, error) {
-	store, err := store.NewStore(cfg.DataDir())
-	if err != nil {
-		return nil, err
-	}
+func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *ethclient.Client, s *store.Store) *WithdrawAPI {
 	return &WithdrawAPI{
 		cfg:    cfg,
 		neo:    neo,
-		store:  store,
+		store:  s,
 		eth:    eth,
 		ctx:    ctx,
 		logger: log.NewLogger("api/withdraw"),
-	}, nil
+	}
 }
 
 func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequest) (*pb.Boolean, error) {
 	w.logger.Info("api - withdraw unlock: ", request.String())
-	//todo check params
-
 	rHash := request.GetRHash()
 	info, err := w.store.GetLockerInfo(rHash)
 	if err != nil {
+		w.logger.Errorf("%s: %s", rHash, err)
 		return nil, err
 	}
+	if info.State != types.WithDrawNeoLockedDone {
+		w.logger.Errorf("current [%s] is [%s]", info.RHash, types.LockerStateToString(info.State))
+		return nil, fmt.Errorf("invalid state: %s", types.LockerStateToString(info.State))
+	}
+
 	go func() {
 		b, height, err := w.neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight)
 		if !b || err != nil {
@@ -58,6 +59,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		info.UnlockedNep5Hash = request.GetNep5TxHash()
 		info.ROrigin = request.GetROrigin()
 		if err := w.store.UpdateLockerInfo(info); err != nil {
+			w.logger.Errorf("%s: %s", request.GetRHash(), err)
 			return
 		}
 		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
@@ -71,6 +73,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		info.State = types.WithDrawEthUnlockPending
 		info.UnlockedErc20Hash = tx
 		if err := w.store.UpdateLockerInfo(info); err != nil {
+			w.logger.Errorf("%s: %s", request.GetRHash(), err)
 			return
 		}
 		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))

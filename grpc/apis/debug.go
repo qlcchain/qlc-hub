@@ -19,17 +19,13 @@ type DebugAPI struct {
 	logger *zap.SugaredLogger
 }
 
-func NewDebugAPI(ctx context.Context, cfg *config.Config) (*DebugAPI, error) {
-	store, err := store.NewStore(cfg.DataDir())
-	if err != nil {
-		return nil, err
-	}
+func NewDebugAPI(ctx context.Context, cfg *config.Config, s *store.Store) *DebugAPI {
 	return &DebugAPI{
 		ctx:    ctx,
 		cfg:    cfg,
-		store:  store,
+		store:  s,
 		logger: log.NewLogger("api/debug"),
-	}, nil
+	}
 }
 
 func (d *DebugAPI) LockerInfosCount(ctx context.Context, e *empty.Empty) (*pb.LockerInfosCountResponse, error) {

@@ -57,6 +57,9 @@ func neo2eth() {
 	if err != nil {
 		log.Fatal(b, err)
 	}
+
+	n.RHashFromApplicationLog(tx)
+
 	tx, err = n.WrapperUnlock(rOrigin, wrapperWif, userEthAddress)
 	if err != nil {
 		log.Fatal(err)

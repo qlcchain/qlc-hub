@@ -11,7 +11,7 @@ import "github.com/qlcchain/qlc-hub/cmd/client/commands"
 
 func main() {
 	commands.Deposit()
-	commands.DepositFetch()
+	//commands.DepositFetch()
 	//commands.Withdraw()
 	//commands.WithdrawFetch()
 }

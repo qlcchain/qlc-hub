@@ -14,7 +14,7 @@ import (
 )
 
 func (e *EventAPI) ethEventLister() {
-	contractAddress := common.HexToAddress(e.ethContract)
+	contractAddress := common.HexToAddress(e.cfg.EthereumCfg.Contract)
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{contractAddress},
 	}
@@ -74,7 +74,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 	}
 
 	var hashTimer *eth.HashTimer
-	if hashTimer, err = eth.GetHashTimer(e.eth, e.ethContract, rHash); err != nil {
+	if hashTimer, err = eth.GetHashTimer(e.eth, e.cfg.EthereumCfg.Contract, rHash); err != nil {
 		e.logger.Errorf("ethEvent/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
 		return
 	}
