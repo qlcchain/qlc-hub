@@ -58,7 +58,7 @@ func neo2eth() {
 		log.Fatal(b, err)
 	}
 
-	n.RHashFromApplicationLog(tx)
+	//n.RHashFromApplicationLog(tx)
 
 	tx, err = n.WrapperUnlock(rOrigin, wrapperWif, userEthAddress)
 	if err != nil {
@@ -81,8 +81,8 @@ func neo2ethRefund() {
 		log.Fatal(err)
 	}
 	log.Println("user lock: ", tx)
-	//sleepForHashTimer(40, c)
-	//refundUser(rOrigin, c)
+	sleepForHashTimer(40, n)
+	refundUser(rOrigin, n)
 }
 
 func eth2neo() {
@@ -118,11 +118,11 @@ func eth2neoRefund() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//rOrigin, rHash := hubUtil.Sha256Hash()
-	//log.Println("hash: ", rOrigin, "==>", rHash)
-	//
-	//wrapperLock(rHash, c)
-	//sleepForHashTimer(20, c)
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	log.Println("hash: ", rOrigin, "==>", rHash)
+
+	wrapperLock(rHash, c)
+	sleepForHashTimer(20, c)
 	refundWrapper("3a985606e258becc169b1bfcb87ce443d9e546f22b0d069fe0cc4caf17afde89", c)
 }
 

@@ -59,7 +59,7 @@ func (n *Transaction) WrapperUnlock(rOrigin, wrapperWif, userEthAddress string) 
 
 // withdraw
 
-func (n *Transaction) WrapperLock(wrapperWif, userEthAddress, rHash string, amount int) (string, error) { //todo set int64
+func (n *Transaction) WrapperLock(wrapperWif, userEthAddress, rHash string, amount int) (string, error) {
 	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
 	if err != nil {
 		return "", err
@@ -71,7 +71,7 @@ func (n *Transaction) WrapperLock(wrapperWif, userEthAddress, rHash string, amou
 			AddressParam(wrapperAccount.Address),
 			IntegerTypeParam(amount),
 			ArrayTypeParam(userEthAddress),
-			IntegerTypeParam(10), //todo setting
+			IntegerTypeParam(10),
 		}),
 	}
 	r, err := n.CreateTransaction(TransactionParam{

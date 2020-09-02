@@ -40,14 +40,13 @@ func NewServer(cfg *config.Config) *Server {
 	gRpcServer := grpc.NewServer()
 	ctx, cancel := context.WithCancel(context.Background())
 
-	r := &Server{
+	return &Server{
 		cfg:    cfg,
 		rpc:    gRpcServer,
 		ctx:    ctx,
 		cancel: cancel,
 		logger: log.NewLogger("rpc"),
 	}
-	return r
 }
 
 func (g *Server) Start() error {

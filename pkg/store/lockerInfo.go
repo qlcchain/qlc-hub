@@ -95,10 +95,14 @@ func (s *Store) CountLockerInfos() (uint64, error) {
 	return s.store.Count(prefix)
 }
 
-func (l *Store) SetLockerInfoFail(info *types.LockerInfo) error {
-	info.LastModifyTime = time.Now().Unix()
-	info.Fail = true
-	return l.updateLockerInfo(info)
+func (l *Store) SetLockerStateFail(info *types.LockerInfo, err error) error {
+	if info != nil && err != nil {
+		info.LastModifyTime = time.Now().Unix()
+		info.Remark = err.Error()
+		info.Fail = true
+		return l.updateLockerInfo(info)
+	}
+	return nil
 }
 
 func (l *Store) UpdateLockerInfo(info *types.LockerInfo) error {

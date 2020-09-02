@@ -37,5 +37,5 @@ func NewEventAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, 
 }
 
 func (e *EventAPI) Event(empty *empty.Empty, server pb.EventAPI_EventServer) error {
-	panic("implement me")
+	return nil
 }

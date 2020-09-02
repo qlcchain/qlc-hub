@@ -165,7 +165,6 @@ func TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64, client 
 			if err != nil {
 				return false, fmt.Errorf("eth tx by hash: %s", err)
 			}
-			fmt.Println("======== ", p)
 			if !p {
 				goto HeightConfirmed
 			}
@@ -204,7 +203,5 @@ func IsConfirmedOverHeightInterval(txHeight int64, interval int64, client *ethcl
 	if err != nil {
 		return false
 	}
-	fmt.Println("======== bestHeight,txHeight ", bestHeight, txHeight)
 	return bestHeight-txHeight > interval
-
 }

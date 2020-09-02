@@ -36,7 +36,9 @@ func Deposit() {
 	}
 
 	// wait for wrapper state
-	waitForLockerState(rHash, types.DepositEthLockedDone)
+	if !waitForLockerState(rHash, types.DepositEthLockedDone) {
+		logger.Fatal(err)
+	}
 
 	// user unlock (eth)
 	etx, err := eth.UserUnlock(rHash, rOrigin, ethUserPrikey, ethContract, ethClient)
@@ -44,7 +46,9 @@ func Deposit() {
 		logger.Fatal(err)
 	}
 	logger.Info("UserUnlock eth hash: ", etx)
-	waitForLockerState(rHash, types.DepositNeoUnLockedDone)
+	if !waitForLockerState(rHash, types.DepositNeoUnLockedDone) {
+		logger.Fatal(err)
+	}
 	logger.Info("successfully")
 }
 
@@ -72,7 +76,9 @@ func DepositFetch() {
 	}
 
 	// wait for wrapper state
-	waitForLockerState(rHash, types.DepositEthLockedDone)
+	if !waitForLockerState(rHash, types.DepositEthLockedDone) {
+		logger.Fatal(err)
+	}
 	waitForEthIntervalTimerOut(rHash)
 }
 

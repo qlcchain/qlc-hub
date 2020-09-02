@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/nspcc-dev/neo-go/pkg/core"
 	"math/big"
 	"math/rand"
 	"sort"
@@ -71,12 +72,46 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 	if err != nil {
 		return "", fmt.Errorf("CreateFunctionInvocationScript: %s", err)
 	}
-	re, err := n.client.SignAndPushInvocationTx(scripts, account, param.Sysfee, param.Netfee)
-	if err != nil {
-		return "", fmt.Errorf("SignAndPushInvocationTx: %s", err)
+
+	// use library can not add remark ,may return "failed sendning tx: Block or transaction already exists and cannot be sent repeatedly"
+	//re, err := n.client.SignAndPushInvocationTx(scripts, account, param.Sysfee, param.Netfee)
+	//if err != nil {
+	//	return "", fmt.Errorf("SignAndPushInvocationTx: %s", err)
+	//}
+
+	tx := transaction.NewInvocationTX(scripts, param.Sysfee)
+	gas := param.Sysfee + param.Netfee
+
+	if gas > 0 {
+		if err = request.AddInputsAndUnspentsToTx(tx, account.Address, core.UtilityTokenID(), gas, n.client); err != nil {
+			return "", fmt.Errorf("failed to add inputs and unspents to transaction: %s ", err)
+		}
+	} else {
+		addr, err := address.StringToUint160(account.Address)
+		if err != nil {
+			return "", fmt.Errorf("failed to get address: %s", err)
+		}
+		tx.AddVerificationHash(addr)
+		if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
+			tx.Attributes = append(tx.Attributes, transaction.Attribute{
+				Usage: transaction.Remark,
+				Data:  remark(),
+			})
+		}
 	}
+
+	if err = account.SignTx(tx); err != nil {
+		return "", fmt.Errorf("failed to sign tx, %s", err)
+	}
+	txHash := tx.Hash()
+	err = n.client.SendRawTransaction(tx)
+
+	if err != nil {
+		return "", fmt.Errorf("failed sendning tx: %s", err)
+	}
+
 	//n.logger.Debugf("transaction successfully: %s", re.StringLE())
-	return re.StringLE(), nil
+	return txHash.StringLE(), nil
 }
 
 type witnessWrapper struct {
@@ -300,8 +335,6 @@ func getValue(key string, data map[string]interface{}) (interface{}, error) {
 }
 
 func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, uint32, error) {
-	//todo verify tx successfully
-
 	var txHeight uint32
 	cTicker := time.NewTicker(6 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
@@ -314,7 +347,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, u
 			}
 			txHeight, err = n.client.GetTransactionHeight(hash)
 			if err != nil {
-				fmt.Println("======= ", txHash, err)
+				n.logger.Debugf("get neo tx [%s] height err: %s", hash, err)
 			} else {
 				goto HeightConfirmed
 			}
@@ -334,7 +367,7 @@ HeightConfirmed:
 				return false, 0, err
 			} else {
 				nh := nHeight.BlockHeight
-				fmt.Println("===== ", txHeight, nh)
+				n.logger.Debugf("tx [%s] current confirmed height (%d, %d)", txHash, txHeight, nh)
 				if nh-txHeight >= uint32(interval) {
 					return true, txHeight, nil
 				}
@@ -358,7 +391,7 @@ func (n *Transaction) ValidateAddress(addr string) error {
 	return n.client.ValidateAddress(addr)
 }
 
-func (n *Transaction) RHashFromApplicationLog(hash string) (string, error) {
+func (n *Transaction) ApplicationLog(hash string) (string, error) {
 	if h, err := util.Uint256DecodeStringLE(hash); err == nil {
 		if l, err := n.client.GetApplicationLog(h); err == nil {
 			data, _ := json.MarshalIndent(l, "", "\t")

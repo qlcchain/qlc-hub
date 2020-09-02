@@ -7,7 +7,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
-	"go.uber.org/zap"
 )
 
 var (
@@ -42,12 +41,11 @@ var (
 	neoTrasaction *neo.Transaction
 	ethClient     *ethclient.Client
 	lockAmount    = 130000000
-	logger        *zap.SugaredLogger
+	logger        = log.NewLogger("main")
 )
 
 func init() {
 	var err error
-	logger = log.NewLogger("api/debug")
 	ethContract, neoContract = getContractAddress()
 	neoContractLE, err = util.Uint160DecodeStringLE(neoContract)
 	if err != nil {

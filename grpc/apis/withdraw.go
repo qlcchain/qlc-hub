@@ -49,9 +49,11 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 	}
 
 	go func() {
+		w.logger.Infof("waiting for neo tx [%s] confirmed", request.GetNep5TxHash())
 		b, height, err := w.neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight)
 		if !b || err != nil {
 			w.logger.Errorf("neo tx confirmed: %s, %v [%s]", err, b, rHash)
+			w.store.SetLockerStateFail(info, err)
 			return
 		}
 		info.State = types.WithDrawNeoUnLockedDone
@@ -60,6 +62,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		info.ROrigin = request.GetROrigin()
 		if err := w.store.UpdateLockerInfo(info); err != nil {
 			w.logger.Errorf("%s: %s", request.GetRHash(), err)
+			w.store.SetLockerStateFail(info, err)
 			return
 		}
 		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
@@ -67,6 +70,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		tx, err := eth.WrapperUnlock(rHash, request.GetROrigin(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, w.eth)
 		if err != nil {
 			w.logger.Errorf("eth wrapper unlock: %s [%s]", err, rHash)
+			w.store.SetLockerStateFail(info, err)
 			return
 		}
 		w.logger.Info("[%s] withdraw wrapper eth unlock: ", rHash, tx)
@@ -74,6 +78,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		info.UnlockedErc20Hash = tx
 		if err := w.store.UpdateLockerInfo(info); err != nil {
 			w.logger.Errorf("%s: %s", request.GetRHash(), err)
+			w.store.SetLockerStateFail(info, err)
 			return
 		}
 		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))

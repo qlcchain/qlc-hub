@@ -48,7 +48,7 @@ func main() {
 	log.Setup(cfg)
 
 	logger := log.NewLogger("main")
-	logger.Debug(util.ToIndentString(cfg))
+	logger.Info(util.ToIndentString(cfg))
 
 	server := grpc.NewServer(cfg)
 	if err := server.Start(); err != nil {

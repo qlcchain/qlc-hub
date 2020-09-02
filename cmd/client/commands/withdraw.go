@@ -27,7 +27,9 @@ func Withdraw() {
 	}
 	logger.Info("eth user lock hash: ", tx)
 
-	waitForLockerState(rHash, types.WithDrawNeoLockedDone)
+	if !waitForLockerState(rHash, types.WithDrawNeoLockedDone) {
+		logger.Fatal(err)
+	}
 
 	// neo - user unlock
 	tx, err = neoTrasaction.UserUnlock(rOrigin, neoUserWif)
@@ -46,7 +48,9 @@ func Withdraw() {
 	if !r || err != nil {
 		logger.Fatal(err)
 	}
-	waitForLockerState(rHash, types.WithDrawEthUnlockDone)
+	if !waitForLockerState(rHash, types.WithDrawEthUnlockDone) {
+		logger.Fatal(err)
+	}
 	logger.Info("successfully")
 }
 
