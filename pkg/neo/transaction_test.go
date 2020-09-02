@@ -1,7 +1,6 @@
 package neo
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/nspcc-dev/neo-go/pkg/util"
@@ -49,14 +48,14 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 }
 
 func TestTransaction_RHashFromApplicationLog(t *testing.T) {
-	c, err := NewTransaction(url, contractAddress)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	r3, err := c.RHashFromApplicationLog("2493bd842308c4e0e53521099a3a6afd134f55186efd327586c45f0b04c4a21a")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(r3)
+	//c, err := NewTransaction(url, contractAddress)
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//
+	//r3, err := c.RHashFromApplicationLog("2493bd842308c4e0e53521099a3a6afd134f55186efd327586c45f0b04c4a21a")
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//fmt.Println(r3)
 }
