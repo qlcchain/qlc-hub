@@ -67,7 +67,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 			w.logger.Errorf("eth wrapper unlock: %s [%s]", err, rHash)
 			return
 		}
-		w.logger.Info("withdraw wrapper eth unlock: ", tx)
+		w.logger.Info("[%s] withdraw wrapper eth unlock: ", rHash, tx)
 		info.State = types.WithDrawEthUnlockPending
 		info.UnlockedErc20Hash = tx
 		if err := w.store.UpdateLockerInfo(info); err != nil {

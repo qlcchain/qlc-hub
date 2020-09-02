@@ -98,6 +98,25 @@ const (
 	DestroyFetch
 )
 
+func StateValueToString(value int) string {
+	switch State(value) {
+	case IssueLock:
+		return "IssueLock"
+	case IssueUnlock:
+		return "IssueUnLock"
+	case IssueFetch:
+		return "IssueFetch"
+	case DestroyLock:
+		return "DestroyLock"
+	case DestroyUnlock:
+		return "DestroyUnlock"
+	case DestroyFetch:
+		return "DestroyFetch"
+	default:
+		return "Invalid"
+	}
+}
+
 func GetHashTimer(client *ethclient.Client, contract string, rHash string) (*HashTimer, error) {
 	instance, err := NewQLCChainCaller(common.HexToAddress(contract), client)
 	if err != nil {

@@ -95,14 +95,26 @@ func (s *Store) CountLockerInfos() (uint64, error) {
 	return s.store.Count(prefix)
 }
 
+func (l *Store) SetLockerInfoFail(info *types.LockerInfo) error {
+	info.LastModifyTime = time.Now().Unix()
+	info.Fail = true
+	return l.updateLockerInfo(info)
+}
+
 func (l *Store) UpdateLockerInfo(info *types.LockerInfo) error {
+	info.LastModifyTime = time.Now().Unix()
+	info.Remark = ""
+	info.Fail = false
+	return l.updateLockerInfo(info)
+}
+
+func (l *Store) updateLockerInfo(info *types.LockerInfo) error {
 	k, err := getLockerInfoKey(info.RHash)
 	if err != nil {
 		l.logger.Errorf("getLockerInfoKey: %s  [%s]", err, info.RHash)
 		return err
 	}
 
-	info.LastModifyTime = time.Now().Unix()
 	v, err := info.Serialize()
 	if err != nil {
 		l.logger.Errorf("info Serialize: %s  [%s]", err, info.RHash)

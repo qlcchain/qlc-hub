@@ -1,14 +1,8 @@
 package apis
 
 import (
-	"context"
-	"fmt"
-	"testing"
-	"time"
-
 	"github.com/qlcchain/qlc-hub/config"
-	pb "github.com/qlcchain/qlc-hub/grpc/proto"
-	"github.com/qlcchain/qlc-hub/pkg/util"
+	"testing"
 )
 
 var cfg = &config.Config{
@@ -29,21 +23,21 @@ var cfg = &config.Config{
 }
 
 func TestDepositAPI(t *testing.T) {
-	rOrigin, rHash := util.Sha256Hash()
-	fmt.Println("hash: ", rOrigin, "==>", rHash)
-
-	api, err := NewDepositAPI(context.Background(), cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = api.Lock(context.Background(), &pb.DepositLockRequest{
-		Nep5TxHash: "",
-		Amount:     100000,
-		RHash:      rHash,
-		Addr:       "",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	time.Sleep(5 * time.Second)
+	//rOrigin, rHash := util.Sha256Hash()
+	//fmt.Println("hash: ", rOrigin, "==>", rHash)
+	//
+	//api, err := NewDepositAPI(context.Background(), cfg)
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//_, err = api.Lock(context.Background(), &pb.DepositLockRequest{
+	//	Nep5TxHash: "",
+	//	Amount:     100000,
+	//	RHash:      rHash,
+	//	Addr:       "",
+	//})
+	//if err != nil {
+	//	t.Fatal(err)
+	//}
+	//time.Sleep(5 * time.Second)
 }

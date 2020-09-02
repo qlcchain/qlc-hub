@@ -11,14 +11,58 @@
     "application/json"
   ],
   "paths": {
-    "/debug/debug": {
+    "/debug/lockerInfosByState": {
       "get": {
-        "operationId": "DebugAPI_Debug",
+        "operationId": "DebugAPI_LockerInfosByState",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoString"
+              "$ref": "#/definitions/protoLockerStatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
+    "/debug/lockerInfosCount": {
+      "get": {
+        "operationId": "DebugAPI_LockerInfosCount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protolockerInfosCountResponse"
             }
           },
           "default": {
@@ -128,9 +172,9 @@
         ]
       }
     },
-    "/info/lockerState": {
+    "/info/lockerInfo": {
       "get": {
-        "operationId": "InfoAPI_LockerState",
+        "operationId": "InfoAPI_LockerInfo",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -158,9 +202,9 @@
         ]
       }
     },
-    "/info/lockerStates": {
+    "/info/lockerInfos": {
       "get": {
-        "operationId": "InfoAPI_LockerStates",
+        "operationId": "InfoAPI_LockerInfos",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -176,6 +220,94 @@
           }
         },
         "parameters": [
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/lockerInfosByErc20Addr": {
+      "get": {
+        "operationId": "InfoAPI_LockerInfosByErc20Addr",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoLockerStatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/lockerInfosByNep5Addr": {
+      "get": {
+        "operationId": "InfoAPI_LockerInfosByNep5Addr",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoLockerStatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
           {
             "name": "count",
             "in": "query",
@@ -405,14 +537,6 @@
         }
       }
     },
-    "protoString": {
-      "type": "object",
-      "properties": {
-        "value": {
-          "type": "string"
-        }
-      }
-    },
     "protoWithdrawUnlockRequest": {
       "type": "object",
       "properties": {
@@ -436,6 +560,18 @@
         "value": {
           "type": "string",
           "format": "byte"
+        }
+      }
+    },
+    "protolockerInfosCountResponse": {
+      "type": "object",
+      "properties": {
+        "counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
         }
       }
     },
