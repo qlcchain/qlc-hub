@@ -40,24 +40,27 @@ func main() {
 
 func neo2eth() {
 	log.Println("====neo2eth====")
-	c, err := neo.NewTransaction(url, contractAddress)
+	n, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 230000000, c)
+	tx, err := n.UserLock(userWif, wrapperAccount.Address, rHash, 230000000)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user lock: ", tx)
 
-	b, _, err := neo.TxVerifyAndConfirmed(tx, 2, c)
+	b, _, err := n.TxVerifyAndConfirmed(tx, 2)
 	if err != nil {
 		log.Fatal(b, err)
 	}
-	tx, err = neo.WrapperUnlock(rOrigin, wrapperWif, userEthAddress, c)
+
+	//n.RHashFromApplicationLog(tx)
+
+	tx, err = n.WrapperUnlock(rOrigin, wrapperWif, userEthAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,43 +69,43 @@ func neo2eth() {
 
 func neo2ethRefund() {
 	log.Println("====neo2ethRefund====")
-	c, err := neo.NewTransaction(url, contractAddress)
+	n, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, 130000000, c)
+	tx, err := n.UserLock(userWif, wrapperAccount.Address, rHash, 130000000)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user lock: ", tx)
-	//sleepForHashTimer(40, c)
-	//refundUser(rOrigin, c)
+	sleepForHashTimer(40, n)
+	refundUser(rOrigin, n)
 }
 
 func eth2neo() {
 	log.Println("====eth2neo====")
-	c, err := neo.NewTransaction(url, contractAddress)
+	n, err := neo.NewTransaction(url, contractAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neo.WrapperLock(wrapperWif, userEthAddress, rHash, 140000000, c)
+	tx, err := n.WrapperLock(wrapperWif, userEthAddress, rHash, 140000000)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("wrapper lock: ", tx)
 
-	b, _, err := neo.TxVerifyAndConfirmed(tx, 3, c)
+	b, _, err := n.TxVerifyAndConfirmed(tx, 3)
 	if err != nil {
 		log.Fatal(b, err)
 	}
 
-	tx, err = neo.UserUnlock(rOrigin, userWif, c)
+	tx, err = n.UserUnlock(rOrigin, userWif)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,11 +118,11 @@ func eth2neoRefund() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//rOrigin, rHash := hubUtil.Sha256Hash()
-	//log.Println("hash: ", rOrigin, "==>", rHash)
-	//
-	//wrapperLock(rHash, c)
-	//sleepForHashTimer(20, c)
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	log.Println("hash: ", rOrigin, "==>", rHash)
+
+	wrapperLock(rHash, c)
+	sleepForHashTimer(20, c)
 	refundWrapper("3a985606e258becc169b1bfcb87ce443d9e546f22b0d069fe0cc4caf17afde89", c)
 }
 

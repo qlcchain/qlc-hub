@@ -31,13 +31,6 @@ const (
 	Invalid
 )
 
-func LockerStateFromString(t string) LockerState {
-	switch t {
-	default:
-		return Invalid
-	}
-}
-
 func LockerStateToString(t LockerState) string {
 	switch t {
 	case DepositInit:
@@ -81,6 +74,6 @@ func LockerStateToString(t LockerState) string {
 	case Failed:
 		return "Failed"
 	default:
-		return "invalid"
+		return "Invalid"
 	}
 }

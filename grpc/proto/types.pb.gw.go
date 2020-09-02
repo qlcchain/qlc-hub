@@ -151,24 +151,6 @@ func request_EventAPI_Event_0(ctx context.Context, marshaler runtime.Marshaler, 
 
 }
 
-func request_DebugAPI_Debug_0(ctx context.Context, marshaler runtime.Marshaler, client DebugAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq empty.Empty
-	var metadata runtime.ServerMetadata
-
-	msg, err := client.Debug(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_DebugAPI_Debug_0(ctx context.Context, marshaler runtime.Marshaler, server DebugAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq empty.Empty
-	var metadata runtime.ServerMetadata
-
-	msg, err := server.Debug(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 func request_InfoAPI_Ping_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
@@ -188,73 +170,199 @@ func local_request_InfoAPI_Ping_0(ctx context.Context, marshaler runtime.Marshal
 }
 
 var (
-	filter_InfoAPI_LockerState_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+	filter_InfoAPI_LockerInfo_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_InfoAPI_LockerState_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_InfoAPI_LockerInfo_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq String
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerState_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfo_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.LockerState(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.LockerInfo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_InfoAPI_LockerState_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_InfoAPI_LockerInfo_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq String
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerState_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfo_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.LockerState(ctx, &protoReq)
+	msg, err := server.LockerInfo(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
 var (
-	filter_InfoAPI_LockerStates_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+	filter_InfoAPI_LockerInfosByErc20Addr_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_InfoAPI_LockerStates_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Offset
+func request_InfoAPI_LockerInfosByErc20Addr_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerStates_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfosByErc20Addr_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.LockerStates(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.LockerInfosByErc20Addr(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_InfoAPI_LockerStates_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_InfoAPI_LockerInfosByErc20Addr_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfosByErc20Addr_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.LockerInfosByErc20Addr(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_InfoAPI_LockerInfosByNep5Addr_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_InfoAPI_LockerInfosByNep5Addr_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfosByNep5Addr_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.LockerInfosByNep5Addr(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_InfoAPI_LockerInfosByNep5Addr_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfosByNep5Addr_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.LockerInfosByNep5Addr(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_InfoAPI_LockerInfos_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_InfoAPI_LockerInfos_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Offset
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerStates_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfos_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.LockerStates(ctx, &protoReq)
+	msg, err := client.LockerInfos(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_InfoAPI_LockerInfos_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Offset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InfoAPI_LockerInfos_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.LockerInfos(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_DebugAPI_LockerInfosCount_0(ctx context.Context, marshaler runtime.Marshaler, client DebugAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.LockerInfosCount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DebugAPI_LockerInfosCount_0(ctx context.Context, marshaler runtime.Marshaler, server DebugAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.LockerInfosCount(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_DebugAPI_LockerInfosByState_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_DebugAPI_LockerInfosByState_0(ctx context.Context, marshaler runtime.Marshaler, client DebugAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DebugAPI_LockerInfosByState_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.LockerInfosByState(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DebugAPI_LockerInfosByState_0(ctx context.Context, marshaler runtime.Marshaler, server DebugAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DebugAPI_LockerInfosByState_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.LockerInfosByState(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -350,34 +458,6 @@ func RegisterEventAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 	return nil
 }
 
-// RegisterDebugAPIHandlerServer registers the http handlers for service DebugAPI to "mux".
-// UnaryRPC     :call DebugAPIServer directly.
-// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterDebugAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DebugAPIServer) error {
-
-	mux.Handle("GET", pattern_DebugAPI_Debug_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_DebugAPI_Debug_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DebugAPI_Debug_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	return nil
-}
-
 // RegisterInfoAPIHandlerServer registers the http handlers for service InfoAPI to "mux".
 // UnaryRPC     :call InfoAPIServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -403,7 +483,7 @@ func RegisterInfoAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 
 	})
 
-	mux.Handle("GET", pattern_InfoAPI_LockerState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InfoAPI_LockerInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -412,18 +492,18 @@ func RegisterInfoAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_InfoAPI_LockerState_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_InfoAPI_LockerInfo_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InfoAPI_LockerState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InfoAPI_LockerInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_InfoAPI_LockerStates_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InfoAPI_LockerInfosByErc20Addr_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -432,14 +512,102 @@ func RegisterInfoAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_InfoAPI_LockerStates_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_InfoAPI_LockerInfosByErc20Addr_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InfoAPI_LockerStates_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InfoAPI_LockerInfosByErc20Addr_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_InfoAPI_LockerInfosByNep5Addr_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InfoAPI_LockerInfosByNep5Addr_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_InfoAPI_LockerInfosByNep5Addr_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_InfoAPI_LockerInfos_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InfoAPI_LockerInfos_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_InfoAPI_LockerInfos_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+// RegisterDebugAPIHandlerServer registers the http handlers for service DebugAPI to "mux".
+// UnaryRPC     :call DebugAPIServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+func RegisterDebugAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DebugAPIServer) error {
+
+	mux.Handle("GET", pattern_DebugAPI_LockerInfosCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DebugAPI_LockerInfosCount_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_LockerInfosCount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_DebugAPI_LockerInfosByState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DebugAPI_LockerInfosByState_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_LockerInfosByState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -677,75 +845,6 @@ var (
 	forward_EventAPI_Event_0 = runtime.ForwardResponseStream
 )
 
-// RegisterDebugAPIHandlerFromEndpoint is same as RegisterDebugAPIHandler but
-// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterDebugAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.Dial(endpoint, opts...)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
-			}
-			return
-		}
-		go func() {
-			<-ctx.Done()
-			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
-			}
-		}()
-	}()
-
-	return RegisterDebugAPIHandler(ctx, mux, conn)
-}
-
-// RegisterDebugAPIHandler registers the http handlers for service DebugAPI to "mux".
-// The handlers forward requests to the grpc endpoint over "conn".
-func RegisterDebugAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterDebugAPIHandlerClient(ctx, mux, NewDebugAPIClient(conn))
-}
-
-// RegisterDebugAPIHandlerClient registers the http handlers for service DebugAPI
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "DebugAPIClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "DebugAPIClient"
-// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "DebugAPIClient" to call the correct interceptors.
-func RegisterDebugAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client DebugAPIClient) error {
-
-	mux.Handle("GET", pattern_DebugAPI_Debug_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_DebugAPI_Debug_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DebugAPI_Debug_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	return nil
-}
-
-var (
-	pattern_DebugAPI_Debug_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 0}, []string{"debug"}, "", runtime.AssumeColonVerbOpt(true)))
-)
-
-var (
-	forward_DebugAPI_Debug_0 = runtime.ForwardResponseMessage
-)
-
 // RegisterInfoAPIHandlerFromEndpoint is same as RegisterInfoAPIHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterInfoAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
@@ -804,7 +903,7 @@ func RegisterInfoAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 
 	})
 
-	mux.Handle("GET", pattern_InfoAPI_LockerState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InfoAPI_LockerInfo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -813,18 +912,18 @@ func RegisterInfoAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_InfoAPI_LockerState_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_InfoAPI_LockerInfo_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InfoAPI_LockerState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InfoAPI_LockerInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_InfoAPI_LockerStates_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InfoAPI_LockerInfosByErc20Addr_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -833,14 +932,54 @@ func RegisterInfoAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_InfoAPI_LockerStates_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_InfoAPI_LockerInfosByErc20Addr_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InfoAPI_LockerStates_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InfoAPI_LockerInfosByErc20Addr_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_InfoAPI_LockerInfosByNep5Addr_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InfoAPI_LockerInfosByNep5Addr_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_InfoAPI_LockerInfosByNep5Addr_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_InfoAPI_LockerInfos_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InfoAPI_LockerInfos_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_InfoAPI_LockerInfos_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -850,15 +989,116 @@ func RegisterInfoAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 var (
 	pattern_InfoAPI_Ping_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "ping"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_InfoAPI_LockerState_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "lockerState"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_InfoAPI_LockerInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "lockerInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_InfoAPI_LockerStates_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "lockerState"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_InfoAPI_LockerInfosByErc20Addr_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "lockerInfosByErc20Addr"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_InfoAPI_LockerInfosByNep5Addr_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "lockerInfosByNep5Addr"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_InfoAPI_LockerInfos_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "lockerInfos"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
 	forward_InfoAPI_Ping_0 = runtime.ForwardResponseMessage
 
-	forward_InfoAPI_LockerState_0 = runtime.ForwardResponseMessage
+	forward_InfoAPI_LockerInfo_0 = runtime.ForwardResponseMessage
 
-	forward_InfoAPI_LockerStates_0 = runtime.ForwardResponseMessage
+	forward_InfoAPI_LockerInfosByErc20Addr_0 = runtime.ForwardResponseMessage
+
+	forward_InfoAPI_LockerInfosByNep5Addr_0 = runtime.ForwardResponseMessage
+
+	forward_InfoAPI_LockerInfos_0 = runtime.ForwardResponseMessage
+)
+
+// RegisterDebugAPIHandlerFromEndpoint is same as RegisterDebugAPIHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterDebugAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.Dial(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+			return
+		}
+		go func() {
+			<-ctx.Done()
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+		}()
+	}()
+
+	return RegisterDebugAPIHandler(ctx, mux, conn)
+}
+
+// RegisterDebugAPIHandler registers the http handlers for service DebugAPI to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterDebugAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterDebugAPIHandlerClient(ctx, mux, NewDebugAPIClient(conn))
+}
+
+// RegisterDebugAPIHandlerClient registers the http handlers for service DebugAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "DebugAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "DebugAPIClient"
+// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
+// "DebugAPIClient" to call the correct interceptors.
+func RegisterDebugAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client DebugAPIClient) error {
+
+	mux.Handle("GET", pattern_DebugAPI_LockerInfosCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DebugAPI_LockerInfosCount_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_LockerInfosCount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_DebugAPI_LockerInfosByState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DebugAPI_LockerInfosByState_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_LockerInfosByState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+var (
+	pattern_DebugAPI_LockerInfosCount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"debug", "lockerInfosCount"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_DebugAPI_LockerInfosByState_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"debug", "lockerInfosByState"}, "", runtime.AssumeColonVerbOpt(true)))
+)
+
+var (
+	forward_DebugAPI_LockerInfosCount_0 = runtime.ForwardResponseMessage
+
+	forward_DebugAPI_LockerInfosByState_0 = runtime.ForwardResponseMessage
 )

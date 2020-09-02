@@ -98,6 +98,25 @@ const (
 	DestroyFetch
 )
 
+func StateValueToString(value int) string {
+	switch State(value) {
+	case IssueLock:
+		return "IssueLock"
+	case IssueUnlock:
+		return "IssueUnLock"
+	case IssueFetch:
+		return "IssueFetch"
+	case DestroyLock:
+		return "DestroyLock"
+	case DestroyUnlock:
+		return "DestroyUnlock"
+	case DestroyFetch:
+		return "DestroyFetch"
+	default:
+		return "Invalid"
+	}
+}
+
 func GetHashTimer(client *ethclient.Client, contract string, rHash string) (*HashTimer, error) {
 	instance, err := NewQLCChainCaller(common.HexToAddress(contract), client)
 	if err != nil {
@@ -146,7 +165,6 @@ func TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64, client 
 			if err != nil {
 				return false, fmt.Errorf("eth tx by hash: %s", err)
 			}
-			fmt.Println("======== ", p)
 			if !p {
 				goto HeightConfirmed
 			}
@@ -185,11 +203,5 @@ func IsConfirmedOverHeightInterval(txHeight int64, interval int64, client *ethcl
 	if err != nil {
 		return false
 	}
-	fmt.Println("======== bestHeight,txHeight ", bestHeight, txHeight)
-	if bestHeight-txHeight >= interval {
-		return true
-	} else {
-		return false
-	}
-
+	return bestHeight-txHeight > interval
 }

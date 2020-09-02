@@ -18,7 +18,7 @@ func Deposit() {
 	logger.Info("hash: ", rOrigin, "==>", rHash)
 
 	// user lock (neo)
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, depositAmount, neoTrasaction)
+	tx, err := neoTrasaction.UserLock(neoUserWif, neoWrapperAccount.Address, rHash, depositAmount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,14 +29,16 @@ func Deposit() {
 		"amount": %d,
 		"rHash": "%s",
 		"addr": "%s"
-	}`, tx, lockAmount, rHash, wrapperAccount.Address)
+	}`, tx, lockAmount, rHash, ethWrapperAccount.String())
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
 	if err != nil || !r {
 		logger.Fatal(err, r)
 	}
 
 	// wait for wrapper state
-	waitForLockerState(rHash, types.DepositEthLockedDone)
+	if !waitForLockerState(rHash, types.DepositEthLockedDone) {
+		logger.Fatal(err)
+	}
 
 	// user unlock (eth)
 	etx, err := eth.UserUnlock(rHash, rOrigin, ethUserPrikey, ethContract, ethClient)
@@ -44,7 +46,9 @@ func Deposit() {
 		logger.Fatal(err)
 	}
 	logger.Info("UserUnlock eth hash: ", etx)
-	waitForLockerState(rHash, types.DepositNeoUnLockedDone)
+	if !waitForLockerState(rHash, types.DepositNeoUnLockedDone) {
+		logger.Fatal(err)
+	}
 	logger.Info("successfully")
 }
 
@@ -53,7 +57,7 @@ func DepositFetch() {
 	logger.Info("hash: ", rOrigin, "==>", rHash)
 
 	// user lock (neo)
-	tx, err := neo.UserLock(userWif, wrapperAccount.Address, rHash, depositAmount, neoTrasaction)
+	tx, err := neoTrasaction.UserLock(neoUserWif, neoWrapperAccount.Address, rHash, depositAmount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,14 +69,16 @@ func DepositFetch() {
 		"amount": %d,
 		"rHash": "%s",
 		"addr": "%s"
-	}`, tx, lockAmount, rHash, wrapperAccount.Address)
+	}`, tx, lockAmount, rHash, neoWrapperAccount.Address)
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
 	if err != nil || !r {
 		logger.Fatal(err, r)
 	}
 
 	// wait for wrapper state
-	waitForLockerState(rHash, types.DepositEthLockedDone)
+	if !waitForLockerState(rHash, types.DepositEthLockedDone) {
+		logger.Fatal(err)
+	}
 	waitForEthIntervalTimerOut(rHash)
 }
 

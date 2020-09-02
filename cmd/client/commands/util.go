@@ -11,7 +11,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
-func waitForLockerState(rHash string, lockerState types.LockerState) {
+func waitForLockerState(rHash string, lockerState types.LockerState) bool {
 	cTicker := time.NewTicker(6 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
@@ -20,16 +20,21 @@ func waitForLockerState(rHash string, lockerState types.LockerState) {
 			fmt.Println(err)
 			continue
 		}
-		fmt.Println("====== ", state["stateStr"])
+		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		if state["fail"].(bool) {
+			logger.Debugf("rHash [%s] fail: [%s] ", rHash, state["remark"].(string))
+			return false
+		}
 		if state["stateStr"].(string) == types.LockerStateToString(lockerState) {
-			return
+			return true
 		}
 	}
-	logger.Fatal("timeout")
+	logger.Error("timeout")
+	return false
 }
 
 func getLockerState(rHash string) (map[string]interface{}, error) {
-	ret, err := get(fmt.Sprintf("%s/info/lockerState?value=%s", hubUrl, rHash))
+	ret, err := get(fmt.Sprintf("%s/info/lockerInfo?value=%s", hubUrl, rHash))
 	if err != nil {
 		return nil, err
 	}
