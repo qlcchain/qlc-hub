@@ -12,6 +12,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"github.com/qlcchain/qlc-hub/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -82,12 +83,12 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.store.SetLockerStateFail(info, err)
 			return
 		}
+		d.logger.Infof("swap info: %s", util.ToString(swapInfo))
 
-		// init info
 		info.State = types.DepositNeoLockedDone
 		info.LockedNep5Height = height
 		info.Amount = swapInfo.Amount
-		info.Nep5Addr = swapInfo.UserEthAddress
+		info.Nep5Addr = swapInfo.UserNeoAddress
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
 			d.store.SetLockerStateFail(info, err)

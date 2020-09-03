@@ -261,7 +261,7 @@ func (n *Transaction) QuerySwapData(rHash string) (map[string]interface{}, error
 
 type SwapInfo struct {
 	Amount         int64  `json:"amount"`
-	UserEthAddress string `json:"userEthAddress"`
+	UserNeoAddress string `json:"userNeoAddress"`
 	//rHash    string
 	//rOrigin  string
 	OvertimeBlocks int64 `json:"overtimeBlocks"`
@@ -281,50 +281,6 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 		return nil, err
 	}
 	return info, nil
-}
-
-func getAmount(data map[string]interface{}) (int64, error) {
-	amount, err := getValue("amount", data)
-	if err != nil {
-		return 0, err
-	}
-	if r, ok := amount.(*big.Int); ok {
-		return r.Int64(), nil
-	} else {
-		return 0, errors.New("invalid amount")
-	}
-}
-
-func getIntValue(key string, data map[string]interface{}) (int64, error) {
-	if v, err := getValue(key, data); err != nil {
-		return 0, err
-	} else {
-		if r, ok := v.(int64); ok {
-			return r, nil
-		} else {
-			return 0, errors.New("invalid string")
-		}
-	}
-}
-
-func getStringValue(key string, data map[string]interface{}) (string, error) {
-	if v, err := getValue(key, data); err != nil {
-		return "", err
-	} else {
-		if r, ok := v.(string); ok {
-			return r, nil
-		} else {
-			return "", errors.New("invalid string")
-		}
-	}
-}
-
-func getValue(key string, data map[string]interface{}) (interface{}, error) {
-	if r, ok := data[key]; ok {
-		return r, nil
-	} else {
-		return 0, fmt.Errorf("can not get key %s [%s]", key, u.ToIndentString(data))
-	}
 }
 
 func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, uint32, error) {

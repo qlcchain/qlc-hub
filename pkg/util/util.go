@@ -30,6 +30,14 @@ func ToIndentString(v interface{}) string {
 	return string(b)
 }
 
+func ToString(v interface{}) string {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
 // Bytes fills the given byte slice with random bytes.
 func Bytes(data []byte) error {
 	_, err := rand.Read(data)

@@ -219,7 +219,7 @@ func (e *EventAPI) loopLockerState() {
 							if err := e.store.UpdateLockerInfo(info); err != nil {
 								e.logger.Errorf("loopLockerState/updateLocker: %s [%s]", err, info.RHash)
 							}
-							e.logger.Infof("[%s] set neo timeout flag true, [%s]", info.RHash, types.LockerStateToString(info.State))
+							e.logger.Infof("[%s] set neo timeout flag true, [%s, %d]", info.RHash, types.LockerStateToString(info.State), e.cfg.NEOCfg.DepositHeight)
 						}
 					}
 				}
