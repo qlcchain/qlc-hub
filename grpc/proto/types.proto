@@ -55,8 +55,10 @@ message LockerStateResponse {
   uint32 unlockedErc20Height = 15;
   string startTime           = 16;
   string lastModifyTime      = 17;
-  bool   fail                = 18;
-  string remark              = 19;
+  bool   neoTimeout          = 18;
+  bool   ethTimeout          = 19;
+  bool   fail                = 20;
+  string remark              = 21;
 }
 
 message Offset {
@@ -144,7 +146,22 @@ message lockerInfosCountResponse  {
     map<string, int32> counts = 1;
 }
 
+message HashTimerResponse  {
+    string rHash          = 1;
+    string rOrigin        = 2;
+    int64  amount         = 3;
+    string userAddr       = 4;
+    uint32 lockedHeight   = 5;
+    uint32 unlockedHeight = 6;
+}
+
 service DebugAPI {
+    rpc HashTimer(String) returns (HashTimerResponse){
+        option (google.api.http) = {
+          get: "/debug/hashTimer"
+        };
+    }
+
     rpc LockerInfosCount(google.protobuf.Empty) returns (lockerInfosCountResponse){
         option (google.api.http) = {
           get: "/debug/lockerInfosCount"

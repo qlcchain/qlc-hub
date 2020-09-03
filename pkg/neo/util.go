@@ -147,7 +147,8 @@ var (
 		"refundTimestamp":   "time",
 		"overtimeBlocks":    "int",
 	}
-	keys = []string{"origin",
+	keys = []string{
+		"originText",
 		"userNeoAddress",
 		"wrapperNeoAddress",
 		"userEthAddress",

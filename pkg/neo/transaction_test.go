@@ -1,19 +1,18 @@
 package neo
 
 import (
+	"fmt"
 	"testing"
 
-	"github.com/nspcc-dev/neo-go/pkg/util"
-
-	u "github.com/qlcchain/qlc-hub/pkg/util"
-
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
+	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 var (
 	url             = "http://seed2.ngd.network:20332"
-	contractAddress = "0533290f35572cd06e3667653255ffd6ee6430fb"
+	contractAddress = "e0abb5fde5a0b870c13f3e60258856e38a939187"
 	contractLE, _   = util.Uint160DecodeStringLE(contractAddress)
 
 	userWif            = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
@@ -33,7 +32,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rHash := "6c428bbdb7b7a3c235f16d241916337d457b2e52147cb213853f1316aff2e3d3"
+	rHash := "1bc9a54216e2f094edd984771673d0c29f0eb1c4ba6ddcb4f377168f4433a958"
 	r, err := c.QuerySwapData(rHash)
 	if err != nil {
 		t.Fatal(err)
@@ -44,18 +43,17 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(u.ToIndentString(r2))
-
 }
 
 func TestTransaction_RHashFromApplicationLog(t *testing.T) {
-	//c, err := NewTransaction(url, contractAddress)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	//
-	//r3, err := c.RHashFromApplicationLog("2493bd842308c4e0e53521099a3a6afd134f55186efd327586c45f0b04c4a21a")
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	//fmt.Println(r3)
+	c, err := NewTransaction(url, contractAddress)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r3, d, err := c.LockerEventFromApplicationLog("17a561d21f12ca3ad7b98459ccba801fa8ae192c4acdcc5251937fc7dd665566")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(r3, d)
 }

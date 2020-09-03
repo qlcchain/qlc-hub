@@ -7,6 +7,8 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 )
 
+// deposit
+
 func (n *Transaction) UserLock(userWif, wrapperAddress, rHash string, amount int) (string, error) {
 	userAccount, err := wallet.NewAccountFromWIF(userWif)
 	if err != nil {
@@ -53,6 +55,30 @@ func (n *Transaction) WrapperUnlock(rOrigin, wrapperWif, userEthAddress string) 
 	})
 	if err != nil {
 		return "", fmt.Errorf("wrapperUnlock/createTransaction: %s", err)
+	}
+	return r, nil
+}
+
+func (n *Transaction) RefundUser(rOrigin string, userWif string) (string, error) {
+	userAccount, err := wallet.NewAccountFromWIF(userWif)
+	if err != nil {
+		return "", fmt.Errorf("new account from wif: %s", err)
+	}
+	params := []request.Param{
+		FunctionName("refundUser"),
+		ArrayParams([]request.Param{
+			StringTypeParam(rOrigin),
+			AddressParam(userAccount.Address),
+		}),
+	}
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
+		Params:   params,
+		Wif:      userWif,
+		ROrigin:  rOrigin,
+		FuncName: "refundUser",
+	})
+	if err != nil {
+		return "", fmt.Errorf("refundUser/createTransaction: %s", err)
 	}
 	return r, nil
 }
@@ -108,7 +134,7 @@ func (n *Transaction) UserUnlock(rOrigin, userWif string) (string, error) {
 	return r, nil
 }
 
-func (n *Transaction) WrapperFetch(rHash, wrapperWif string) (string, error) {
+func (n *Transaction) RefundWrapper(rHash, wrapperWif string) (string, error) {
 	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
 	if err != nil {
 		return "", err
@@ -128,7 +154,7 @@ func (n *Transaction) WrapperFetch(rHash, wrapperWif string) (string, error) {
 		FuncName: "refundWrapper",
 	})
 	if err != nil {
-		return "", fmt.Errorf("wrapperFetch/createTransaction: %s", err)
+		return "", fmt.Errorf("refundWrapper/createTransaction: %s", err)
 	}
 	return r, nil
 }

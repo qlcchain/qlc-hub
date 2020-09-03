@@ -180,7 +180,7 @@ HeightConfirmed:
 	for {
 		select {
 		case <-vTicker.C:
-			b := IsConfirmedOverHeightInterval(txHeight, interval, client)
+			b := IsLockerTimeout(txHeight, interval, client)
 			if b {
 				return true, nil
 			}
@@ -198,7 +198,7 @@ func GetBestBlockHeight(client *ethclient.Client) (int64, error) {
 	return block.Number().Int64(), nil
 }
 
-func IsConfirmedOverHeightInterval(txHeight int64, interval int64, client *ethclient.Client) bool {
+func IsLockerTimeout(txHeight int64, interval int64, client *ethclient.Client) bool {
 	bestHeight, err := GetBestBlockHeight(client)
 	if err != nil {
 		return false

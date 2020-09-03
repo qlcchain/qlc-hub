@@ -31,7 +31,6 @@ var (
 	ethWrapperPrikey        = "67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e"
 	_, ethWrapperAccount, _ = eth.GetAccountByPriKey(ethWrapperPrikey)
 	ethUserPrikey           = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
-	userEthPrikey           = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 
 	ethIntervalHeight = 20
 	neoIntervalHeight = 20

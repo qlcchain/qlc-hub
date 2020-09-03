@@ -49,13 +49,13 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 	}
 
 	go func() {
-		w.logger.Infof("waiting for neo tx [%s] confirmed", request.GetNep5TxHash())
-		b, height, err := w.neo.TxVerifyAndConfirmed(request.GetNep5TxHash(), neoConfirmedHeight)
-		if !b || err != nil {
-			w.logger.Errorf("neo tx confirmed: %s, %v [%s]", err, b, rHash)
+		height, err := w.neo.CheckTxAndRHash(request.GetNep5TxHash(), request.GetRHash(), w.cfg.NEOCfg.ConfirmedHeight, neo.UserUnlock)
+		if err != nil {
+			w.logger.Error(err)
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
+
 		info.State = types.WithDrawNeoUnLockedDone
 		info.UnlockedNep5Height = height
 		info.UnlockedNep5Hash = request.GetNep5TxHash()
@@ -73,7 +73,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		w.logger.Info("[%s] withdraw wrapper eth unlock: ", rHash, tx)
+		w.logger.Infof("[%s] withdraw wrapper eth unlock: %s", rHash, tx)
 		info.State = types.WithDrawEthUnlockPending
 		info.UnlockedErc20Hash = tx
 		if err := w.store.UpdateLockerInfo(info); err != nil {

@@ -95,9 +95,10 @@ func Sha256Hash() (string, string) {
 }
 
 func RemoveHexPrefix(str string) string {
-	if strings.HasPrefix(str, "0x") {
-		s := strings.TrimLeft(str, "0x")
-		return s
+	if len(str) == 66 || len(str) == 42 {
+		if strings.HasPrefix(str, "0x") {
+			return str[2:]
+		}
 	}
 	return str
 }
