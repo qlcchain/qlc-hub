@@ -49,6 +49,20 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 	}
 
 	go func() {
+		lock(request.GetRHash(), w.logger)
+		defer unlock(request.GetRHash(), w.logger)
+
+		info, err := w.store.GetLockerInfo(request.GetRHash())
+		if err != nil {
+			w.logger.Error(err)
+			w.store.SetLockerStateFail(info, err)
+			return
+		}
+		if info.State >= types.WithDrawEthUnlockPending {
+			w.logger.Infof("[%s] state already ahead [%s]", request.GetRHash(), types.LockerStateToString(types.WithDrawEthUnlockPending))
+			return
+		}
+
 		height, err := w.neo.CheckTxAndRHash(request.GetNep5TxHash(), request.GetRHash(), w.cfg.NEOCfg.ConfirmedHeight, neo.UserUnlock)
 		if err != nil {
 			w.logger.Error(err)

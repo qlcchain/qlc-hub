@@ -2,6 +2,8 @@ package apis
 
 import (
 	"context"
+	"fmt"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -10,6 +12,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
+	"github.com/qlcchain/qlc-hub/pkg/types"
 	"go.uber.org/zap"
 )
 
@@ -47,9 +50,40 @@ func (d *DebugAPI) HashTimer(ctx context.Context, s *pb.String) (*pb.HashTimerRe
 }
 
 func (d *DebugAPI) LockerInfosCount(ctx context.Context, e *empty.Empty) (*pb.LockerInfosCountResponse, error) {
-	return nil, nil
+	counts := make(map[string]int32)
+	var total int32
+	if err := d.store.GetLockerInfos(func(info *types.LockerInfo) error {
+		counts[types.LockerStateToString(info.State)]++
+		total++
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	counts["Total"] = total
+	return &pb.LockerInfosCountResponse{
+		Counts: counts,
+	}, nil
 }
 
-func (d *DebugAPI) LockerInfosByState(ctx context.Context, s *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
-	return nil, nil
+func (d *DebugAPI) LockerInfosByState(ctx context.Context, params *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
+	if params.GetCount() < 0 || params.GetOffset() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d", params.GetCount(), params.GetOffset())
+	}
+	as := make([]*pb.LockerStateResponse, 0)
+	err := d.store.GetLockerInfos(func(info *types.LockerInfo) error {
+		if types.LockerStateToString(info.State) == params.GetParam() {
+			as = append(as, toLockerState(info))
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(as, func(i, j int) bool {
+		return as[i].LastModifyTime > as[j].LastModifyTime
+	})
+	states := getStateByOffset(as, params.GetCount(), params.GetOffset())
+	return &pb.LockerStatesResponse{
+		Lockers: states,
+	}, nil
 }

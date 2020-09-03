@@ -32,7 +32,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rHash := "23e22e61a0eac0e20df612f05dd1871590dd6600ac7ceef63777c4c3f7d5137b"
+	rHash := "5601c1949d5e6bbc793e4e3ecf62b2b322b8381f71a41b9e1dac04308633fc0c"
 	r, err := c.QuerySwapData(rHash)
 	if err != nil {
 		t.Fatal(err)

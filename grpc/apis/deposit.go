@@ -43,21 +43,19 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		return nil, err
 	}
 
-	var info *types.LockerInfo
-	var err error
-	if info, err = d.store.GetLockerInfo(request.GetRHash()); err == nil {
-		if info.State == types.DepositInit {
-			info.LockedNep5Hash = request.GetNep5TxHash()
+	if lockerInfo, err := d.store.GetLockerInfo(request.GetRHash()); err == nil {
+		if lockerInfo.State == types.DepositInit {
+			lockerInfo.LockedNep5Hash = request.GetNep5TxHash()
 		} else {
-			if info.Fail {
-				return nil, fmt.Errorf("lock fail: %s", info.Remark)
+			if lockerInfo.Fail {
+				return nil, fmt.Errorf("lock fail: %s", lockerInfo.Remark)
 			} else {
 				return toBoolean(true), nil
 			}
 		}
 	} else {
 		// init info
-		info = &types.LockerInfo{
+		info := &types.LockerInfo{
 			State:          types.DepositInit,
 			RHash:          request.GetRHash(),
 			LockedNep5Hash: request.GetNep5TxHash(),
@@ -70,6 +68,20 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 	}
 
 	go func() {
+		lock(request.GetRHash(), d.logger)
+		defer unlock(request.GetRHash(), d.logger)
+
+		info, err := d.store.GetLockerInfo(request.GetRHash())
+		if err != nil {
+			d.logger.Error(err)
+			d.store.SetLockerStateFail(info, err)
+			return
+		}
+		if info.State >= types.DepositEthLockedPending {
+			d.logger.Infof("[%s] state already ahead [%s]", request.GetRHash(), types.LockerStateToString(types.DepositEthLockedPending))
+			return
+		}
+
 		height, err := d.neo.CheckTxAndRHash(request.GetNep5TxHash(), request.GetRHash(), d.cfg.NEOCfg.ConfirmedHeight, neo.UserLock)
 		if err != nil {
 			d.logger.Error(err)

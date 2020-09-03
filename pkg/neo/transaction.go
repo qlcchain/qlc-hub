@@ -262,9 +262,9 @@ func (n *Transaction) QuerySwapData(rHash string) (map[string]interface{}, error
 type SwapInfo struct {
 	Amount         int64  `json:"amount"`
 	UserNeoAddress string `json:"userNeoAddress"`
-	//rHash    string
-	//rOrigin  string
-	OvertimeBlocks int64 `json:"overtimeBlocks"`
+	State          int    `json:"state"`
+	OriginText     string `json:"originText"`
+	OvertimeBlocks int64  `json:"overtimeBlocks"`
 }
 
 func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
@@ -375,7 +375,7 @@ func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int,
 	n.logger.Infof("waiting for neo tx [%s] confirmed", txHash)
 	b, height, err := n.TxVerifyAndConfirmed(txHash, confirmedHeight)
 	if !b || err != nil {
-		return 0, fmt.Errorf("neo tx confirmed: %s, %v [%s]", err, b, rHash)
+		return 0, fmt.Errorf("neo tx confirmed: %s, %v , %s, [%s]", err, b, txHash, rHash)
 	}
 
 	rHashEvent, stateEvent, err := n.LockerEventFromApplicationLog(txHash)
