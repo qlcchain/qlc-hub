@@ -11,6 +11,42 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
+func waitForWithdrawEthTimeout(rHash string) bool {
+	cTicker := time.NewTicker(30 * time.Second)
+	for i := 0; i < 100; i++ {
+		<-cTicker.C
+		state, err := getLockerState(rHash)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		if state["ethTimeout"].(bool) {
+			return true
+		}
+	}
+	logger.Error("timeout")
+	return false
+}
+
+func waitForDepositNeoTimeout(rHash string) bool {
+	cTicker := time.NewTicker(30 * time.Second)
+	for i := 0; i < 100; i++ {
+		<-cTicker.C
+		state, err := getLockerState(rHash)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		if state["neoTimeout"].(bool) {
+			return true
+		}
+	}
+	logger.Error("timeout")
+	return false
+}
+
 func waitForLockerState(rHash string, lockerState types.LockerState) bool {
 	cTicker := time.NewTicker(6 * time.Second)
 	for i := 0; i < 100; i++ {
@@ -86,7 +122,7 @@ func post(paras string, url string) (bool, error) {
 	}
 	defer response.Body.Close()
 	if response.StatusCode > 200 {
-		logger.Fatalf("%d status code returned ", response.StatusCode)
+		logger.Fatalf("%d status code returned ,%s", response.StatusCode, url)
 	}
 	bytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {

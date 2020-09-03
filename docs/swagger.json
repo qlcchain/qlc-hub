@@ -11,6 +11,36 @@
     "application/json"
   ],
   "paths": {
+    "/debug/hashTimer": {
+      "get": {
+        "operationId": "DebugAPI_HashTimer",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoHashTimerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
     "/debug/lockerInfosByState": {
       "get": {
         "operationId": "DebugAPI_LockerInfosByState",
@@ -440,6 +470,32 @@
         }
       }
     },
+    "protoHashTimerResponse": {
+      "type": "object",
+      "properties": {
+        "rHash": {
+          "type": "string"
+        },
+        "rOrigin": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userAddr": {
+          "type": "string"
+        },
+        "lockedHeight": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "unlockedHeight": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
     "protoLockerStateResponse": {
       "type": "object",
       "properties": {
@@ -499,6 +555,14 @@
         },
         "lastModifyTime": {
           "type": "string"
+        },
+        "neoTimeout": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "ethTimeout": {
+          "type": "boolean",
+          "format": "boolean"
         },
         "fail": {
           "type": "boolean",

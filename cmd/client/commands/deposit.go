@@ -69,17 +69,32 @@ func DepositFetch() {
 		"amount": %d,
 		"rHash": "%s",
 		"addr": "%s"
-	}`, tx, lockAmount, rHash, neoWrapperAccount.Address)
+	}`, tx, lockAmount, rHash, ethWrapperAccount.String())
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
 	if err != nil || !r {
 		logger.Fatal(err, r)
 	}
 
 	// wait for wrapper state
-	if !waitForLockerState(rHash, types.DepositEthLockedDone) {
+	if !waitForDepositNeoTimeout(rHash) {
+		logger.Fatal("timeout")
+	}
+
+	tx2, err := neoTrasaction.RefundUser(rOrigin, neoUserWif)
+	if err != nil {
 		logger.Fatal(err)
 	}
-	waitForEthIntervalTimerOut(rHash)
+	logger.Info("refund user tx ", tx2)
+
+	// wrapper lock (eth)
+	paras2 := fmt.Sprintf(`{
+		"rHash": "%s",
+		"nep5TxHash": "%s",
+	}`, rHash, tx2)
+	r2, err := post(paras2, fmt.Sprintf("%s/deposit/fetchNotice", hubUrl))
+	if err != nil || !r2 {
+		logger.Fatal(err, r2)
+	}
 }
 
 func waitForEthIntervalTimerOut(rHash string) {
@@ -92,7 +107,7 @@ func waitForEthIntervalTimerOut(rHash string) {
 
 	for i := 0; i < ethIntervalHeight*12; i++ {
 		time.Sleep(10 * time.Second)
-		b := eth.IsConfirmedOverHeightInterval(int64(lockerHeight), int64(ethIntervalHeight), ethClient)
+		b := eth.IsLockerTimeout(int64(lockerHeight), int64(ethIntervalHeight), ethClient)
 		if b {
 			return
 		}

@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/nspcc-dev/neo-go/pkg/core"
 	"math/big"
 	"math/rand"
 	"sort"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/nspcc-dev/neo-go/pkg/core"
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 	"github.com/nspcc-dev/neo-go/pkg/io"
@@ -259,11 +260,11 @@ func (n *Transaction) QuerySwapData(rHash string) (map[string]interface{}, error
 }
 
 type SwapInfo struct {
-	Amount   int64
-	UserAddr string
-	rHash    string
-	rOrigin  string
-	OverTime int64
+	Amount         int64  `json:"amount"`
+	UserEthAddress string `json:"userEthAddress"`
+	//rHash    string
+	//rOrigin  string
+	OvertimeBlocks int64 `json:"overtimeBlocks"`
 }
 
 func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
@@ -272,21 +273,13 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 		return nil, err
 	}
 	info := new(SwapInfo)
-	amount, err := getAmount(data)
+	tt, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
-	info.Amount = amount
-	overTime, err := getIntValue("overtimeBlocks", data)
-	if err != nil {
+	if err := json.Unmarshal(tt, info); err != nil {
 		return nil, err
 	}
-	info.OverTime = overTime
-	//origin, err := getStringValue("origin", data)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//info.rOrigin = origin
 	return info, nil
 }
 
@@ -378,7 +371,7 @@ HeightConfirmed:
 	}
 }
 
-func (n *Transaction) IsConfirmedOverHeightInterval(txHeight uint32, interval int64) bool {
+func (n *Transaction) IsLockerTimeout(txHeight uint32, interval int64) bool {
 	nHeight, err := n.Client().GetStateHeight()
 	if err != nil {
 		return false
@@ -391,16 +384,64 @@ func (n *Transaction) ValidateAddress(addr string) error {
 	return n.client.ValidateAddress(addr)
 }
 
-func (n *Transaction) ApplicationLog(hash string) (string, error) {
+func (n *Transaction) LockerEventFromApplicationLog(hash string) (string, State, error) {
 	if h, err := util.Uint256DecodeStringLE(hash); err == nil {
 		if l, err := n.client.GetApplicationLog(h); err == nil {
-			data, _ := json.MarshalIndent(l, "", "\t")
-			fmt.Println(string(data))
-			return "l", nil
+			//data, _ := json.MarshalIndent(l, "", "\t")
+			//fmt.Println(string(data))
+			for _, executions := range l.Executions {
+				for _, events := range executions.Events {
+					if events.Item.Type == smartcontract.ArrayType {
+						values := events.Item.Value.([]smartcontract.Parameter)
+						if len(values) == 3 {
+							rHash, ok := values[1].Value.([]byte)
+							if !ok {
+								return "", 0, errors.New("invalid rHash value from log")
+							}
+							rHashStr := common.BytesToHash(rHash).String()
+							if state, ok := values[2].Value.(int64); ok {
+								return u.RemoveHexPrefix(rHashStr), State(state), nil
+							} else {
+								return u.RemoveHexPrefix(rHashStr), State(0), nil
+							}
+						}
+					}
+				}
+			}
 		} else {
-			return "", fmt.Errorf("get applicationLog: %s", err)
+			return "", 0, fmt.Errorf("get applicationLog: %s, %s", err, hash)
 		}
-	} else {
-		return "", fmt.Errorf("decode string: %s", err)
 	}
+	return "", 0, fmt.Errorf("can not find lock event %s", hash)
 }
+
+func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int, state State) (uint32, error) {
+	n.logger.Infof("waiting for neo tx [%s] confirmed", txHash)
+	b, height, err := n.TxVerifyAndConfirmed(txHash, confirmedHeight)
+	if !b || err != nil {
+		return 0, fmt.Errorf("neo tx confirmed: %s, %v [%s]", err, b, rHash)
+	}
+
+	rHashEvent, stateEvent, err := n.LockerEventFromApplicationLog(txHash)
+	if err != nil {
+		return 0, fmt.Errorf("neo event: %s, %s, [%s]", err, txHash, rHash)
+	}
+	if rHashEvent != rHash {
+		return 0, fmt.Errorf("invalid rHash: %s, %s", rHashEvent, rHash)
+	}
+	if stateEvent != state {
+		return 0, fmt.Errorf("invalid state:  %d, %d", stateEvent, state)
+	}
+	return height, nil
+}
+
+type State int
+
+const (
+	UserLock State = iota
+	WrapperUnlock
+	RefundUser
+	WrapperLock
+	UserUnlock
+	RefundWrapper
+)

@@ -14,6 +14,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"github.com/qlcchain/qlc-hub/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -51,7 +52,8 @@ func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, e
 }
 
 func (i *InfoAPI) LockerInfo(ctx context.Context, s *pb.String) (*pb.LockerStateResponse, error) {
-	r, err := i.store.GetLockerInfo(s.GetValue())
+	rHash := util.RemoveHexPrefix(s.GetValue())
+	r, err := i.store.GetLockerInfo(rHash)
 	if err != nil {
 		return nil, err
 	}
@@ -162,6 +164,8 @@ func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
 		UnlockedErc20Height: s.UnlockedErc20Height,
 		StartTime:           time.Unix(s.StartTime, 0).Format(time.RFC3339),
 		LastModifyTime:      time.Unix(s.LastModifyTime, 0).Format(time.RFC3339),
+		NeoTimeout:          s.NeoTimeout,
+		EthTimeout:          s.EthTimeout,
 		Fail:                s.Fail,
 		Remark:              s.Remark,
 	}

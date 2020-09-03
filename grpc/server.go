@@ -3,25 +3,24 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/nspcc-dev/neo-go/pkg/wallet"
-	"github.com/qlcchain/qlc-hub/pkg/eth"
-	"github.com/qlcchain/qlc-hub/pkg/neo"
-	"github.com/qlcchain/qlc-hub/pkg/store"
 	"net"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
+	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	"github.com/qlcchain/qlc-hub/pkg/neo"
+	"github.com/qlcchain/qlc-hub/pkg/store"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Server struct {
@@ -183,7 +182,7 @@ func (g *Server) registerApi() error {
 	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterEventAPIServer(g.rpc, apis.NewEventAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
-	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.store))
+	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.store))
 	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.store))
 	return nil
 }

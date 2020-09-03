@@ -21,7 +21,7 @@ func Withdraw() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	tx, err := eth.UserLock(rHash, userEthPrikey, address.String(), ethContract, int64(withdrawAmount), ethClient)
+	tx, err := eth.UserLock(rHash, ethUserPrikey, address.String(), ethContract, int64(withdrawAmount), ethClient)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,13 +63,21 @@ func WithdrawFetch() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	tx, err := eth.UserLock(rHash, userEthPrikey, address.String(), ethContract, int64(withdrawAmount), ethClient)
+	tx, err := eth.UserLock(rHash, ethUserPrikey, address.String(), ethContract, int64(withdrawAmount), ethClient)
 	if err != nil {
 		log.Fatal(err)
 	}
 	logger.Info("eth user lock hash: ", tx)
 
-	waitForNeoIntervalTimerOut(tx)
+	if !waitForWithdrawEthTimeout(rHash) {
+		logger.Fatal("timeout")
+	}
+
+	tx, err = eth.UserFetch(rHash, ethUserPrikey, ethContract, ethClient)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	logger.Info("eth user fetch hash: ", tx)
 }
 
 func waitForNeoIntervalTimerOut(txHash string) {
@@ -82,7 +90,7 @@ func waitForNeoIntervalTimerOut(txHash string) {
 
 	for i := 0; i < neoIntervalHeight*12; i++ {
 		time.Sleep(10 * time.Second)
-		b := neoTrasaction.IsConfirmedOverHeightInterval(ch, int64(ethIntervalHeight))
+		b := neoTrasaction.IsLockerTimeout(ch, int64(ethIntervalHeight))
 		if b {
 			return
 		}

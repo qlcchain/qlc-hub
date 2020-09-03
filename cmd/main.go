@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/pkg/log"
@@ -34,6 +33,7 @@ func main() {
 				code = 0
 			}
 		}
+		fmt.Println(err)
 		os.Exit(code)
 	}
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -45,6 +44,23 @@ func WrapperUnlock(rHash, rOrigin, wrapperPrikey, contract string, client *ethcl
 	tx, err := instance.DestoryUnlock(opts, rHashBytes, rOriginBytes)
 	if err != nil {
 		return "", fmt.Errorf("WrapperUnlock/DestoryUnlock: %s", err)
+	}
+	return tx.Hash().Hex(), nil
+}
+
+func UserFetch(rHash, userPrikey, contract string, client *ethclient.Client) (string, error) {
+	instance, opts, err := GetTransactor(client, userPrikey, contract)
+	if err != nil {
+		return "", err
+	}
+
+	rHashBytes, err := util.HexStringToBytes32(rHash)
+	if err != nil {
+		return "", err
+	}
+	tx, err := instance.DestoryFetch(opts, rHashBytes)
+	if err != nil {
+		return "", err
 	}
 	return tx.Hash().Hex(), nil
 }
