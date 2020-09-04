@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/pkg/log"
@@ -45,7 +46,7 @@ func main() {
 	if cfg.Verbose {
 		cfg.LogLevel = "debug"
 	}
-	log.Setup(cfg)
+	log.Setup(cfg.LogDir(), cfg.LogLevel)
 
 	logger := log.NewLogger("main")
 	logger.Info(util.ToIndentString(cfg))

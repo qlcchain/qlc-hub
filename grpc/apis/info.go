@@ -8,6 +8,8 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -15,7 +17,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
-	"go.uber.org/zap"
 )
 
 type InfoAPI struct {

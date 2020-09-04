@@ -1,4 +1,4 @@
-.PHONY: deps clean build lint changelog snapshot release
+.PHONY: deps clean build lint changelog snapshot release signer signer-proto
 
 # Check for required command tools to build or stop immediately
 EXECUTABLES = git go find pwd
@@ -60,3 +60,10 @@ release: changelog
 		-v $(GOPATH)/src:/go/src \
 		-w /qlc-hub \
 		goreng/golang-cross:$(GO_BUILDER_VERSION) --rm-dist --release-notes=CHANGELOG.md
+
+signer-proto:
+	protoc -I$(GOPATH)/src -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I=$(shell pwd)/grpc/proto/ --go_out=plugins=grpc:$(shell pwd)/grpc/proto $(shell pwd)/grpc/proto/signer.proto
+
+signer:
+	go build ${LDFLAGS} -o $(BUILDDIR)/signer -i $(shell pwd)/cmd/signer/main.go
+	@echo 'Build signer done.'

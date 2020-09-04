@@ -3,6 +3,7 @@ package db
 import (
 	"bytes"
 	"errors"
+
 	"github.com/dgraph-io/badger/v2"
 	"github.com/dgraph-io/badger/v2/options"
 

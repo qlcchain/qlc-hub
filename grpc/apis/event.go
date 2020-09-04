@@ -2,6 +2,7 @@ package apis
 
 import (
 	"context"
+
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"

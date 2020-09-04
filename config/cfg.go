@@ -7,8 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/qlcchain/qlc-hub/pkg/util"
 	"gopkg.in/validator.v2"
+
+	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 const (
@@ -17,12 +18,14 @@ const (
 )
 
 type Config struct {
-	Verbose     bool         `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
-	LogLevel    string       `json:"logLevel" short:"l" long:"level" description:"log level" default:"info"` //info,warn,debug.
-	NEOCfg      *NEOCfg      `json:"neo" validate:"nonnil"`
-	EthereumCfg *EthereumCfg `json:"ethereum" validate:"nonnil"`
-	RPCCfg      *RPCCfg      `json:"rpc" validate:"nonnil"`
-	DateDir     string       `json:"dateDir" validate:"nonnil"`
+	Verbose        bool         `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
+	LogLevel       string       `json:"logLevel" short:"l" long:"level" description:"log level" default:"info"` //info,warn,debug.
+	SignerToken    string       `json:"signerToken"  long:"signerToken" description:"singer JWT token" validate:"nonzero"`
+	SignerEndPoint string       `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" validate:"nonzero"`
+	NEOCfg         *NEOCfg      `json:"neo" validate:"nonnil"`
+	EthereumCfg    *EthereumCfg `json:"ethereum" validate:"nonnil"`
+	RPCCfg         *RPCCfg      `json:"rpc" validate:"nonnil"`
+	DateDir        string       `json:"dateDir" validate:"nonnil"`
 }
 
 type NEOCfg struct {

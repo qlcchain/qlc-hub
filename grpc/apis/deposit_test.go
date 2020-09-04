@@ -1,8 +1,9 @@
 package apis
 
 import (
-	"github.com/qlcchain/qlc-hub/config"
 	"testing"
+
+	"github.com/qlcchain/qlc-hub/config"
 )
 
 var cfg = &config.Config{

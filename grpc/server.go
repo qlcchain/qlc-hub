@@ -5,12 +5,17 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"time"
+
+	"github.com/qlcchain/qlc-hub/pkg/util"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
@@ -18,9 +23,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 type Server struct {
@@ -53,7 +55,7 @@ func (g *Server) Start() error {
 		return err
 	}
 
-	network, address, err := scheme(g.cfg.RPCCfg.GRPCListenAddress)
+	network, address, err := util.Scheme(g.cfg.RPCCfg.GRPCListenAddress)
 	if err != nil {
 		return err
 	}
@@ -134,7 +136,7 @@ func (g *Server) newGateway(grpcAddress, gwAddress string) error {
 	if err := registerGWApi(ctx, gwmux, grpcAddress, opts); err != nil {
 		return fmt.Errorf("gateway register: %s", err)
 	}
-	_, address, err := scheme(gwAddress)
+	_, address, err := util.Scheme(gwAddress)
 	if err != nil {
 		return err
 	}
@@ -169,14 +171,6 @@ func (g *Server) Stop() {
 
 	g.store.Close() //todo wait all server stop
 
-}
-
-func scheme(endpoint string) (string, string, error) {
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return "", "", err
-	}
-	return u.Scheme, u.Host, nil
 }
 
 func (g *Server) registerApi() error {

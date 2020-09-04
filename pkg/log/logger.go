@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -28,13 +27,12 @@ func init() {
 	Root = defaultLogger.Sugar().Named("log")
 }
 
-func Setup(cfg *config.Config) (err error) {
-	logFolder := cfg.LogDir()
-	err = util.CreateDirIfNotExist(logFolder)
+func Setup(dir, level string) (err error) {
+	err = util.CreateDirIfNotExist(dir)
 	if err != nil {
 		return
 	}
-	logfile, _ := filepath.Abs(filepath.Join(logFolder, logfile))
+	logfile, _ := filepath.Abs(filepath.Join(dir, logfile))
 	w := zapcore.AddSync(&lumberjack.Logger{
 		Filename:   logfile,
 		MaxSize:    10, // megabytes
@@ -44,7 +42,7 @@ func Setup(cfg *config.Config) (err error) {
 		LocalTime:  true,
 	})
 	l := zap.ErrorLevel
-	if err := l.Set(cfg.LogLevel); err != nil {
+	if err := l.Set(level); err != nil {
 		fmt.Println(err)
 	}
 	consoleDebugging := zapcore.Lock(os.Stdout)
