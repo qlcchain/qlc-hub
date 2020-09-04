@@ -12,6 +12,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"github.com/qlcchain/qlc-hub/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -42,21 +43,17 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		return nil, err
 	}
 
-	var info *types.LockerInfo
-	var err error
-	if info, err = d.store.GetLockerInfo(request.GetRHash()); err == nil {
-		if info.State == types.DepositInit {
-			info.LockedNep5Hash = request.GetNep5TxHash()
+	if lockerInfo, err := d.store.GetLockerInfo(request.GetRHash()); err == nil {
+		if lockerInfo.State == types.DepositInit {
+			lockerInfo.LockedNep5Hash = request.GetNep5TxHash()
 		} else {
-			if info.Fail {
-				return nil, fmt.Errorf("lock fail: %s", info.Remark)
-			} else {
-				return toBoolean(true), nil
+			if lockerInfo.Fail {
+				return nil, fmt.Errorf("lock fail: %s", lockerInfo.Remark)
 			}
 		}
 	} else {
 		// init info
-		info = &types.LockerInfo{
+		info := &types.LockerInfo{
 			State:          types.DepositInit,
 			RHash:          request.GetRHash(),
 			LockedNep5Hash: request.GetNep5TxHash(),
@@ -65,41 +62,62 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.logger.Error(err)
 			return nil, err
 		}
-		d.logger.Infof("[%s] add state to [%s]", info.RHash, types.LockerStateToString(types.DepositInit))
+		d.logger.Infof("add [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositInit))
 	}
 
 	go func() {
+		lock(request.GetRHash(), d.logger)
+		defer unlock(request.GetRHash(), d.logger)
+
+		var info *types.LockerInfo
+		var err error
+		defer func() {
+			d.store.SetLockerStateFail(info, err)
+		}()
+
+		info, err = d.store.GetLockerInfo(request.GetRHash())
+		if err != nil {
+			d.logger.Error(err)
+			return
+		}
+		if info.State >= types.DepositEthLockedPending {
+			d.logger.Infof("[%s] state already ahead [%s]", request.GetRHash(), types.LockerStateToString(types.DepositEthLockedPending))
+			return
+		}
+
 		height, err := d.neo.CheckTxAndRHash(request.GetNep5TxHash(), request.GetRHash(), d.cfg.NEOCfg.ConfirmedHeight, neo.UserLock)
 		if err != nil {
 			d.logger.Error(err)
-			d.store.SetLockerStateFail(info, err)
 			return
 		}
 
 		swapInfo, err := d.neo.QuerySwapInfo(request.GetRHash())
 		if err != nil {
 			d.logger.Errorf("query swap info: %s", err)
-			d.store.SetLockerStateFail(info, err)
+			return
+		}
+		d.logger.Infof("swap info: %s", util.ToString(swapInfo))
+
+		if b, h := d.neo.HasConfirmedBlocksHeight(height, getLockDeadLineHeight(d.cfg.NEOCfg.DepositHeight)); b {
+			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, height, h)
+			d.logger.Error(err)
 			return
 		}
 
-		// init info
 		info.State = types.DepositNeoLockedDone
 		info.LockedNep5Height = height
 		info.Amount = swapInfo.Amount
-		info.Nep5Addr = swapInfo.UserEthAddress
+		info.UserAddr = swapInfo.UserNeoAddress
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
-			d.store.SetLockerStateFail(info, err)
 			return
 		}
-		d.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
+		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
 
 		// wrapper to eth lock
 		tx, err := eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.Account, d.cfg.EthereumCfg.Contract, swapInfo.Amount, d.eth)
 		if err != nil {
 			d.logger.Error(err)
-			d.store.SetLockerStateFail(info, err)
 			return
 		}
 		d.logger.Infof("deposit/wrapper eth lock: %s [%s]", request.GetRHash(), tx)
@@ -107,10 +125,9 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		info.LockedErc20Hash = tx
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
-			d.store.SetLockerStateFail(info, err)
 			return
 		}
-		d.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthLockedPending))
+		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthLockedPending))
 	}()
 	return toBoolean(true), nil
 }
@@ -134,7 +151,7 @@ func (d *DepositAPI) FetchNotice(ctx context.Context, request *pb.FetchNoticeReq
 		return nil, err
 	}
 	if !info.NeoTimeout {
-		d.logger.Errorf("current [%s] is [%s], not timeout", info.RHash, types.LockerStateToString(info.State))
+		d.logger.Errorf("current state is %s, [%s], not timeout", types.LockerStateToString(info.State), info.RHash)
 		return nil, fmt.Errorf("not yet timeout, state: %s", types.LockerStateToString(info.State))
 	}
 	go func() {
@@ -153,7 +170,7 @@ func (d *DepositAPI) FetchNotice(ctx context.Context, request *pb.FetchNoticeReq
 			d.store.SetLockerStateFail(info, err)
 			return
 		}
-		d.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
+		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
 	}()
 	return toBoolean(true), nil
 }

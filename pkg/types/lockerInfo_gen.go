@@ -42,13 +42,8 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 			if err != nil {
 				return
 			}
-		case "erc20Addr":
-			z.Erc20Addr, err = dc.ReadString()
-			if err != nil {
-				return
-			}
-		case "nep5Addr":
-			z.Nep5Addr, err = dc.ReadString()
+		case "userAddr":
+			z.UserAddr, err = dc.ReadString()
 			if err != nil {
 				return
 			}
@@ -134,9 +129,9 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 20
+	// map header, size 19
 	// write "state"
-	err = en.Append(0xde, 0x0, 0x14, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	err = en.Append(0xde, 0x0, 0x13, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	if err != nil {
 		return
 	}
@@ -171,21 +166,12 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	// write "erc20Addr"
-	err = en.Append(0xa9, 0x65, 0x72, 0x63, 0x32, 0x30, 0x41, 0x64, 0x64, 0x72)
+	// write "userAddr"
+	err = en.Append(0xa8, 0x75, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
 	if err != nil {
 		return
 	}
-	err = en.WriteString(z.Erc20Addr)
-	if err != nil {
-		return
-	}
-	// write "nep5Addr"
-	err = en.Append(0xa8, 0x6e, 0x65, 0x70, 0x35, 0x41, 0x64, 0x64, 0x72)
-	if err != nil {
-		return
-	}
-	err = en.WriteString(z.Nep5Addr)
+	err = en.WriteString(z.UserAddr)
 	if err != nil {
 		return
 	}
@@ -321,9 +307,9 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 // MarshalMsg implements msgp.Marshaler
 func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 20
+	// map header, size 19
 	// string "state"
-	o = append(o, 0xde, 0x0, 0x14, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	o = append(o, 0xde, 0x0, 0x13, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	o, err = z.State.MarshalMsg(o)
 	if err != nil {
 		return
@@ -337,12 +323,9 @@ func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	// string "amount"
 	o = append(o, 0xa6, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74)
 	o = msgp.AppendInt64(o, z.Amount)
-	// string "erc20Addr"
-	o = append(o, 0xa9, 0x65, 0x72, 0x63, 0x32, 0x30, 0x41, 0x64, 0x64, 0x72)
-	o = msgp.AppendString(o, z.Erc20Addr)
-	// string "nep5Addr"
-	o = append(o, 0xa8, 0x6e, 0x65, 0x70, 0x35, 0x41, 0x64, 0x64, 0x72)
-	o = msgp.AppendString(o, z.Nep5Addr)
+	// string "userAddr"
+	o = append(o, 0xa8, 0x75, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
+	o = msgp.AppendString(o, z.UserAddr)
 	// string "lnHash"
 	o = append(o, 0xa6, 0x6c, 0x6e, 0x48, 0x61, 0x73, 0x68)
 	o = msgp.AppendString(o, z.LockedNep5Hash)
@@ -424,13 +407,8 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 			if err != nil {
 				return
 			}
-		case "erc20Addr":
-			z.Erc20Addr, bts, err = msgp.ReadStringBytes(bts)
-			if err != nil {
-				return
-			}
-		case "nep5Addr":
-			z.Nep5Addr, bts, err = msgp.ReadStringBytes(bts)
+		case "userAddr":
+			z.UserAddr, bts, err = msgp.ReadStringBytes(bts)
 			if err != nil {
 				return
 			}
@@ -517,6 +495,6 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *LockerInfo) Msgsize() (s int) {
-	s = 3 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 10 + msgp.StringPrefixSize + len(z.Erc20Addr) + 9 + msgp.StringPrefixSize + len(z.Nep5Addr) + 7 + msgp.StringPrefixSize + len(z.LockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedErc20Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedErc20Hash) + 9 + msgp.Uint32Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 11 + msgp.BoolSize + 11 + msgp.BoolSize + 5 + msgp.BoolSize + 7 + msgp.StringPrefixSize + len(z.Remark)
+	s = 3 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 9 + msgp.StringPrefixSize + len(z.UserAddr) + 7 + msgp.StringPrefixSize + len(z.LockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedErc20Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedErc20Hash) + 9 + msgp.Uint32Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 11 + msgp.BoolSize + 11 + msgp.BoolSize + 5 + msgp.BoolSize + 7 + msgp.StringPrefixSize + len(z.Remark)
 	return
 }

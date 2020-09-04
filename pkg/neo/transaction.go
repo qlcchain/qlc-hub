@@ -261,10 +261,10 @@ func (n *Transaction) QuerySwapData(rHash string) (map[string]interface{}, error
 
 type SwapInfo struct {
 	Amount         int64  `json:"amount"`
-	UserEthAddress string `json:"userEthAddress"`
-	//rHash    string
-	//rOrigin  string
-	OvertimeBlocks int64 `json:"overtimeBlocks"`
+	UserNeoAddress string `json:"userNeoAddress"`
+	State          int    `json:"state"`
+	OriginText     string `json:"originText"`
+	OvertimeBlocks int64  `json:"overtimeBlocks"`
 }
 
 func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
@@ -283,53 +283,9 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 	return info, nil
 }
 
-func getAmount(data map[string]interface{}) (int64, error) {
-	amount, err := getValue("amount", data)
-	if err != nil {
-		return 0, err
-	}
-	if r, ok := amount.(*big.Int); ok {
-		return r.Int64(), nil
-	} else {
-		return 0, errors.New("invalid amount")
-	}
-}
-
-func getIntValue(key string, data map[string]interface{}) (int64, error) {
-	if v, err := getValue(key, data); err != nil {
-		return 0, err
-	} else {
-		if r, ok := v.(int64); ok {
-			return r, nil
-		} else {
-			return 0, errors.New("invalid string")
-		}
-	}
-}
-
-func getStringValue(key string, data map[string]interface{}) (string, error) {
-	if v, err := getValue(key, data); err != nil {
-		return "", err
-	} else {
-		if r, ok := v.(string); ok {
-			return r, nil
-		} else {
-			return "", errors.New("invalid string")
-		}
-	}
-}
-
-func getValue(key string, data map[string]interface{}) (interface{}, error) {
-	if r, ok := data[key]; ok {
-		return r, nil
-	} else {
-		return 0, fmt.Errorf("can not get key %s [%s]", key, u.ToIndentString(data))
-	}
-}
-
 func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, uint32, error) {
 	var txHeight uint32
-	cTicker := time.NewTicker(6 * time.Second)
+	cTicker := time.NewTicker(2 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
@@ -350,7 +306,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, u
 	}
 
 HeightConfirmed:
-	nTicker := time.NewTicker(6 * time.Second)
+	nTicker := time.NewTicker(5 * time.Second)
 	nTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
@@ -371,13 +327,16 @@ HeightConfirmed:
 	}
 }
 
-func (n *Transaction) IsLockerTimeout(txHeight uint32, interval int64) bool {
-	nHeight, err := n.Client().GetStateHeight()
+func (n *Transaction) HasConfirmedBlocksHeight(startHeight uint32, interval int64) (bool, uint32) {
+	if interval < 0 {
+		interval = 0
+	}
+	nHeight, err := n.client.GetStateHeight()
 	if err != nil {
-		return false
+		return false, 0
 	}
 	nh := nHeight.BlockHeight
-	return nh-txHeight > uint32(interval)
+	return nh-startHeight >= uint32(interval), nh
 }
 
 func (n *Transaction) ValidateAddress(addr string) error {
@@ -416,10 +375,10 @@ func (n *Transaction) LockerEventFromApplicationLog(hash string) (string, State,
 }
 
 func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int, state State) (uint32, error) {
-	n.logger.Infof("waiting for neo tx [%s] confirmed", txHash)
+	n.logger.Infof("waiting for neo tx %s confirmed", txHash)
 	b, height, err := n.TxVerifyAndConfirmed(txHash, confirmedHeight)
 	if !b || err != nil {
-		return 0, fmt.Errorf("neo tx confirmed: %s, %v [%s]", err, b, rHash)
+		return 0, fmt.Errorf("neo tx confirmed: %s, %v , %s, [%s]", err, b, txHash, rHash)
 	}
 
 	rHashEvent, stateEvent, err := n.LockerEventFromApplicationLog(txHash)

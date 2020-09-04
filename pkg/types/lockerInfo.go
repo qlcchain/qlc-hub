@@ -6,8 +6,7 @@ type LockerInfo struct {
 	RHash               string      `msg:"rHash" json:"rHash"`
 	ROrigin             string      `msg:"rOrigin" json:"rOrigin"`
 	Amount              int64       `msg:"amount" json:"amount"`
-	Erc20Addr           string      `msg:"erc20Addr" json:"erc20Addr"`
-	Nep5Addr            string      `msg:"nep5Addr" json:"nep5Addr"`
+	UserAddr            string      `msg:"userAddr" json:"userAddr"`
 	LockedNep5Hash      string      `msg:"lnHash" json:"lockedNep5Hash"`
 	LockedNep5Height    uint32      `msg:"lnHeight" json:"lockedNep5Height"`
 	LockedErc20Hash     string      `msg:"leHash" json:"lockedErc20Hash"`

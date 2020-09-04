@@ -43,22 +43,21 @@ message LockerStateResponse {
   string rHash        = 3;
   string rOrigin      = 4;
   int64  amount       = 5;
-  string userErc20Addr     = 6;
-  string userNep5Addr      = 7;
-  string lockedNep5Hash    = 8;
-  uint32 lockedNep5Height  = 9;
-  string lockedErc20Hash   = 10;
-  uint32 lockedErc20Height = 11;
-  string unlockedNep5Hash  = 12;
-  uint32 unlockedNep5Height  = 13;
-  string unlockedErc20Hash   = 14;
-  uint32 unlockedErc20Height = 15;
-  string startTime           = 16;
-  string lastModifyTime      = 17;
-  bool   neoTimeout          = 18;
-  bool   ethTimeout          = 19;
-  bool   fail                = 20;
-  string remark              = 21;
+  string lockedNep5Hash    = 6;
+  uint32 lockedNep5Height  = 7;
+  string lockedErc20Hash   = 8;
+  uint32 lockedErc20Height = 9;
+  string unlockedNep5Hash  = 10;
+  uint32 unlockedNep5Height  = 11;
+  string unlockedErc20Hash   = 12;
+  uint32 unlockedErc20Height = 13;
+  string startTime           = 14;
+  string lastModifyTime      = 15;
+  string userAddr            = 16;
+  bool   neoTimeout          = 17;
+  bool   ethTimeout          = 18;
+  bool   fail                = 19;
+  string remark              = 20;
 }
 
 message Offset {
@@ -67,7 +66,7 @@ message Offset {
 }
 
 message ParamAndOffset {
-    string  param      = 1;
+    string  value      = 1;
     int32   count      = 2;
     int32   offset     = 3;
 }
@@ -123,15 +122,9 @@ service InfoAPI {
         };
     }
 
-    rpc LockerInfosByErc20Addr(ParamAndOffset) returns (LockerStatesResponse){
+    rpc LockerInfosByAddr(ParamAndOffset) returns (LockerStatesResponse){
         option (google.api.http) = {
-          get: "/info/lockerInfosByErc20Addr"
-        };
-    }
-
-    rpc LockerInfosByNep5Addr(ParamAndOffset) returns (LockerStatesResponse){
-        option (google.api.http) = {
-          get: "/info/lockerInfosByNep5Addr"
+          get: "/info/lockerInfosByAddr"
         };
     }
 

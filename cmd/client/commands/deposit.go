@@ -107,7 +107,7 @@ func waitForEthIntervalTimerOut(rHash string) {
 
 	for i := 0; i < ethIntervalHeight*12; i++ {
 		time.Sleep(10 * time.Second)
-		b := eth.IsLockerTimeout(int64(lockerHeight), int64(ethIntervalHeight), ethClient)
+		b, _ := eth.HasConfirmedBlocksHeight(int64(lockerHeight), int64(ethIntervalHeight), ethClient)
 		if b {
 			return
 		}
