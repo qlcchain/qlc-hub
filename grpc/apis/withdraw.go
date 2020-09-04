@@ -38,14 +38,14 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequest) (*pb.Boolean, error) {
 	w.logger.Info("api - withdraw unlock: ", request.String())
 	rHash := request.GetRHash()
-	info, err := w.store.GetLockerInfo(rHash)
+	lockInfo, err := w.store.GetLockerInfo(rHash)
 	if err != nil {
 		w.logger.Errorf("%s: %s", rHash, err)
 		return nil, err
 	}
-	if info.State != types.WithDrawNeoLockedDone {
-		w.logger.Errorf("current [%s] is [%s]", info.RHash, types.LockerStateToString(info.State))
-		return nil, fmt.Errorf("invalid state: %s", types.LockerStateToString(info.State))
+	if lockInfo.State != types.WithDrawNeoLockedDone {
+		w.logger.Errorf("current [%s] is [%s]", lockInfo.RHash, types.LockerStateToString(lockInfo.State))
+		return nil, fmt.Errorf("invalid state: %s", types.LockerStateToString(lockInfo.State))
 	}
 
 	go func() {
@@ -58,7 +58,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		if info.State >= types.WithDrawEthUnlockPending {
+		if info.State >= types.WithDrawNeoUnLockedDone {
 			w.logger.Infof("[%s] state already ahead [%s]", request.GetRHash(), types.LockerStateToString(types.WithDrawEthUnlockPending))
 			return
 		}
@@ -79,7 +79,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
+		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
 
 		tx, err := eth.WrapperUnlock(rHash, request.GetROrigin(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, w.eth)
 		if err != nil {
@@ -87,7 +87,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		w.logger.Infof("[%s] withdraw wrapper eth unlock: %s", rHash, tx)
+		w.logger.Infof("withdraw wrapper eth unlock: %s [%s] ", tx, rHash)
 		info.State = types.WithDrawEthUnlockPending
 		info.UnlockedErc20Hash = tx
 		if err := w.store.UpdateLockerInfo(info); err != nil {
@@ -95,7 +95,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		w.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))
+		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))
 	}()
 
 	return toBoolean(true), nil

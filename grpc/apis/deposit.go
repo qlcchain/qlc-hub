@@ -64,7 +64,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.logger.Error(err)
 			return nil, err
 		}
-		d.logger.Infof("[%s] add state to [%s]", info.RHash, types.LockerStateToString(types.DepositInit))
+		d.logger.Infof("add [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositInit))
 	}
 
 	go func() {
@@ -106,7 +106,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.store.SetLockerStateFail(info, err)
 			return
 		}
-		d.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
+		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
 
 		// wrapper to eth lock
 		tx, err := eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.Account, d.cfg.EthereumCfg.Contract, swapInfo.Amount, d.eth)
@@ -123,7 +123,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.store.SetLockerStateFail(info, err)
 			return
 		}
-		d.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthLockedPending))
+		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthLockedPending))
 	}()
 	return toBoolean(true), nil
 }
@@ -166,7 +166,7 @@ func (d *DepositAPI) FetchNotice(ctx context.Context, request *pb.FetchNoticeReq
 			d.store.SetLockerStateFail(info, err)
 			return
 		}
-		d.logger.Infof("[%s] set state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
+		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
 	}()
 	return toBoolean(true), nil
 }

@@ -372,7 +372,7 @@ func (n *Transaction) LockerEventFromApplicationLog(hash string) (string, State,
 }
 
 func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int, state State) (uint32, error) {
-	n.logger.Infof("waiting for neo tx [%s] confirmed", txHash)
+	n.logger.Infof("waiting for neo tx %s confirmed", txHash)
 	b, height, err := n.TxVerifyAndConfirmed(txHash, confirmedHeight)
 	if !b || err != nil {
 		return 0, fmt.Errorf("neo tx confirmed: %s, %v , %s, [%s]", err, b, txHash, rHash)
