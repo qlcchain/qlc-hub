@@ -3,6 +3,7 @@ package apis
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -52,42 +53,38 @@ func (e *EventAPI) ethEventLister() {
 }
 
 func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint64) {
-	lock(rHash, e.logger)
-	defer unlock(rHash, e.logger)
-
 	var info *types.LockerInfo
 	var err error
 	defer func() {
-		if info != nil && err != nil {
-			info.Remark = err.Error()
-			e.store.SetLockerStateFail(info, err)
-		}
+		e.store.SetLockerStateFail(info, err)
 	}()
-
-	if eth.State(state) != eth.DestroyLock {
-		if info, err = e.store.GetLockerInfo(rHash); err != nil {
-			e.logger.Errorf("ethEvent/getLockerInfo[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
-			return
-		}
-	}
 
 	var b bool
 	e.logger.Infof("waiting for eth tx %s confirmed ", tx)
 	if b, err = eth.TxVerifyAndConfirmed(tx, int64(txHeight), int64(e.cfg.EthereumCfg.ConfirmedHeight), e.eth); !b || err != nil {
-		e.logger.Errorf("ethEvent/txVerify(eth)[%d]: %s, %v, rHash[%s], txHash[%s]", state, err, b, rHash, tx)
+		e.logger.Errorf("event/txVerify(eth)[%d]: %s, %v, rHash[%s], txHash[%s]", state, err, b, rHash, tx)
 		return
+	}
+
+	lock(rHash, e.logger)
+	defer unlock(rHash, e.logger)
+
+	if eth.State(state) != eth.DestroyLock {
+		if info, err = e.store.GetLockerInfo(rHash); err != nil {
+			e.logger.Errorf("event/getLockerInfo[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
+			return
+		}
 	}
 
 	var hashTimer *eth.HashTimer
 	if hashTimer, err = eth.GetHashTimer(e.eth, e.cfg.EthereumCfg.Contract, rHash); err != nil {
-		e.logger.Errorf("ethEvent/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
+		e.logger.Errorf("event/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
 		return
 	}
 
 	var txHash string
 	switch eth.State(state) {
 	case eth.IssueLock:
-		// update indo
 		info.State = types.DepositEthLockedDone
 		info.LockedErc20Hash = tx
 		info.LockedErc20Height = hashTimer.LockedHeight
@@ -111,7 +108,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 			e.logger.Errorf("ethEvent/wrapperUnlock[%d]: %s, %s, %s, [%s]", state, err, hashTimer.ROrigin, hashTimer.UserAddr, rHash)
 			return
 		}
-		e.logger.Infof("[%d] [%s] deposit/wrapper unlock(neo): %s", state, rHash, txHash)
+		e.logger.Infof("[%d] deposit/wrapper unlock(neo): %s [%s] ", state, txHash, rHash)
 		info.State = types.DepositNeoUnLockedPending
 		info.UnlockedNep5Hash = txHash
 		if err = e.store.UpdateLockerInfo(info); err != nil {
@@ -154,6 +151,12 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.logger.Infof("[%d] add [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthLockedDone))
 
 		// neo lock
+		if b, h := eth.IsBeyondIntervalHeight(int64(info.LockedErc20Height), getLockDeadLineHeight(e.cfg.EthereumCfg.WithdrawHeight), e.eth); b {
+			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, info.LockedErc20Height, h)
+			e.logger.Error(err)
+			return
+		}
+
 		txHash, err = e.neo.WrapperLock(e.cfg.NEOCfg.WIF, hashTimer.UserAddr, rHash, int(info.Amount))
 		if err != nil {
 			e.logger.Errorf("ethEvent/wrapper lock(neo)[%d]: %s [%s]", state, err, rHash)
@@ -218,24 +221,24 @@ func (e *EventAPI) loopLockerState() {
 				// user timeout -> fetch neo
 				if info.State >= types.DepositNeoLockedDone && info.State <= types.DepositEthFetchDone {
 					if !info.NeoTimeout && info.State == types.DepositEthFetchDone {
-						if e.neo.IsLockerTimeout(info.LockedNep5Height, e.cfg.NEOCfg.DepositHeight) {
+						if b, h := e.neo.IsBeyondIntervalHeight(info.LockedNep5Height, e.cfg.NEOCfg.DepositHeight); b {
 							info.NeoTimeout = true
 							if err := e.store.UpdateLockerInfo(info); err != nil {
 								e.logger.Errorf("loopLockerState/updateLocker: %s [%s]", err, info.RHash)
 							}
-							e.logger.Infof("[%s] set neo timeout flag true, [%s, %d]", info.RHash, types.LockerStateToString(info.State), e.cfg.NEOCfg.DepositHeight)
+							e.logger.Infof("[%s] set neo timeout flag true, [%s, %d->%d]", info.RHash, types.LockerStateToString(info.State), info.LockedNep5Height, h)
 						}
 					}
 				}
 
 				if info.State >= types.WithDrawEthLockedDone && info.State <= types.WithDrawNeoFetchDone {
 					if !info.EthTimeout && info.State == types.WithDrawNeoFetchDone {
-						if eth.IsLockerTimeout(int64(info.LockedErc20Height), e.cfg.EthereumCfg.WithdrawHeight, e.eth) {
+						if b, h := eth.IsBeyondIntervalHeight(int64(info.LockedErc20Height), e.cfg.EthereumCfg.WithdrawHeight, e.eth); b {
 							info.EthTimeout = true
 							if err := e.store.UpdateLockerInfo(info); err != nil {
 								e.logger.Errorf("loopLockerState/updateLocker: %s [%s]", err, info.RHash)
 							}
-							e.logger.Infof("[%s] set eth timeout flag true, [%s, %d]", info.RHash, types.LockerStateToString(info.State), e.cfg.EthereumCfg.WithdrawHeight)
+							e.logger.Infof("[%s] set eth timeout flag true, [%s, %d->%d]", info.RHash, types.LockerStateToString(info.State), info.LockedErc20Height, h)
 						}
 					}
 				}
@@ -243,7 +246,7 @@ func (e *EventAPI) loopLockerState() {
 				switch info.State {
 				case types.DepositEthLockedPending: // should confirmed tx
 					e.continueDepositEthLockedPending(info.RHash)
-				case types.DepositEthLockedDone: // check if timeout
+				case types.DepositEthLockedDone: // check if timeout or eth already unlock
 					e.continueDepositEthLockedDone(info.RHash)
 				case types.DepositNeoUnLockedPending: // should confirmed tx
 					e.continueDepositNeoUnLockedPending(info.RHash)
@@ -311,9 +314,9 @@ func (e *EventAPI) continueDepositEthLockedPending(rHash string) {
 // deposit fetch, from eth
 func (e *EventAPI) continueDepositEthLockedDone(rHash string) {
 	info, _ := e.store.GetLockerInfo(rHash)
-	if eth.IsLockerTimeout(int64(info.LockedErc20Height), e.cfg.EthereumCfg.DepositHeight, e.eth) {
-		e.logger.Infof("loop/deposit wrapper eth timeout, rHash[%s], lockerState[%s], lockerHeight[%d, %d]", info.RHash,
-			types.LockerStateToString(info.State), info.LockedErc20Height, e.cfg.EthereumCfg.DepositHeight)
+	if b, h := eth.IsBeyondIntervalHeight(int64(info.LockedErc20Height), e.cfg.EthereumCfg.DepositHeight, e.eth); b {
+		e.logger.Infof("loop/deposit wrapper eth timeout, rHash[%s], lockerState[%s], lockerHeight[%d -> %d]", info.RHash,
+			types.LockerStateToString(info.State), info.LockedErc20Height, h)
 		tx, err := eth.WrapperFetch(info.RHash, e.cfg.EthereumCfg.Account, e.cfg.EthereumCfg.Contract, e.eth)
 		if err != nil {
 			e.logger.Errorf("loop/wrapperFetch: %s", err)
@@ -328,15 +331,67 @@ func (e *EventAPI) continueDepositEthLockedDone(rHash string) {
 			return
 		}
 		e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthFetchPending))
+	} else {
+		lock(rHash, e.logger)
+		defer unlock(rHash, e.logger)
+
+		info, _ := e.store.GetLockerInfo(rHash)
+		if info.State >= types.DepositEthUnLockedDone {
+			return
+		}
+
+		hashTimer, err := eth.GetHashTimer(e.eth, e.cfg.EthereumCfg.Contract, info.RHash)
+		if err != nil {
+			e.logger.Errorf("loop/getHashTimer: %s [%s]", err, rHash)
+			return
+		}
+
+		if hashTimer.UnlockedHeight > 0 {
+			info.State = types.DepositEthUnLockedDone
+			info.ROrigin = hashTimer.ROrigin
+			info.UnlockedErc20Height = hashTimer.UnlockedHeight
+			if err = e.store.UpdateLockerInfo(info); err != nil {
+				return
+			}
+			e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthUnLockedDone))
+
+			// to neo unlock
+			txHash, err := e.neo.WrapperUnlock(hashTimer.ROrigin, e.cfg.NEOCfg.WIF, hashTimer.UserAddr)
+			if err != nil {
+				e.logger.Errorf("loop/wrapperUnlock: %s, %s, %s, [%s]", err, hashTimer.ROrigin, hashTimer.UserAddr, rHash)
+				return
+			}
+			e.logger.Infof("loop/deposit wrapper unlock(neo): %s [%s] ", txHash, rHash)
+			info.State = types.DepositNeoUnLockedPending
+			info.UnlockedNep5Hash = txHash
+			if err = e.store.UpdateLockerInfo(info); err != nil {
+				return
+			}
+			e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoUnLockedPending))
+
+			var height uint32
+			e.logger.Infof("waiting for neo tx %s confirmed", txHash)
+			b, height, err := e.neo.TxVerifyAndConfirmed(txHash, e.cfg.NEOCfg.ConfirmedHeight)
+			if !b || err != nil {
+				e.logger.Errorf("loop/txVerify(neo): %s, %v, %s, [%s]", err, b, txHash, rHash)
+				return
+			}
+			info.State = types.DepositNeoUnLockedDone
+			info.UnlockedNep5Height = height
+			if err = e.store.UpdateLockerInfo(info); err != nil {
+				return
+			}
+			e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoUnLockedDone))
+		}
 	}
 }
 
 // withdraw fetch, from neo
 func (e *EventAPI) continueWithdrawNeoLockedDone(rHash string) {
 	info, _ := e.store.GetLockerInfo(rHash)
-	if e.neo.IsLockerTimeout(info.LockedNep5Height, e.cfg.NEOCfg.WithdrawHeight) {
-		e.logger.Infof("loop/withdraw neo timeout, rHash[%s], lockerState[%s], lockerHeight[%d, %d]", info.RHash,
-			types.LockerStateToString(info.State), info.LockedNep5Height, e.cfg.NEOCfg.WithdrawHeight)
+	if b, h := e.neo.IsBeyondIntervalHeight(info.LockedNep5Height, e.cfg.NEOCfg.WithdrawHeight); b {
+		e.logger.Infof("loop/withdraw neo timeout, rHash[%s], lockerState[%s], lockerHeight[%d -> %d]", info.RHash,
+			types.LockerStateToString(info.State), info.LockedNep5Height, h)
 		tx, err := e.neo.RefundWrapper(info.RHash, e.cfg.NEOCfg.WIF)
 		if err != nil {
 			e.logger.Errorf("withdrawNeoFetch(neo): %s", err)
@@ -486,4 +541,8 @@ func (e *EventAPI) continueWithDrawNeoFetchPending(rHash string) {
 		return
 	}
 	e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoFetchDone))
+}
+
+func getLockDeadLineHeight(height int64) int64 {
+	return (height / 2) - 5
 }

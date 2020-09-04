@@ -85,6 +85,7 @@ func (g *Server) checkBaseInfo() error {
 	if err != nil {
 		return fmt.Errorf("eth dail: %s", err)
 	}
+
 	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
 		return fmt.Errorf("eth node connect timeout: %s", err)
 	}

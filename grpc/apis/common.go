@@ -17,7 +17,6 @@ var timeout = 24 * time.Hour
 
 var glock = gcache.New(maxRHashSzie).Expiration(timeout).LRU().Build()
 
-//todo delete data
 func lock(rHash string, logger *zap.SugaredLogger) {
 	if v, err := glock.Get(rHash); err != nil {
 		mutex := &sync.Mutex{}

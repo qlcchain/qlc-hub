@@ -327,13 +327,16 @@ HeightConfirmed:
 	}
 }
 
-func (n *Transaction) IsLockerTimeout(txHeight uint32, interval int64) bool {
-	nHeight, err := n.Client().GetStateHeight()
+func (n *Transaction) IsBeyondIntervalHeight(startHeight uint32, interval int64) (bool, uint32) {
+	if interval < 1 {
+		interval = 1
+	}
+	nHeight, err := n.client.GetStateHeight()
 	if err != nil {
-		return false
+		return false, 0
 	}
 	nh := nHeight.BlockHeight
-	return nh-txHeight > uint32(interval)
+	return nh-startHeight >= uint32(interval), nh
 }
 
 func (n *Transaction) ValidateAddress(addr string) error {
