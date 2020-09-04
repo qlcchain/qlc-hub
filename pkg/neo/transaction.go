@@ -285,7 +285,7 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 
 func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, uint32, error) {
 	var txHeight uint32
-	cTicker := time.NewTicker(6 * time.Second)
+	cTicker := time.NewTicker(2 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
@@ -306,7 +306,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, u
 	}
 
 HeightConfirmed:
-	nTicker := time.NewTicker(6 * time.Second)
+	nTicker := time.NewTicker(5 * time.Second)
 	nTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
@@ -327,9 +327,9 @@ HeightConfirmed:
 	}
 }
 
-func (n *Transaction) IsBeyondIntervalHeight(startHeight uint32, interval int64) (bool, uint32) {
-	if interval < 1 {
-		interval = 1
+func (n *Transaction) HasConfirmedBlocksHeight(startHeight uint32, interval int64) (bool, uint32) {
+	if interval < 0 {
+		interval = 0
 	}
 	nHeight, err := n.client.GetStateHeight()
 	if err != nil {

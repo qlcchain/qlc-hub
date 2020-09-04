@@ -90,7 +90,7 @@ func waitForNeoIntervalTimerOut(txHash string) {
 
 	for i := 0; i < neoIntervalHeight*12; i++ {
 		time.Sleep(10 * time.Second)
-		b, _ := neoTrasaction.IsBeyondIntervalHeight(ch, int64(ethIntervalHeight))
+		b, _ := neoTrasaction.HasConfirmedBlocksHeight(ch, int64(ethIntervalHeight))
 		if b {
 			return
 		}

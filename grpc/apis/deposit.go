@@ -98,7 +98,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		}
 		d.logger.Infof("swap info: %s", util.ToString(swapInfo))
 
-		if b, h := d.neo.IsBeyondIntervalHeight(height, getLockDeadLineHeight(d.cfg.NEOCfg.DepositHeight)); b {
+		if b, h := d.neo.HasConfirmedBlocksHeight(height, getLockDeadLineHeight(d.cfg.NEOCfg.DepositHeight)); b {
 			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, height, h)
 			d.logger.Error(err)
 			return
@@ -107,7 +107,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		info.State = types.DepositNeoLockedDone
 		info.LockedNep5Height = height
 		info.Amount = swapInfo.Amount
-		info.Nep5Addr = swapInfo.UserNeoAddress
+		info.UserAddr = swapInfo.UserNeoAddress
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
 			return
@@ -151,7 +151,7 @@ func (d *DepositAPI) FetchNotice(ctx context.Context, request *pb.FetchNoticeReq
 		return nil, err
 	}
 	if !info.NeoTimeout {
-		d.logger.Errorf("current [%s] is [%s], not timeout", info.RHash, types.LockerStateToString(info.State))
+		d.logger.Errorf("current state is %s, [%s], not timeout", types.LockerStateToString(info.State), info.RHash)
 		return nil, fmt.Errorf("not yet timeout, state: %s", types.LockerStateToString(info.State))
 	}
 	go func() {

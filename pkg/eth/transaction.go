@@ -156,7 +156,7 @@ func (h *HashTimer) String() string {
 }
 
 func TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64, client *ethclient.Client) (bool, error) {
-	cTicker := time.NewTicker(6 * time.Second)
+	cTicker := time.NewTicker(2 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
@@ -175,12 +175,12 @@ func TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64, client 
 
 HeightConfirmed:
 
-	vTicker := time.NewTicker(6 * time.Second)
+	vTicker := time.NewTicker(5 * time.Second)
 	vTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
 		case <-vTicker.C:
-			b, _ := IsBeyondIntervalHeight(txHeight, interval, client)
+			b, _ := HasConfirmedBlocksHeight(txHeight, interval, client)
 			if b {
 				return true, nil
 			}
@@ -198,9 +198,9 @@ func GetBestBlockHeight(client *ethclient.Client) (int64, error) {
 	return block.Number().Int64(), nil
 }
 
-func IsBeyondIntervalHeight(startHeight int64, interval int64, client *ethclient.Client) (bool, int64) {
-	if interval < 1 {
-		interval = 1
+func HasConfirmedBlocksHeight(startHeight int64, interval int64, client *ethclient.Client) (bool, int64) {
+	if interval < 0 {
+		interval = 0
 	}
 	bestHeight, err := GetBestBlockHeight(client)
 	if err != nil {

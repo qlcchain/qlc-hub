@@ -71,7 +71,7 @@ func (d *DebugAPI) LockerInfosByState(ctx context.Context, params *pb.ParamAndOf
 	}
 	as := make([]*pb.LockerStateResponse, 0)
 	err := d.store.GetLockerInfos(func(info *types.LockerInfo) error {
-		if types.LockerStateToString(info.State) == params.GetParam() {
+		if types.LockerStateToString(info.State) == params.GetValue() {
 			as = append(as, toLockerState(info))
 		}
 		return nil

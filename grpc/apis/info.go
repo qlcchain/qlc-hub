@@ -60,36 +60,13 @@ func (i *InfoAPI) LockerInfo(ctx context.Context, s *pb.String) (*pb.LockerState
 	return toLockerState(r), nil
 }
 
-func (i *InfoAPI) LockerInfosByErc20Addr(ctx context.Context, offset *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
+func (i *InfoAPI) LockerInfosByAddr(ctx context.Context, offset *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
 	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
 		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
 	}
 	as := make([]*pb.LockerStateResponse, 0)
 	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
-		if info.Erc20Addr == offset.GetParam() {
-			as = append(as, toLockerState(info))
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	sort.Slice(as, func(i, j int) bool {
-		return as[i].LastModifyTime > as[j].LastModifyTime
-	})
-	states := getStateByOffset(as, offset.GetCount(), offset.GetOffset())
-	return &pb.LockerStatesResponse{
-		Lockers: states,
-	}, nil
-}
-
-func (i *InfoAPI) LockerInfosByNep5Addr(ctx context.Context, offset *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
-	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
-		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
-	}
-	as := make([]*pb.LockerStateResponse, 0)
-	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
-		if info.Nep5Addr == offset.GetParam() {
+		if info.UserAddr == offset.GetValue() {
 			as = append(as, toLockerState(info))
 		}
 		return nil
@@ -152,8 +129,7 @@ func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
 		RHash:               s.RHash,
 		ROrigin:             s.ROrigin,
 		Amount:              s.Amount,
-		UserErc20Addr:       s.Erc20Addr,
-		UserNep5Addr:        s.Nep5Addr,
+		UserAddr:            s.UserAddr,
 		LockedNep5Hash:      s.LockedNep5Hash,
 		LockedNep5Height:    s.LockedNep5Height,
 		LockedErc20Hash:     s.LockedErc20Hash,

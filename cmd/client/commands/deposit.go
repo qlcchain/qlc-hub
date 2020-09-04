@@ -24,7 +24,6 @@ func Deposit() {
 	}
 	logger.Info("neo UserLock hash: ", tx)
 
-	time.Sleep(3 * time.Second)
 	paras := fmt.Sprintf(`{
 		"nep5TxHash": "%s",
 		"amount": %d,
@@ -108,7 +107,7 @@ func waitForEthIntervalTimerOut(rHash string) {
 
 	for i := 0; i < ethIntervalHeight*12; i++ {
 		time.Sleep(10 * time.Second)
-		b, _ := eth.IsBeyondIntervalHeight(int64(lockerHeight), int64(ethIntervalHeight), ethClient)
+		b, _ := eth.HasConfirmedBlocksHeight(int64(lockerHeight), int64(ethIntervalHeight), ethClient)
 		if b {
 			return
 		}
