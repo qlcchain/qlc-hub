@@ -1,8 +1,12 @@
-package client
+package signer
 
 import (
 	"context"
 	"time"
+
+	"google.golang.org/grpc/backoff"
+
+	"github.com/qlcchain/qlc-hub/pkg/util"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -13,33 +17,47 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
-type AuthClient struct {
+type SignerClient struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
 	client      *grpc.ClientConn
 	accessToken string
 	logger      *zap.SugaredLogger
+	timeout     time.Duration
 }
 
-func NewAuthClient(cfg *config.Config) (*AuthClient, error) {
-	cc, err := grpc.Dial(cfg.SignerEndPoint, grpc.WithInsecure())
+func NewSigner(cfg *config.Config) (*SignerClient, error) {
+	_, host, err := util.Scheme(cfg.SignerEndPoint)
 	if err != nil {
 		return nil, err
 	}
+
 	ctx, cancel := context.WithCancel(context.Background())
-	i := &AuthClient{
+	i := &SignerClient{
 		ctx:         ctx,
 		cancel:      cancel,
-		client:      cc,
 		accessToken: cfg.SignerToken,
-		logger:      log.NewLogger("client/interceptor"),
+		timeout:     5 * time.Second,
+		logger:      log.NewLogger("signer/client"),
 	}
+	timeout, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+	cc, err := grpc.DialContext(timeout, host, grpc.WithInsecure(), grpc.WithBlock(),
+		grpc.WithConnectParams(grpc.ConnectParams{
+			Backoff:           backoff.DefaultConfig,
+			MinConnectTimeout: time.Second * 3,
+		}),
+		grpc.WithUnaryInterceptor(i.Unary()), grpc.WithStreamInterceptor(i.Stream()))
+	if err != nil {
+		return nil, err
+	}
+	i.client = cc
 	i.scheduleRefreshToken(time.Hour * 12)
 	return i, nil
 }
 
-func (i *AuthClient) refreshToken() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (i *SignerClient) refreshToken() error {
+	ctx, cancel := context.WithTimeout(context.Background(), i.timeout)
 	defer cancel()
 
 	c := proto.NewTokenServiceClient(i.client)
@@ -51,23 +69,29 @@ func (i *AuthClient) refreshToken() error {
 	return nil
 }
 
-func (i *AuthClient) Sign(t proto.SignType, address string, rawData []byte) (*proto.SignResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (i *SignerClient) Sign(t proto.SignType, address string, rawData []byte) (*proto.SignResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), i.timeout)
 	defer cancel()
 
 	c := proto.NewSignServiceClient(i.client)
-	if sign, err := c.Sign(ctx, &proto.SignRequest{
+	return c.Sign(ctx, &proto.SignRequest{
 		Type:    t,
 		Address: address,
 		RawData: rawData,
-	}); err == nil {
-		return sign, nil
-	} else {
-		return nil, err
-	}
+	})
 }
 
-func (i *AuthClient) scheduleRefreshToken(refreshDuration time.Duration) error {
+func (i *SignerClient) AddressList(t proto.SignType) (*proto.AddressResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), i.timeout)
+	defer cancel()
+
+	c := proto.NewTokenServiceClient(i.client)
+	return c.AddressList(ctx, &proto.AddressRequest{
+		Type: t,
+	})
+}
+
+func (i *SignerClient) scheduleRefreshToken(refreshDuration time.Duration) error {
 	err := i.refreshToken()
 	if err != nil {
 		return err
@@ -81,8 +105,7 @@ func (i *AuthClient) scheduleRefreshToken(refreshDuration time.Duration) error {
 				return
 			default:
 				time.Sleep(wait)
-				err := i.refreshToken()
-				if err != nil {
+				if err := i.refreshToken(); err != nil {
 					wait = time.Second
 				} else {
 					wait = refreshDuration
@@ -94,11 +117,11 @@ func (i *AuthClient) scheduleRefreshToken(refreshDuration time.Duration) error {
 	return nil
 }
 
-func (i *AuthClient) attachToken(ctx context.Context) context.Context {
+func (i *SignerClient) attachToken(ctx context.Context) context.Context {
 	return metadata.AppendToOutgoingContext(ctx, "authorization", i.accessToken)
 }
 
-func (i *AuthClient) Unary() grpc.UnaryClientInterceptor {
+func (i *SignerClient) Unary() grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -111,7 +134,7 @@ func (i *AuthClient) Unary() grpc.UnaryClientInterceptor {
 	}
 }
 
-func (i *AuthClient) Stream() grpc.StreamClientInterceptor {
+func (i *SignerClient) Stream() grpc.StreamClientInterceptor {
 	return func(
 		ctx context.Context,
 		desc *grpc.StreamDesc,
@@ -124,7 +147,7 @@ func (i *AuthClient) Stream() grpc.StreamClientInterceptor {
 	}
 }
 
-func (i *AuthClient) Stop() {
+func (i *SignerClient) Stop() {
 	i.cancel()
 	i.client.Close()
 }

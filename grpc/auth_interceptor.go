@@ -22,8 +22,12 @@ type AuthInterceptor struct {
 
 func NewAuthInterceptor(jwtManager *jwt.JWTManager) *AuthInterceptor {
 	return &AuthInterceptor{jwtManager: jwtManager,
-		accessibleRoles: make(map[string][]string, 0),
-		logger:          log.NewLogger("auth/interceptor")}
+		accessibleRoles: map[string][]string{
+			"/proto.TokenService/Refresh":     jwt.Admin,
+			"/proto.TokenService/AddressList": jwt.Admin,
+			"/proto.SignService/Sign":         jwt.Admin,
+		},
+		logger: log.NewLogger("auth/interceptor")}
 }
 
 func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
@@ -76,6 +80,9 @@ func (i *AuthInterceptor) authorize(ctx context.Context, method string) error {
 	}
 
 	accessToken := values[0]
+	if accessToken == "" {
+		return status.Errorf(codes.Unauthenticated, "authorization token is not provided")
+	}
 	claims, err := i.jwtManager.Verify(accessToken)
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)

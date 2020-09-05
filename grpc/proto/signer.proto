@@ -25,6 +25,14 @@ message RefreshResponse {
     string token = 1;
 }
 
+message AddressRequest {
+    SignType Type = 1;
+}
+
+message AddressResponse {
+    repeated string address = 1;
+}
+
 service SignService {
     rpc Sign (SignRequest) returns (SignResponse) {
     };
@@ -32,5 +40,7 @@ service SignService {
 
 service TokenService {
     rpc Refresh (RefreshRequest) returns (RefreshResponse) {
+    };
+    rpc AddressList (AddressRequest) returns (AddressResponse) {
     };
 }

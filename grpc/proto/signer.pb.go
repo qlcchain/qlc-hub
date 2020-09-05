@@ -280,6 +280,100 @@ func (x *RefreshResponse) GetToken() string {
 	return ""
 }
 
+type AddressRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Type SignType `protobuf:"varint,1,opt,name=Type,proto3,enum=proto.SignType" json:"Type,omitempty"`
+}
+
+func (x *AddressRequest) Reset() {
+	*x = AddressRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signer_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddressRequest) ProtoMessage() {}
+
+func (x *AddressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_signer_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddressRequest.ProtoReflect.Descriptor instead.
+func (*AddressRequest) Descriptor() ([]byte, []int) {
+	return file_signer_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AddressRequest) GetType() SignType {
+	if x != nil {
+		return x.Type
+	}
+	return SignType_ETH
+}
+
+type AddressResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Address []string `protobuf:"bytes,1,rep,name=address,proto3" json:"address,omitempty"`
+}
+
+func (x *AddressResponse) Reset() {
+	*x = AddressResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_signer_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AddressResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddressResponse) ProtoMessage() {}
+
+func (x *AddressResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_signer_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddressResponse.ProtoReflect.Descriptor instead.
+func (*AddressResponse) Descriptor() ([]byte, []int) {
+	return file_signer_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *AddressResponse) GetAddress() []string {
+	if x != nil {
+		return x.Address
+	}
+	return nil
+}
+
 var File_signer_proto protoreflect.FileDescriptor
 
 var file_signer_proto_rawDesc = []byte{
@@ -298,19 +392,29 @@ var file_signer_proto_rawDesc = []byte{
 	0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x22, 0x27, 0x0a, 0x0f, 0x52, 0x65, 0x66,
 	0x72, 0x65, 0x73, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x14, 0x0a, 0x05,
 	0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x74, 0x6f, 0x6b,
-	0x65, 0x6e, 0x2a, 0x1c, 0x0a, 0x08, 0x53, 0x69, 0x67, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x07,
-	0x0a, 0x03, 0x45, 0x54, 0x48, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03, 0x4e, 0x45, 0x4f, 0x10, 0x01,
-	0x32, 0x40, 0x0a, 0x0b, 0x53, 0x69, 0x67, 0x6e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12,
-	0x31, 0x0a, 0x04, 0x53, 0x69, 0x67, 0x6e, 0x12, 0x12, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
-	0x53, 0x69, 0x67, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x13, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x00, 0x32, 0x4a, 0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x53, 0x65, 0x72, 0x76, 0x69,
-	0x63, 0x65, 0x12, 0x3a, 0x0a, 0x07, 0x52, 0x65, 0x66, 0x72, 0x65, 0x73, 0x68, 0x12, 0x15, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x66, 0x72, 0x65, 0x73, 0x68, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x66,
-	0x72, 0x65, 0x73, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x09,
-	0x5a, 0x07, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x65, 0x6e, 0x22, 0x35, 0x0a, 0x0e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x23, 0x0a, 0x04, 0x54, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0e, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x54,
+	0x79, 0x70, 0x65, 0x52, 0x04, 0x54, 0x79, 0x70, 0x65, 0x22, 0x2b, 0x0a, 0x0f, 0x41, 0x64, 0x64,
+	0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07,
+	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07, 0x61,
+	0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x2a, 0x1c, 0x0a, 0x08, 0x53, 0x69, 0x67, 0x6e, 0x54, 0x79,
+	0x70, 0x65, 0x12, 0x07, 0x0a, 0x03, 0x45, 0x54, 0x48, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03, 0x4e,
+	0x45, 0x4f, 0x10, 0x01, 0x32, 0x40, 0x0a, 0x0b, 0x53, 0x69, 0x67, 0x6e, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x12, 0x31, 0x0a, 0x04, 0x53, 0x69, 0x67, 0x6e, 0x12, 0x12, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x69, 0x67, 0x6e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x32, 0x8a, 0x01, 0x0a, 0x0c, 0x54, 0x6f, 0x6b, 0x65, 0x6e,
+	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x3a, 0x0a, 0x07, 0x52, 0x65, 0x66, 0x72, 0x65,
+	0x73, 0x68, 0x12, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x66, 0x72, 0x65,
+	0x73, 0x68, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2e, 0x52, 0x65, 0x66, 0x72, 0x65, 0x73, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x00, 0x12, 0x3e, 0x0a, 0x0b, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x4c, 0x69,
+	0x73, 0x74, 0x12, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x2e, 0x41, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x22, 0x00, 0x42, 0x09, 0x5a, 0x07, 0x2e, 0x3b, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -326,25 +430,30 @@ func file_signer_proto_rawDescGZIP() []byte {
 }
 
 var file_signer_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_signer_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_signer_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_signer_proto_goTypes = []interface{}{
 	(SignType)(0),           // 0: proto.SignType
 	(*SignRequest)(nil),     // 1: proto.SignRequest
 	(*SignResponse)(nil),    // 2: proto.SignResponse
 	(*RefreshRequest)(nil),  // 3: proto.RefreshRequest
 	(*RefreshResponse)(nil), // 4: proto.RefreshResponse
+	(*AddressRequest)(nil),  // 5: proto.AddressRequest
+	(*AddressResponse)(nil), // 6: proto.AddressResponse
 }
 var file_signer_proto_depIdxs = []int32{
 	0, // 0: proto.SignRequest.Type:type_name -> proto.SignType
-	1, // 1: proto.SignService.Sign:input_type -> proto.SignRequest
-	3, // 2: proto.TokenService.Refresh:input_type -> proto.RefreshRequest
-	2, // 3: proto.SignService.Sign:output_type -> proto.SignResponse
-	4, // 4: proto.TokenService.Refresh:output_type -> proto.RefreshResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	0, // 1: proto.AddressRequest.Type:type_name -> proto.SignType
+	1, // 2: proto.SignService.Sign:input_type -> proto.SignRequest
+	3, // 3: proto.TokenService.Refresh:input_type -> proto.RefreshRequest
+	5, // 4: proto.TokenService.AddressList:input_type -> proto.AddressRequest
+	2, // 5: proto.SignService.Sign:output_type -> proto.SignResponse
+	4, // 6: proto.TokenService.Refresh:output_type -> proto.RefreshResponse
+	6, // 7: proto.TokenService.AddressList:output_type -> proto.AddressResponse
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_signer_proto_init() }
@@ -401,6 +510,30 @@ func file_signer_proto_init() {
 				return nil
 			}
 		}
+		file_signer_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddressRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_signer_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddressResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -408,7 +541,7 @@ func file_signer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_signer_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   2,
 		},
@@ -508,6 +641,7 @@ var _SignService_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type TokenServiceClient interface {
 	Refresh(ctx context.Context, in *RefreshRequest, opts ...grpc.CallOption) (*RefreshResponse, error)
+	AddressList(ctx context.Context, in *AddressRequest, opts ...grpc.CallOption) (*AddressResponse, error)
 }
 
 type tokenServiceClient struct {
@@ -527,9 +661,19 @@ func (c *tokenServiceClient) Refresh(ctx context.Context, in *RefreshRequest, op
 	return out, nil
 }
 
+func (c *tokenServiceClient) AddressList(ctx context.Context, in *AddressRequest, opts ...grpc.CallOption) (*AddressResponse, error) {
+	out := new(AddressResponse)
+	err := c.cc.Invoke(ctx, "/proto.TokenService/AddressList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TokenServiceServer is the server API for TokenService service.
 type TokenServiceServer interface {
 	Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error)
+	AddressList(context.Context, *AddressRequest) (*AddressResponse, error)
 }
 
 // UnimplementedTokenServiceServer can be embedded to have forward compatible implementations.
@@ -538,6 +682,9 @@ type UnimplementedTokenServiceServer struct {
 
 func (*UnimplementedTokenServiceServer) Refresh(context.Context, *RefreshRequest) (*RefreshResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Refresh not implemented")
+}
+func (*UnimplementedTokenServiceServer) AddressList(context.Context, *AddressRequest) (*AddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddressList not implemented")
 }
 
 func RegisterTokenServiceServer(s *grpc.Server, srv TokenServiceServer) {
@@ -562,6 +709,24 @@ func _TokenService_Refresh_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TokenService_AddressList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TokenServiceServer).AddressList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.TokenService/AddressList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TokenServiceServer).AddressList(ctx, req.(*AddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _TokenService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.TokenService",
 	HandlerType: (*TokenServiceServer)(nil),
@@ -569,6 +734,10 @@ var _TokenService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Refresh",
 			Handler:    _TokenService_Refresh_Handler,
+		},
+		{
+			MethodName: "AddressList",
+			Handler:    _TokenService_AddressList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
