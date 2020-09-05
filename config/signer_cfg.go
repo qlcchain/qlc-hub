@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"gopkg.in/validator.v2"
 
@@ -50,17 +52,11 @@ func (c *SignerConfig) Verify() error {
 
 	counter := 0
 	for _, v := range c.NeoAccounts {
-		if privateKey, err := crypto.HexToECDSA(v); err == nil {
-			publicKey := privateKey.Public()
-			if publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey); ok {
-				address := crypto.PubkeyToAddress(*publicKeyECDSA).String()
-				c.saveKey(proto.SignType_NEO, address, privateKey)
-				counter++
-			} else {
-				log.Root.Error("invalid public key")
-			}
+		if priv, err := keys.NewPrivateKeyFromHex(v); err == nil {
+			c.saveKey(proto.SignType_NEO, priv.Address(), priv)
+			counter++
 		} else {
-			log.Root.Errorf("can not decode private key(%s), err: %s", v, err)
+			log.Root.Errorf("can not decode wif key(%s),err: %s", v, err)
 		}
 	}
 	if counter == 0 {

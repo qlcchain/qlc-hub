@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
+
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -64,7 +66,13 @@ func main() {
 	logger.Info("NEO: ", util.ToIndentString(r1))
 
 	r2 := cfg.AddressList(pb.SignType_ETH)
-	logger.Info("NEO: ", util.ToIndentString(r2))
+	logger.Info("ETH: ", util.ToIndentString(r2))
+
+	for i := 0; i < 10; i++ {
+		if token, err := cfg.JwtManager.Generate(jwt.User); err == nil {
+			logger.Debugf("%d: %s", i, token)
+		}
+	}
 
 	server, err := NewServer(cfg)
 	if err != nil {
