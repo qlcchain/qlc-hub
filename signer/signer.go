@@ -47,7 +47,7 @@ func NewSigner(cfg *config.Config) (*SignerClient, error) {
 			Backoff:           backoff.DefaultConfig,
 			MinConnectTimeout: time.Second * 3,
 		}),
-		grpc.WithUnaryInterceptor(i.Unary()), grpc.WithStreamInterceptor(i.Stream()))
+		grpc.WithUnaryInterceptor(i.unary()), grpc.WithStreamInterceptor(i.stream()))
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (i *SignerClient) attachToken(ctx context.Context) context.Context {
 	return metadata.AppendToOutgoingContext(ctx, "authorization", i.accessToken)
 }
 
-func (i *SignerClient) Unary() grpc.UnaryClientInterceptor {
+func (i *SignerClient) unary() grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
@@ -134,7 +134,7 @@ func (i *SignerClient) Unary() grpc.UnaryClientInterceptor {
 	}
 }
 
-func (i *SignerClient) Stream() grpc.StreamClientInterceptor {
+func (i *SignerClient) stream() grpc.StreamClientInterceptor {
 	return func(
 		ctx context.Context,
 		desc *grpc.StreamDesc,

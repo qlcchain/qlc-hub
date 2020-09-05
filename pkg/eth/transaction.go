@@ -9,6 +9,11 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/core/types"
+
+	"github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/signer"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -18,7 +23,8 @@ import (
 )
 
 func GetTransactor(client *ethclient.Client, priKey, contract string) (transactor *QLCChainTransactor, opts *bind.TransactOpts, err error) {
-	auth, err := getTransactOpts(client, priKey)
+	//TODO: fix it
+	auth, err := getTransactOpts(client, priKey, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -35,7 +41,8 @@ func GetTransactorSession(client *ethclient.Client, priKey, contract string) (*Q
 	if err != nil {
 		return nil, fmt.Errorf("new contract: %s", err)
 	}
-	auth, err := getTransactOpts(client, priKey)
+	//TODO: fix it
+	auth, err := getTransactOpts(client, priKey, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -50,14 +57,11 @@ func GetTransactorSession(client *ethclient.Client, priKey, contract string) (*Q
 	return session, nil
 }
 
-func getTransactOpts(client *ethclient.Client, priKey string) (*bind.TransactOpts, error) {
-	privateKey, fromAddress, err := GetAccountByPriKey(priKey)
-	if err != nil {
-		return nil, err
-	}
+func getTransactOpts(client *ethclient.Client, ethAddr string, sc *signer.SignerClient) (*bind.TransactOpts, error) {
+	addr := common.HexToAddress(ethAddr)
 	//todo rethink auth parameter settings
 	ctx := context.Background()
-	nonce, err := client.PendingNonceAt(ctx, fromAddress)
+	nonce, err := client.PendingNonceAt(ctx, addr)
 	if err != nil {
 		return nil, fmt.Errorf("crypto hex to ecdsa: %s", err)
 	}
@@ -66,7 +70,19 @@ func getTransactOpts(client *ethclient.Client, priKey string) (*bind.TransactOpt
 	if err != nil {
 		return nil, fmt.Errorf("suggest gas price: %s", err)
 	}
-	auth := bind.NewKeyedTransactor(privateKey)
+	auth := &bind.TransactOpts{
+		From: addr,
+		Signer: func(signer types.Signer, address common.Address, tx *types.Transaction) (*types.Transaction, error) {
+			if address != addr {
+				return nil, errors.New("not authorized to sign this account")
+			}
+			signature, err := sc.Sign(proto.SignType_ETH, ethAddr, signer.Hash(tx).Bytes())
+			if err != nil {
+				return nil, err
+			}
+			return tx.WithSignature(signer, signature.Sign)
+		},
+	}
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(0)      // in wei
 	auth.GasLimit = uint64(8000000) // in units

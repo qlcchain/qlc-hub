@@ -3,14 +3,14 @@ package neo
 import (
 	"fmt"
 
+	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
+
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
-	"github.com/nspcc-dev/neo-go/pkg/wallet"
 )
 
 // deposit
-
-func (n *Transaction) UserLock(userWif, wrapperAddress, rHash string, amount int) (string, error) {
-	userAccount, err := wallet.NewAccountFromWIF(userWif)
+func (n *Transaction) UserLock(publicKey, wrapperAddress, rHash string, amount int) (string, error) {
+	pubKey, err := keys.NewPublicKeyFromString(publicKey)
 	if err != nil {
 		return "", err
 	}
@@ -18,15 +18,15 @@ func (n *Transaction) UserLock(userWif, wrapperAddress, rHash string, amount int
 		FunctionName("userLock"),
 		ArrayParams([]request.Param{
 			ArrayTypeParam(rHash),
-			AddressParam(userAccount.Address),
+			AddressParam(pubKey.Address()),
 			IntegerTypeParam(amount),
 			AddressParam(wrapperAddress),
 			IntegerTypeParam(10), //todo
 		}),
 	}
 	r, err := n.CreateTransaction(TransactionParam{
-		Params: params,
-		Wif:    userWif,
+		Params:    params,
+		PublicKey: pubKey,
 	})
 	if err != nil {
 		return "", fmt.Errorf("UserLock/CreateTransaction: %s", err)
@@ -34,8 +34,8 @@ func (n *Transaction) UserLock(userWif, wrapperAddress, rHash string, amount int
 	return r, nil
 }
 
-func (n *Transaction) WrapperUnlock(rOrigin, wrapperWif, userEthAddress string) (string, error) {
-	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
+func (n *Transaction) WrapperUnlock(rOrigin, publicKey, userEthAddress string) (string, error) {
+	pubKey, err := keys.NewPublicKeyFromString(publicKey)
 	if err != nil {
 		return "", err
 	}
@@ -43,15 +43,15 @@ func (n *Transaction) WrapperUnlock(rOrigin, wrapperWif, userEthAddress string) 
 		FunctionName("wrapperUnlock"),
 		ArrayParams([]request.Param{
 			StringTypeParam(rOrigin),
-			AddressParam(wrapperAccount.Address),
+			AddressParam(pubKey.Address()),
 			ArrayTypeParam(userEthAddress),
 		}),
 	}
 	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Wif:      wrapperWif,
-		ROrigin:  rOrigin,
-		FuncName: "wrapperUnlock",
+		Params:    params,
+		PublicKey: pubKey,
+		ROrigin:   rOrigin,
+		FuncName:  "wrapperUnlock",
 	})
 	if err != nil {
 		return "", fmt.Errorf("wrapperUnlock/createTransaction: %s", err)
@@ -59,8 +59,8 @@ func (n *Transaction) WrapperUnlock(rOrigin, wrapperWif, userEthAddress string) 
 	return r, nil
 }
 
-func (n *Transaction) RefundUser(rOrigin string, userWif string) (string, error) {
-	userAccount, err := wallet.NewAccountFromWIF(userWif)
+func (n *Transaction) RefundUser(rOrigin string, publicKey string) (string, error) {
+	pubKey, err := keys.NewPublicKeyFromString(publicKey)
 	if err != nil {
 		return "", fmt.Errorf("new account from wif: %s", err)
 	}
@@ -68,14 +68,14 @@ func (n *Transaction) RefundUser(rOrigin string, userWif string) (string, error)
 		FunctionName("refundUser"),
 		ArrayParams([]request.Param{
 			StringTypeParam(rOrigin),
-			AddressParam(userAccount.Address),
+			AddressParam(pubKey.Address()),
 		}),
 	}
 	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Wif:      userWif,
-		ROrigin:  rOrigin,
-		FuncName: "refundUser",
+		Params:    params,
+		PublicKey: pubKey,
+		ROrigin:   rOrigin,
+		FuncName:  "refundUser",
 	})
 	if err != nil {
 		return "", fmt.Errorf("refundUser/createTransaction: %s", err)
@@ -85,8 +85,8 @@ func (n *Transaction) RefundUser(rOrigin string, userWif string) (string, error)
 
 // withdraw
 
-func (n *Transaction) WrapperLock(wrapperWif, userEthAddress, rHash string, amount int) (string, error) {
-	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
+func (n *Transaction) WrapperLock(publicKey, userEthAddress, rHash string, amount int) (string, error) {
+	pubKey, err := keys.NewPublicKeyFromString(publicKey)
 	if err != nil {
 		return "", err
 	}
@@ -94,15 +94,15 @@ func (n *Transaction) WrapperLock(wrapperWif, userEthAddress, rHash string, amou
 		FunctionName("wrapperLock"),
 		ArrayParams([]request.Param{
 			ArrayTypeParam(rHash),
-			AddressParam(wrapperAccount.Address),
+			AddressParam(pubKey.Address()),
 			IntegerTypeParam(amount),
 			ArrayTypeParam(userEthAddress),
 			IntegerTypeParam(10),
 		}),
 	}
 	r, err := n.CreateTransaction(TransactionParam{
-		Params: params,
-		Wif:    wrapperWif,
+		Params:    params,
+		PublicKey: pubKey,
 	})
 	if err != nil {
 		return "", fmt.Errorf("wrapperLock/createTransaction: %s", err)
@@ -110,8 +110,8 @@ func (n *Transaction) WrapperLock(wrapperWif, userEthAddress, rHash string, amou
 	return r, nil
 }
 
-func (n *Transaction) UserUnlock(rOrigin, userWif string) (string, error) {
-	userAccount, err := wallet.NewAccountFromWIF(userWif)
+func (n *Transaction) UserUnlock(rOrigin, publicKey string) (string, error) {
+	pubKey, err := keys.NewPublicKeyFromString(publicKey)
 	if err != nil {
 		return "", err
 	}
@@ -119,14 +119,14 @@ func (n *Transaction) UserUnlock(rOrigin, userWif string) (string, error) {
 		FunctionName("userUnlock"),
 		ArrayParams([]request.Param{
 			StringTypeParam(rOrigin),
-			AddressParam(userAccount.Address),
+			AddressParam(pubKey.Address()),
 		}),
 	}
 	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Wif:      userWif,
-		ROrigin:  rOrigin,
-		FuncName: "userUnlock",
+		Params:    params,
+		PublicKey: pubKey,
+		ROrigin:   rOrigin,
+		FuncName:  "userUnlock",
 	})
 	if err != nil {
 		return "", fmt.Errorf("userUnlock/createTransaction: %s", err)
@@ -134,8 +134,8 @@ func (n *Transaction) UserUnlock(rOrigin, userWif string) (string, error) {
 	return r, nil
 }
 
-func (n *Transaction) RefundWrapper(rHash, wrapperWif string) (string, error) {
-	wrapperAccount, err := wallet.NewAccountFromWIF(wrapperWif)
+func (n *Transaction) RefundWrapper(rHash, publicKey string) (string, error) {
+	pubKey, err := keys.NewPublicKeyFromString(publicKey)
 	if err != nil {
 		return "", err
 	}
@@ -144,14 +144,14 @@ func (n *Transaction) RefundWrapper(rHash, wrapperWif string) (string, error) {
 		FunctionName("refundWrapper"),
 		ArrayParams([]request.Param{
 			ArrayTypeParam(rHash),
-			AddressParam(wrapperAccount.Address),
+			AddressParam(pubKey.Address()),
 		}),
 	}
 	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Wif:      wrapperWif,
-		RHash:    rHash,
-		FuncName: "refundWrapper",
+		Params:    params,
+		PublicKey: pubKey,
+		RHash:     rHash,
+		FuncName:  "refundWrapper",
 	})
 	if err != nil {
 		return "", fmt.Errorf("refundWrapper/createTransaction: %s", err)

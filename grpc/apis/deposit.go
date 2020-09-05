@@ -116,7 +116,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
 
 		// wrapper to eth lock
-		tx, err := eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.Account, d.cfg.EthereumCfg.Contract, swapInfo.Amount, d.eth)
+		tx, err := eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.Address, d.cfg.EthereumCfg.Contract, swapInfo.Amount, d.eth)
 		if err != nil {
 			d.logger.Error(err)
 			return
@@ -134,12 +134,10 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 }
 
 func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
-	_, address, err := eth.GetAccountByPriKey(d.cfg.EthereumCfg.Account)
-	if err != nil {
-		return fmt.Errorf("invalid erc20 account: %s [%s]", err, d.cfg.EthereumCfg.Account)
-	}
-	if address.String() != request.GetAddr() {
-		return fmt.Errorf("invalid wrapper eth address, want [%s], but get [%s]", address.String(), request.GetAddr())
+	address := d.cfg.EthereumCfg.Address
+
+	if address != request.GetAddr() {
+		return fmt.Errorf("invalid wrapper eth address, want [%s], but get [%s]", address, request.GetAddr())
 	}
 	return nil
 }

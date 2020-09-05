@@ -92,7 +92,7 @@ func (w *WithdrawAPI) Unlock(ctx context.Context, request *pb.WithdrawUnlockRequ
 		}
 		w.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
 
-		tx, err := eth.WrapperUnlock(request.GetRHash(), request.GetROrigin(), w.cfg.EthereumCfg.Account, w.cfg.EthereumCfg.Contract, w.eth)
+		tx, err := eth.WrapperUnlock(request.GetRHash(), request.GetROrigin(), w.cfg.EthereumCfg.Address, w.cfg.EthereumCfg.Contract, w.eth)
 		if err != nil {
 			w.logger.Errorf("eth wrapper unlock: %s [%s]", err, request.GetRHash())
 			w.store.SetLockerStateFail(info, err)

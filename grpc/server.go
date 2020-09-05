@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/qlcchain/qlc-hub/signer"
+
 	"github.com/qlcchain/qlc-hub/pkg/util"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -19,7 +20,6 @@ import (
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
-	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
@@ -28,6 +28,7 @@ import (
 type Server struct {
 	rpc    *grpc.Server
 	srv    *http.Server
+	signer *signer.SignerClient
 	ctx    context.Context
 	cancel context.CancelFunc
 	cfg    *config.Config
@@ -93,7 +94,14 @@ func (g *Server) checkBaseInfo() error {
 	}
 	g.eth = eClient
 
-	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract)
+	signer, err := signer.NewSigner(g.cfg)
+	if err != nil {
+		return err
+	}
+
+	g.signer = signer
+
+	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract, signer)
 	if err != nil {
 		return fmt.Errorf("neo transaction: %s", err)
 	}
@@ -101,15 +109,6 @@ func (g *Server) checkBaseInfo() error {
 		return fmt.Errorf("neo node connect timeout: %s", err)
 	}
 	g.neo = nTransaction
-
-	_, err = wallet.NewAccountFromWIF(g.cfg.NEOCfg.WIF)
-	if err != nil {
-		return fmt.Errorf("invalid nep5 wif: %s [%s]", err, g.cfg.NEOCfg.WIF)
-	}
-	_, _, err = eth.GetAccountByPriKey(g.cfg.EthereumCfg.Account)
-	if err != nil {
-		return fmt.Errorf("invalid erc20 account: %s [%s]", err, g.cfg.EthereumCfg.Account)
-	}
 
 	store, err := store.NewStore(g.cfg.DataDir())
 	if err != nil {
@@ -168,6 +167,7 @@ func (g *Server) Stop() {
 	}
 	g.eth.Close()
 	g.rpc.Stop()
+	g.signer.Stop()
 
 	g.store.Close() //todo wait all server stop
 

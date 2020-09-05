@@ -29,8 +29,8 @@ func UserLock(rHash, userPriKey, wrapperAddr, contract string, amount int64, cli
 	return tx.Hash().Hex(), nil
 }
 
-func WrapperUnlock(rHash, rOrigin, wrapperPrikey, contract string, client *ethclient.Client) (string, error) {
-	instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
+func WrapperUnlock(rHash, rOrigin, address, contract string, client *ethclient.Client) (string, error) {
+	instance, opts, err := GetTransactor(client, address, contract)
 	if err != nil {
 		return "", fmt.Errorf("WrapperUnlock/GetTransactor: %s", err)
 	}
@@ -67,8 +67,8 @@ func UserFetch(rHash, userPrikey, contract string, client *ethclient.Client) (st
 }
 
 // deposit
-func WrapperLock(rHash, wrapperPrikey, contract string, amount int64, client *ethclient.Client) (string, error) {
-	instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
+func WrapperLock(rHash, address, contract string, amount int64, client *ethclient.Client) (string, error) {
+	instance, opts, err := GetTransactor(client, address, contract)
 	if err != nil {
 		return "", err
 	}
@@ -106,8 +106,8 @@ func UserUnlock(rHash, rOrigin, userPriKey, contract string, client *ethclient.C
 	return tx.Hash().Hex(), nil
 }
 
-func WrapperFetch(rHash, wrapperPrikey, contract string, client *ethclient.Client) (string, error) {
-	instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
+func WrapperFetch(rHash, address, contract string, client *ethclient.Client) (string, error) {
+	instance, opts, err := GetTransactor(client, address, contract)
 	if err != nil {
 		return "", err
 	}

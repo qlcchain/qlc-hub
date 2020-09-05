@@ -11,10 +11,14 @@ import (
 	"sort"
 	"time"
 
+	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
+
+	"github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/signer"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/nspcc-dev/neo-go/pkg/core"
 	"github.com/nspcc-dev/neo-go/pkg/core/transaction"
-	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 	"github.com/nspcc-dev/neo-go/pkg/io"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
@@ -22,7 +26,6 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
-	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"go.uber.org/zap"
 
 	"github.com/qlcchain/qlc-hub/pkg/log"
@@ -30,6 +33,7 @@ import (
 )
 
 type Transaction struct {
+	signer       *signer.SignerClient
 	url          string
 	client       *client.Client
 	contractLE   util.Uint160
@@ -37,7 +41,7 @@ type Transaction struct {
 	logger       *zap.SugaredLogger
 }
 
-func NewTransaction(url, contractAddr string) (*Transaction, error) {
+func NewTransaction(url, contractAddr string, signer *signer.SignerClient) (*Transaction, error) {
 	c, err := client.New(context.Background(), url, client.Options{})
 	if err != nil {
 		return nil, err
@@ -47,6 +51,7 @@ func NewTransaction(url, contractAddr string) (*Transaction, error) {
 		return nil, err
 	}
 	return &Transaction{
+		signer:       signer,
 		url:          url,
 		client:       c,
 		contractLE:   contract,
@@ -56,20 +61,16 @@ func NewTransaction(url, contractAddr string) (*Transaction, error) {
 }
 
 type TransactionParam struct {
-	Params   []request.Param
-	Wif      string
-	Sysfee   util.Fixed8
-	Netfee   util.Fixed8
-	ROrigin  string
-	RHash    string
-	FuncName string
+	Params    []request.Param
+	PublicKey *keys.PublicKey
+	Sysfee    util.Fixed8
+	Netfee    util.Fixed8
+	ROrigin   string
+	RHash     string
+	FuncName  string
 }
 
 func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) {
-	account, err := wallet.NewAccountFromWIF(param.Wif)
-	if err != nil {
-		return "", fmt.Errorf("NewAccountFromWIF: %s", err)
-	}
 	scripts, err := request.CreateFunctionInvocationScript(n.contractLE, param.Params)
 	if err != nil {
 		return "", fmt.Errorf("CreateFunctionInvocationScript: %s", err)
@@ -85,15 +86,11 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 	gas := param.Sysfee + param.Netfee
 
 	if gas > 0 {
-		if err = request.AddInputsAndUnspentsToTx(tx, account.Address, core.UtilityTokenID(), gas, n.client); err != nil {
+		if err = request.AddInputsAndUnspentsToTx(tx, param.PublicKey.Address(), core.UtilityTokenID(), gas, n.client); err != nil {
 			return "", fmt.Errorf("failed to add inputs and unspents to transaction: %s ", err)
 		}
 	} else {
-		addr, err := address.StringToUint160(account.Address)
-		if err != nil {
-			return "", fmt.Errorf("failed to get address: %s", err)
-		}
-		tx.AddVerificationHash(addr)
+		tx.AddVerificationHash(param.PublicKey.GetScriptHash())
 		if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
 			tx.Attributes = append(tx.Attributes, transaction.Attribute{
 				Usage: transaction.Remark,
@@ -102,7 +99,7 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 		}
 	}
 
-	if err = account.SignTx(tx); err != nil {
+	if err = n.SignTx(tx, param.PublicKey); err != nil {
 		return "", fmt.Errorf("failed to sign tx, %s", err)
 	}
 	txHash := tx.Hash()
@@ -114,6 +111,26 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 
 	//n.logger.Debugf("transaction successfully: %s", re.StringLE())
 	return txHash.StringLE(), nil
+}
+
+func (n *Transaction) SignTx(t *transaction.Transaction, publicKey *keys.PublicKey) error {
+	if n.signer == nil {
+		return errors.New("invalid signer")
+	}
+	data := t.GetSignedPart()
+	if data == nil {
+		return errors.New("failed to get transaction's signed part")
+	}
+
+	if sign, err := n.signer.Sign(proto.SignType_NEO, publicKey.Address(), data); err == nil {
+		t.Scripts = append(t.Scripts, transaction.Witness{
+			InvocationScript:   append([]byte{byte(opcode.PUSHBYTES64)}, sign.Sign...),
+			VerificationScript: publicKey.GetVerificationScript(),
+		})
+		return nil
+	} else {
+		return err
+	}
 }
 
 type witnessWrapper struct {
@@ -130,14 +147,8 @@ func (w witnessWrapper) GetScriptHash() *util.Uint160 {
 }
 
 func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
-	account, err := wallet.NewAccountFromWIF(param.Wif)
-	if err != nil {
-		return "", fmt.Errorf("new account: %s", err)
-	}
-	accountUint, err := address.StringToUint160(account.Address)
-	if err != nil {
-		return "", fmt.Errorf("address uint160: %s", err)
-	}
+	accountUint := param.PublicKey.GetScriptHash()
+
 	scripts, err := request.CreateFunctionInvocationScript(n.contractLE, param.Params)
 	if err != nil {
 		return "", fmt.Errorf("create script: %s", err)
@@ -164,7 +175,7 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 		})
 	}
 
-	if err := account.SignTx(tx); err != nil {
+	if err := n.SignTx(tx, param.PublicKey); err != nil {
 		return "", fmt.Errorf("signTx: %s", err)
 	}
 
