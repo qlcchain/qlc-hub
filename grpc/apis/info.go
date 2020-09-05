@@ -6,8 +6,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"
 
@@ -36,13 +34,9 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, s *store.Store) *InfoAP
 }
 
 func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, error) {
-	pubKey, err := keys.NewPublicKeyFromString(i.cfg.NEOCfg.PublicKey)
-	if err != nil {
-		return nil, err
-	}
 	return &pb.PingResponse{
 		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoAddress:  pubKey.Address(),
+		NeoAddress:  i.cfg.NEOCfg.Address,
 		EthContract: i.cfg.EthereumCfg.Contract,
 		EthAddress:  i.cfg.EthereumCfg.Address,
 	}, nil

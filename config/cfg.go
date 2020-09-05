@@ -31,7 +31,7 @@ type Config struct {
 type NEOCfg struct {
 	EndPoint        string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" default:"http://seed2.ngd.network:20332" validate:"nonzero"`
 	Contract        string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"e0abb5fde5a0b870c13f3e60258856e38a939187" validate:"nonzero"`
-	PublicKey       string `json:"publicKey" long:"publicKey" description:"NEO public key hex string" default:"" validate:"nonzero"`
+	Address         string `json:"address" long:"address" description:"NEO address" default:"" validate:"nonzero"`
 	ConfirmedHeight int    `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"1" validate:"nonzero"`
 	DepositHeight   int64  `json:"depositNeoTimeoutHeight" long:"depositNeoTimeoutHeight" description:"Lock timeout Height of deposit" default:"40" validate:"nonzero"`
 	WithdrawHeight  int64  `json:"withdrawNeoTimeoutHeight" long:"withdrawNeoTimeoutHeight" description:"Lock timeout Height of withdraw" default:"20" validate:"nonzero"`

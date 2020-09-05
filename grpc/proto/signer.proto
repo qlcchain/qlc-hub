@@ -15,6 +15,7 @@ message SignRequest {
 
 message SignResponse {
     bytes sign = 1;
+    bytes verifyData = 2;
 }
 
 message RefreshRequest {

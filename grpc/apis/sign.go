@@ -47,7 +47,10 @@ func (s *SignerService) Sign(ctx context.Context, request *pb.SignRequest) (*pb.
 				}
 			case *keys.PrivateKey:
 				sign := k.Sign(rawData)
-				return &pb.SignResponse{Sign: sign}, nil
+				return &pb.SignResponse{
+					Sign:       sign,
+					VerifyData: k.PublicKey().GetVerificationScript(),
+				}, nil
 			default:
 				return nil, invalidKey(t, address)
 			}
