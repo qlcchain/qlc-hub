@@ -67,7 +67,7 @@ func main() {
 	logger.Info("NEO: ", util.ToIndentString(r2))
 
 	server, err := NewServer(cfg)
-	if err == nil {
+	if err != nil {
 		logger.Fatal(err)
 	}
 
@@ -125,6 +125,7 @@ func (s *Server) Start() error {
 		return fmt.Errorf("failed to listen: %s", err)
 	}
 	s.registerApi()
+	s.logger.Debugf("server start at %s", address)
 	reflection.Register(s.srv)
 	return s.srv.Serve(lis)
 }

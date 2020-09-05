@@ -5,8 +5,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
+
+	"github.com/mr-tron/base58"
 )
 
 func Decode(pemEncoded string) *ecdsa.PrivateKey {
@@ -30,17 +31,17 @@ func New() (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
 	return privateKey, publicKey
 }
 
-func NewBase64() string {
+func NewBase58Key() string {
 	key, _ := New()
 	encode := Encode(key)
-	return base64.StdEncoding.EncodeToString([]byte(encode))
+
+	return base58.Encode([]byte(encode))
 }
 
-func FromBase64(key string) (*ecdsa.PrivateKey, error) {
-	if data, err := base64.StdEncoding.DecodeString(key); err != nil {
+func FromBase58(key string) (*ecdsa.PrivateKey, error) {
+	if data, err := base58.Decode(key); err != nil {
 		return nil, err
 	} else {
-		key = string(data)
 		return Decode(string(data)), nil
 	}
 }

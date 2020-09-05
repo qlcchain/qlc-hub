@@ -20,6 +20,12 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestNewBase64(t *testing.T) {
-	t.Log(NewBase64())
+func TestNewBase58(t *testing.T) {
+	base58 := NewBase58Key()
+	t.Log(base58)
+	if from, err := FromBase58(base58); err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log(Encode(from))
+	}
 }

@@ -53,7 +53,7 @@ type JWTManager struct {
 }
 
 func NewJWTManager(secretKey string, tokenDuration time.Duration) (*JWTManager, error) {
-	if privateKey, err := FromBase64(secretKey); err == nil {
+	if privateKey, err := FromBase58(secretKey); err == nil {
 		return &JWTManager{
 			pubKey:        privateKey.Public(),
 			privateKey:    privateKey,

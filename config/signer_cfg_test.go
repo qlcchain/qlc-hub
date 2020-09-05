@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 
 	"github.com/qlcchain/qlc-hub/grpc/proto"
@@ -13,23 +14,31 @@ import (
 )
 
 func TestSignerConfig_Verify(t *testing.T) {
-	jwtKey := jwt.NewBase64()
-	cache := make(map[int][]string, 0)
-	for i := 0; i < 2; i++ {
-		account, _ := wallet.NewAccount()
-		cache[int(proto.SignType_NEO)] = append(cache[int(proto.SignType_NEO)], account.PrivateKey().String())
-	}
+	jwtKey := jwt.NewBase58Key()
+	var neoKeys, ethKeys []string
+
 	for i := 0; i < 2; i++ {
 		key, _ := crypto.GenerateKey()
 		privateKeyBytes := crypto.FromECDSA(key)
-		cache[int(proto.SignType_ETH)] = append(cache[int(proto.SignType_ETH)], hex.EncodeToString(privateKeyBytes))
+		s := hex.EncodeToString(privateKeyBytes)
+		t.Logf("0:%s", s)
+		ethKeys = append(ethKeys, s)
 	}
+
+	for i := 0; i < 2; i++ {
+		account, _ := wallet.NewAccount()
+		s := account.PrivateKey().String()
+		t.Logf("1:%s", s)
+		neoKeys = append(neoKeys, s)
+	}
+
 	cfg := &SignerConfig{
 		Verbose:           false,
 		Key:               jwtKey,
 		KeyDuration:       "8760h0m0s",
 		LogLevel:          "debug",
-		ChainAccounts:     cache,
+		NeoAccounts:       neoKeys,
+		EthAccounts:       ethKeys,
 		GRPCListenAddress: "tcp://0.0.0.0:19747",
 		JwtManager:        nil,
 		Keys:              nil,

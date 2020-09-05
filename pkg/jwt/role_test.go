@@ -6,7 +6,7 @@ import (
 )
 
 func TestJWTManager_Verify(t *testing.T) {
-	privateKey := NewBase64()
+	privateKey := NewBase58Key()
 	duration := time.Hour * 24 * 365 // 1year
 	if m, err := NewJWTManager(privateKey, duration); err == nil {
 		if token, err := m.Generate(Admin); err == nil {
@@ -26,7 +26,7 @@ func TestJWTManager_Verify(t *testing.T) {
 }
 
 func TestJWTManager_Refresh(t *testing.T) {
-	privateKey := NewBase64()
+	privateKey := NewBase58Key()
 	duration := time.Hour * 24 * 365 // 1year
 	if m, err := NewJWTManager(privateKey, duration); err == nil {
 		token, err := m.Generate(User)

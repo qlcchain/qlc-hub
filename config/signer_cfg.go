@@ -7,8 +7,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
-
 	"github.com/ethereum/go-ethereum/crypto"
 	"gopkg.in/validator.v2"
 
@@ -27,7 +25,8 @@ type SignerConfig struct {
 	Key               string                                    `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
 	KeyDuration       string                                    `json:"duration" long:"duration" default:"8760h0m0s" validate:"nonzero"`
 	LogLevel          string                                    `json:"logLevel" short:"l" long:"level" description:"log level" default:"warn"` //info,warn,debug.
-	ChainAccounts     map[int][]string                          `json:"keys" long:"accounts" description:"NEO/ETH private key" validate:"min=1"`
+	NeoAccounts       []string                                  `json:"neoAccounts" long:"neoAccounts" description:"NEO private keys" validate:"min=1"`
+	EthAccounts       []string                                  `json:"ethAccounts" long:"ethAccounts" description:"ETH private keys" validate:"min=1"`
 	GRPCListenAddress string                                    `json:"gRPCListenAddress" long:"grpcAddress" description:"GRPC server listen address" default:"tcp://0.0.0.0:19747"`
 	JwtManager        *jwt.JWTManager                           `json:"-"`
 	Keys              map[proto.SignType]map[string]interface{} `json:"-"`
@@ -49,35 +48,42 @@ func (c *SignerConfig) Verify() error {
 	}
 	c.JwtManager = jwt
 
-	for k, priKeys := range c.ChainAccounts {
-		t := proto.SignType(k)
-		for _, v := range priKeys {
-			switch t {
-			case proto.SignType_ETH:
-				if privateKey, err := crypto.HexToECDSA(v); err == nil {
-					publicKey := privateKey.Public()
-					if publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey); ok {
-						address := crypto.PubkeyToAddress(*publicKeyECDSA).String()
-						c.saveKey(t, address, privateKey)
-					} else {
-						log.Root.Error("invalid public key")
-					}
-				} else {
-					log.Root.Errorf("can not decode private key(%s), err: %s", v, err)
-				}
-			case proto.SignType_NEO:
-				if priv, err := keys.NewPrivateKeyFromHex(v); err == nil {
-					c.saveKey(t, priv.Address(), priv)
-				} else {
-					log.Root.Errorf("can not decode wif key(%s),err: %s", v, err)
-				}
+	counter := 0
+	for _, v := range c.NeoAccounts {
+		if privateKey, err := crypto.HexToECDSA(v); err == nil {
+			publicKey := privateKey.Public()
+			if publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey); ok {
+				address := crypto.PubkeyToAddress(*publicKeyECDSA).String()
+				c.saveKey(proto.SignType_NEO, address, privateKey)
+				counter++
+			} else {
+				log.Root.Error("invalid public key")
 			}
+		} else {
+			log.Root.Errorf("can not decode private key(%s), err: %s", v, err)
 		}
 	}
-	if len(c.Keys) == 0 {
-		return errors.New("can not find any invalid keys")
+	if counter == 0 {
+		return errors.New("can not find any invalid NEO keys")
 	}
-
+	counter = 0
+	for _, v := range c.EthAccounts {
+		if privateKey, err := crypto.HexToECDSA(v); err == nil {
+			publicKey := privateKey.Public()
+			if publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey); ok {
+				address := crypto.PubkeyToAddress(*publicKeyECDSA).String()
+				c.saveKey(proto.SignType_ETH, address, privateKey)
+				counter++
+			} else {
+				log.Root.Error("invalid public key")
+			}
+		} else {
+			log.Root.Errorf("can not decode private key(%s), err: %s", v, err)
+		}
+	}
+	if counter == 0 {
+		return errors.New("can not find any invalid ETH keys")
+	}
 	return nil
 }
 
