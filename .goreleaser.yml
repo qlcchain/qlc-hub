@@ -43,6 +43,40 @@ builds:
       - windows
     goarch:
       - amd64
+  - id: signer-darwin
+    ldflags: -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
+    binary: signer
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    main: ./cmd/signer/main.go
+    goos:
+      - darwin
+    goarch:
+      - amd64
+  - id: signer-linux
+    ldflags: -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
+    binary: signer
+    env:
+      - CGO_ENABLED=1
+    main: ./cmd/signer/main.go
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - id: signer-windows-x64
+    ldflags: main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
+    binary: signer
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+    main: ./cmd/signer/main.go
+    goos:
+      - windows
+    goarch:
+      - amd64
 
 archives:
   - format: tar.gz
