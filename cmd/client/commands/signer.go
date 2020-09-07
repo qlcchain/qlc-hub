@@ -1,23 +1,21 @@
-package signer
+package commands
 
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
 
-	"github.com/qlcchain/qlc-hub/grpc"
-	"github.com/qlcchain/qlc-hub/pkg/jwt"
-
 	"github.com/qlcchain/qlc-hub/config"
+	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"github.com/qlcchain/qlc-hub/signer"
 )
 
-func TestAuthClient_SignNeoTx(t *testing.T) {
-	t.Skip()
+func run() {
 	jwtKey := jwt.NewBase58Key()
 	signerAddr := "tpc://0.0.0.0:19747"
 
@@ -34,12 +32,12 @@ func TestAuthClient_SignNeoTx(t *testing.T) {
 	}
 
 	if err := signerCfg.Verify(); err != nil {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	signerServer, err := grpc.NewSignerServer(signerCfg)
 	if err != nil {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 	defer func() {
 		signerServer.Stop()
@@ -47,7 +45,7 @@ func TestAuthClient_SignNeoTx(t *testing.T) {
 
 	token, err := signerCfg.JwtManager.Generate(jwt.User)
 	if err != nil {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 	cfg := &config.Config{
 		Verbose:        true,
@@ -55,23 +53,23 @@ func TestAuthClient_SignNeoTx(t *testing.T) {
 		SignerToken:    token,
 		SignerEndPoint: signerAddr,
 	}
-	signer, err := NewSigner(cfg)
+	signer, err := signer.NewSigner(cfg)
 	if err != nil {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 	defer func() {
 		signer.Stop()
 	}()
 
 	if r1, err := signer.AddressList(proto.SignType_NEO); err == nil {
-		t.Log(r1.Address)
+		logger.Debug(r1.Address)
 	} else {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 	if r1, err := signer.AddressList(proto.SignType_ETH); err == nil {
-		t.Log(r1.Address)
+		logger.Debug(r1.Address)
 	} else {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	rawData := []byte(util.String(120))
@@ -81,10 +79,10 @@ func TestAuthClient_SignNeoTx(t *testing.T) {
 	sign := neoPriv.Sign(rawData)
 	if neoResp, err := signer.Sign(proto.SignType_NEO, neoAddress, rawData); err == nil {
 		if !bytes.Equal(sign, neoResp.Sign) {
-			t.Fatalf("got: %v, exp: %v", neoResp.Sign, sign)
+			logger.Fatalf("got: %v, exp: %v", neoResp.Sign, sign)
 		}
 	} else {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	eth := "5d5f13593918431c70354607060d67e931a8bdc0575b4328e8ebb367b0d86d1d"
@@ -96,9 +94,9 @@ func TestAuthClient_SignNeoTx(t *testing.T) {
 
 	if ethResp, err := signer.Sign(proto.SignType_ETH, ethAddress, h); err == nil {
 		if !bytes.Equal(ethSign, ethResp.Sign) {
-			t.Fatalf("got: %v, exp: %v", ethResp.Sign, sign)
+			logger.Fatalf("got: %v, exp: %v", ethResp.Sign, sign)
 		}
 	} else {
-		t.Fatal(err)
+		logger.Fatal(err)
 	}
 }
