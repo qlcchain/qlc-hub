@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
@@ -18,6 +16,8 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
+	"github.com/qlcchain/qlc-hub/pkg/util"
+	"github.com/qlcchain/qlc-hub/signer"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -26,10 +26,11 @@ import (
 type Server struct {
 	rpc    *grpc.Server
 	srv    *http.Server
+	signer *signer.SignerClient
 	ctx    context.Context
 	cancel context.CancelFunc
 	cfg    *config.Config
-	eth    *ethclient.Client
+	eth    *eth.Transaction
 	neo    *neo.Transaction
 	store  *store.Store
 	logger *zap.SugaredLogger
@@ -52,8 +53,9 @@ func (g *Server) Start() error {
 	if err := g.checkBaseInfo(); err != nil {
 		return err
 	}
+	g.logger.Info("config info checked")
 
-	network, address, err := scheme(g.cfg.RPCCfg.GRPCListenAddress)
+	network, address, err := util.Scheme(g.cfg.RPCCfg.GRPCListenAddress)
 	if err != nil {
 		return err
 	}
@@ -81,17 +83,23 @@ func (g *Server) Start() error {
 }
 
 func (g *Server) checkBaseInfo() error {
+	signer, err := signer.NewSigner(g.cfg)
+	if err != nil {
+		return err
+	}
+	g.signer = signer
+
 	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint)
 	if err != nil {
 		return fmt.Errorf("eth dail: %s", err)
 	}
-
 	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
 		return fmt.Errorf("eth node connect timeout: %s", err)
 	}
-	g.eth = eClient
+	eTransaction := eth.NewTransaction(eClient, signer, g.cfg.EthereumCfg.Contract)
+	g.eth = eTransaction
 
-	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract)
+	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract, signer)
 	if err != nil {
 		return fmt.Errorf("neo transaction: %s", err)
 	}
@@ -99,15 +107,6 @@ func (g *Server) checkBaseInfo() error {
 		return fmt.Errorf("neo node connect timeout: %s", err)
 	}
 	g.neo = nTransaction
-
-	_, err = wallet.NewAccountFromWIF(g.cfg.NEOCfg.WIF)
-	if err != nil {
-		return fmt.Errorf("invalid nep5 wif: %s [%s]", err, g.cfg.NEOCfg.WIF)
-	}
-	_, _, err = eth.GetAccountByPriKey(g.cfg.EthereumCfg.Account)
-	if err != nil {
-		return fmt.Errorf("invalid erc20 account: %s [%s]", err, g.cfg.EthereumCfg.Account)
-	}
 
 	store, err := store.NewStore(g.cfg.DataDir())
 	if err != nil {
@@ -134,7 +133,7 @@ func (g *Server) newGateway(grpcAddress, gwAddress string) error {
 	if err := registerGWApi(ctx, gwmux, grpcAddress, opts); err != nil {
 		return fmt.Errorf("gateway register: %s", err)
 	}
-	_, address, err := scheme(gwAddress)
+	_, address, err := util.Scheme(gwAddress)
 	if err != nil {
 		return err
 	}
@@ -164,19 +163,12 @@ func (g *Server) Stop() {
 			g.logger.Errorf("RESTful server shutdown failed:%+v", err)
 		}
 	}
-	g.eth.Close()
+	g.eth.Client().Close()
 	g.rpc.Stop()
+	g.signer.Stop()
 
 	g.store.Close() //todo wait all server stop
 
-}
-
-func scheme(endpoint string) (string, string, error) {
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return "", "", err
-	}
-	return u.Scheme, u.Host, nil
 }
 
 func (g *Server) registerApi() error {

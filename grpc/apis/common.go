@@ -12,7 +12,7 @@ func sha256(r string) string {
 	panic("implement me")
 }
 
-var maxRHashSzie = 1000
+var maxRHashSzie = 10240
 var timeout = 24 * time.Hour
 
 var glock = gcache.New(maxRHashSzie).Expiration(timeout).LRU().Build()

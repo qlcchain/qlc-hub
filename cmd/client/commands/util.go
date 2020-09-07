@@ -143,11 +143,3 @@ func post(paras string, url string) (bool, error) {
 		return false, fmt.Errorf("response has no result")
 	}
 }
-
-func getContractAddress() (string, string) {
-	ret, err := get(fmt.Sprintf("%s/info/ping", hubUrl))
-	if err != nil {
-		logger.Fatal(err)
-	}
-	return ret["ethContract"].(string), ret["neoContract"].(string)
-}

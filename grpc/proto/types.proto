@@ -19,12 +19,12 @@ message DepositLockRequest{
    string addr       = 4;
 }
 
-message FetchNoticeRequest{
-   string rHash      = 1;
-   string nep5TxHash = 2;
+message FetchRequest{
+   string rOrigin      = 1;
+   string userNep5Addr = 2;
 }
 
-message WithdrawUnlockRequest{
+message ClaimRequest{
   string nep5TxHash = 1;
   string rOrigin    = 2;
   string rHash      = 3;
@@ -84,18 +84,18 @@ service DepositAPI {
         };
     }
 
-    rpc FetchNotice(FetchNoticeRequest) returns (Boolean){
+    rpc Fetch(FetchRequest) returns (Boolean){
        option (google.api.http) = {
-           post: "/deposit/fetchNotice"
+           post: "/deposit/fetch"
            body: "*"
         };
     }
 }
 
 service WithdrawAPI {
-   rpc Unlock(WithdrawUnlockRequest) returns (Boolean){
+   rpc Claim(ClaimRequest) returns (Boolean){
        option (google.api.http) = {
-         post: "/withdraw/unlock"
+         post: "/withdraw/claim"
          body: "*"
        };
     }

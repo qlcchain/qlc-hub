@@ -179,5 +179,6 @@ coverage*.txt
 CHANGELOG.md
 docker/data/*
 !docker/data/.gitkeep
+.run
 
 # End of https://www.gitignore.io/api/go,linux,macos,windows,jetbrains+all,visualstudiocode

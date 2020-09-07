@@ -1,0 +1,47 @@
+syntax = "proto3";
+package proto;
+option go_package = ".;proto";
+
+enum SignType {
+    ETH = 0;
+    NEO = 1;
+}
+
+message SignRequest {
+    SignType Type = 1;
+    string address = 2;
+    bytes rawData = 3;
+}
+
+message SignResponse {
+    bytes sign = 1;
+    bytes verifyData = 2;
+}
+
+message RefreshRequest {
+    string token = 1;
+}
+
+message RefreshResponse {
+    string token = 1;
+}
+
+message AddressRequest {
+    SignType Type = 1;
+}
+
+message AddressResponse {
+    repeated string address = 1;
+}
+
+service SignService {
+    rpc Sign (SignRequest) returns (SignResponse) {
+    };
+}
+
+service TokenService {
+    rpc Refresh (RefreshRequest) returns (RefreshResponse) {
+    };
+    rpc AddressList (AddressRequest) returns (AddressResponse) {
+    };
+}

@@ -7,15 +7,14 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/nspcc-dev/neo-go/pkg/wallet"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
-	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
-	"go.uber.org/zap"
 )
 
 type InfoAPI struct {
@@ -35,19 +34,11 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, s *store.Store) *InfoAP
 }
 
 func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, error) {
-	nep5Account, err := wallet.NewAccountFromWIF(i.cfg.NEOCfg.WIF)
-	if err != nil {
-		return nil, err
-	}
-	_, address, err := eth.GetAccountByPriKey(i.cfg.EthereumCfg.Account)
-	if err != nil {
-		return nil, err
-	}
 	return &pb.PingResponse{
 		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoAddress:  nep5Account.Address,
+		NeoAddress:  i.cfg.NEOCfg.Address,
 		EthContract: i.cfg.EthereumCfg.Contract,
-		EthAddress:  address.String(),
+		EthAddress:  i.cfg.EthereumCfg.Address,
 	}, nil
 }
 

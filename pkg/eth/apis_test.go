@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -27,72 +26,14 @@ const (
 	userEthPrikey = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 )
 
-func TestNewQLCChain(t *testing.T) {
-	client, err := ethclient.Dial(endPointws)
-	if err != nil {
-		t.Fatal(err)
-	}
-	r, err := client.BlockByNumber(context.Background(), nil)
-	fmt.Println(r.Number())
-	defer client.Close()
-
-	//instance, opts, err := GetTransactor(client, wrapperPrikey, contract)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	rOrigin, rHash := util.Sha256Hash()
-	fmt.Println("hash: ", rOrigin, "==>", rHash)
-
-	tx, err := WrapperLock(rHash, wrapperPrikey, contract, 100000000, client)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println("Wrapper Lock: ", tx)
-
-	b, err := TxVerifyAndConfirmed(tx, 0, 0, client)
-	if !b || err != nil {
-		t.Fatal(b, err)
-	}
-
-	tx2, err := UserUnlock(rHash, rOrigin, userEthPrikey, contract, client)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println("User Unlock: ", tx2)
-}
-
-func TestNewQLCChain2(t *testing.T) {
-	client, err := ethclient.Dial(endPointws)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer client.Close()
-	instance, err := GetTransactorSession(client, wrapperPrikey, contract)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rOrigin, rHash := util.Sha256Hash()
-	fmt.Println("hash: ", rOrigin, "==>", rHash)
-
-	bigAmount := big.NewInt(12 * 100000000)
-	rHashBytes, err := util.HexStringToBytes32(rHash)
-	if err != nil {
-		t.Fatal(err)
-	}
-	tx, err := instance.IssueLock(rHashBytes, bigAmount)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(tx.Hash().Hex())
-}
-
 func TestGetHashTimer(t *testing.T) {
 	client, err := ethclient.Dial(endPointws)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer client.Close()
-	r, err := GetHashTimer(client, contract, "3315e92b49957eeeb75cdb1e57560b00ca0b2ec1240d2af194cef580ca188a02")
+	ethTransaction := NewTransaction(client, nil, contract)
+	r, err := ethTransaction.GetHashTimer("3315e92b49957eeeb75cdb1e57560b00ca0b2ec1240d2af194cef580ca188a02")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +156,8 @@ func TestGetBestBlockHeight(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer client.Close()
-	r, err := GetBestBlockHeight(client)
+	ethTransaction := NewTransaction(client, nil, "")
+	r, err := ethTransaction.GetBestBlockHeight()
 	if err != nil {
 		t.Fatal(err)
 	}

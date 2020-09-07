@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -114,4 +115,12 @@ func RemoveHexPrefix(str string) string {
 func IsvalidNEOAddress(addr string) bool {
 	_, err := address.StringToUint160(addr)
 	return err == nil
+}
+
+func Scheme(endpoint string) (string, string, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return "", "", err
+	}
+	return u.Scheme, u.Host, nil
 }

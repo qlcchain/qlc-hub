@@ -43,7 +43,7 @@ jobs:
               rm profile.out
             fi
           done
-          make clean build
+          make clean build signer
 
       - uses: codecov/codecov-action@v1.0.13
         with:
@@ -61,6 +61,15 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           dockerfile: Dockerfile
+
+      - name: Build and Publish the Docker image to DockerHub
+        # uses: gythialy/Publish-Docker-Github-Action@2.4
+        uses: docker://goreng/publish-docker-github-action:v2.4
+        with:
+          name: qlcchain/qlc-signer
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          dockerfile: Dockerfile_signer
       
       - name: Build snapshot
         env:

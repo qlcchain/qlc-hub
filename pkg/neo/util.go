@@ -84,7 +84,7 @@ func StackToSwapInfo(stack []smartcontract.Parameter) (map[string]interface{}, e
 		}
 		result := make(map[string]interface{}, 0)
 		for idx, v := range data {
-			k := keys[idx]
+			k := fields[idx]
 			switch v.Type {
 			case smartcontract.BoolType:
 				continue
@@ -147,7 +147,7 @@ var (
 		"refundTimestamp":   "time",
 		"overtimeBlocks":    "int",
 	}
-	keys = []string{
+	fields = []string{
 		"originText",
 		"userNeoAddress",
 		"wrapperNeoAddress",
