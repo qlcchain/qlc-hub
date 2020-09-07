@@ -36,9 +36,9 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, s *store.Store) *InfoAP
 func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
 		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoAddress:  i.cfg.NEOCfg.Address,
+		NeoAddress:  i.cfg.NEOCfg.SignerAddress,
 		EthContract: i.cfg.EthereumCfg.Contract,
-		EthAddress:  i.cfg.EthereumCfg.Address,
+		EthAddress:  i.cfg.EthereumCfg.SignerAddress,
 	}, nil
 }
 

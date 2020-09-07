@@ -196,7 +196,7 @@ func (h *HashTimer) String() string {
 }
 
 func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) (bool, error) {
-	cTicker := time.NewTicker(2 * time.Second)
+	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
@@ -215,7 +215,7 @@ func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interv
 
 HeightConfirmed:
 
-	vTicker := time.NewTicker(5 * time.Second)
+	vTicker := time.NewTicker(6 * time.Second)
 	vTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {

@@ -48,7 +48,7 @@ func waitForDepositNeoTimeout(rHash string) bool {
 }
 
 func waitForLockerState(rHash string, lockerState types.LockerState) bool {
-	cTicker := time.NewTicker(6 * time.Second)
+	cTicker := time.NewTicker(10 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
 		state, err := getLockerState(rHash)

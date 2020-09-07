@@ -59,13 +59,14 @@ func NewTransaction(url, contractAddr string, signer *signer.SignerClient) (*Tra
 }
 
 type TransactionParam struct {
-	Params   []request.Param
-	Address  string
-	Sysfee   util.Fixed8
-	Netfee   util.Fixed8
-	ROrigin  string
-	RHash    string
-	FuncName string
+	Params        []request.Param
+	SignerAddress string
+	Sysfee        util.Fixed8
+	Netfee        util.Fixed8
+	ROrigin       string
+	RHash         string
+	FuncName      string
+	EmitIndex     string
 }
 
 func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) {
@@ -84,13 +85,13 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 	gas := param.Sysfee + param.Netfee
 
 	if gas > 0 {
-		if err = request.AddInputsAndUnspentsToTx(tx, param.Address, core.UtilityTokenID(), gas, n.client); err != nil {
+		if err = request.AddInputsAndUnspentsToTx(tx, param.SignerAddress, core.UtilityTokenID(), gas, n.client); err != nil {
 			return "", fmt.Errorf("failed to add inputs and unspents to transaction: %s ", err)
 		}
 	} else {
-		addr, err := address.StringToUint160(param.Address)
+		addr, err := address.StringToUint160(param.SignerAddress)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("address to unint160：%s, %s", err, param.SignerAddress)
 		}
 		tx.AddVerificationHash(addr)
 		if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
@@ -101,7 +102,7 @@ func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) 
 		}
 	}
 
-	if err = n.SignTx(tx, param.Address); err != nil {
+	if err = n.SignTx(tx, param.SignerAddress); err != nil {
 		return "", fmt.Errorf("failed to sign tx, %s", err)
 	}
 	txHash := tx.Hash()
@@ -148,8 +149,105 @@ func (w witnessWrapper) GetScriptHash() *util.Uint160 {
 	return w.ScriptHash
 }
 
+func (n *Transaction) CreateTransactionAppendWitness2(param TransactionParam) (string, error) {
+	accountUint, err := address.StringToUint160(param.SignerAddress)
+	if err != nil {
+		return "", fmt.Errorf("addr %s to uint160: %s ", param.SignerAddress, err)
+	}
+	scripts, err := request.CreateFunctionInvocationScript(n.contractLE, param.Params)
+	if err != nil {
+		return "", fmt.Errorf("create script: %s", err)
+	}
+	tx := transaction.NewInvocationTX(scripts, 0)
+
+	// add attributes
+	tx.AddVerificationHash(accountUint)
+	tx.Attributes = append(tx.Attributes, transaction.Attribute{
+		Usage: transaction.Script,
+		Data:  n.contractLE.BytesBE(),
+	})
+
+	if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
+		tx.Attributes = append(tx.Attributes, transaction.Attribute{
+			Usage: transaction.Script,
+			Data:  accountUint.BytesBE(),
+		})
+		r := remark()
+		//r, _ := hex.DecodeString("00000174483c1ff2d76670ab")
+		tx.Attributes = append(tx.Attributes, transaction.Attribute{
+			Usage: transaction.Remark,
+			Data:  r,
+		})
+	}
+
+	if err := n.SignTx(tx, param.SignerAddress); err != nil {
+		return "", fmt.Errorf("signTx: %s", err)
+	}
+
+	var tmp []*witnessWrapper
+	// sign
+	tmp = append(tmp, &witnessWrapper{
+		Witness: transaction.Witness{
+			InvocationScript:   tx.Scripts[0].InvocationScript,
+			VerificationScript: tx.Scripts[0].VerificationScript,
+		},
+		ScriptHash: nil,
+	})
+	// add witness
+	script := io.NewBufBinWriter()
+	if param.ROrigin != "" && param.RHash == "" {
+		//emit.String(script.BinWriter, param.ROrigin)
+	} else if param.ROrigin == "" && param.RHash != "" {
+		//rHex, err := hex.DecodeString(param.RHash)
+		//if err != nil {
+		//	return "", fmt.Errorf("decode error: %s", err)
+		//}
+		//emit.Bytes(script.BinWriter, rHex)
+	} else {
+		return "", errors.New("invalid r text")
+	}
+	emit.String(script.BinWriter, "1")
+	emit.Int(script.BinWriter, 1)
+	emit.Opcode(script.BinWriter, opcode.PACK)
+	emit.String(script.BinWriter, param.EmitIndex)
+	tmp = append(tmp, &witnessWrapper{
+		Witness: transaction.Witness{
+			InvocationScript:   script.Bytes(),
+			VerificationScript: []byte{},
+		},
+		ScriptHash: &n.contractLE,
+	})
+
+	sort.Slice(tmp, func(i, j int) bool {
+		h1 := tmp[i].GetScriptHash()
+		h2 := tmp[j].GetScriptHash()
+
+		return big.NewInt(0).SetBytes(h1.BytesLE()).Cmp(big.NewInt(0).SetBytes(h2.BytesLE())) < 0
+	})
+
+	size := len(tmp)
+	witness := make([]transaction.Witness, size)
+	for i := 0; i < size; i++ {
+		witness[i] = transaction.Witness{
+			InvocationScript:   tmp[i].InvocationScript,
+			VerificationScript: tmp[i].VerificationScript,
+		}
+	}
+
+	tx.Scripts = witness
+
+	n.logger.Debug("tx hex: ", hex.EncodeToString(tx.Bytes()))
+	n.logger.Debug("tx detail: ", u.ToIndentString(tx))
+
+	if err := n.client.SendRawTransaction(tx); err != nil {
+		return "", fmt.Errorf("sendRawTransaction: %s", err)
+	}
+	//n.logger.Debugf("transaction successfully: %s", tx.Hash().StringLE())
+	return tx.Hash().StringLE(), nil
+}
+
 func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
-	accountUint, err := address.StringToUint160(param.Address)
+	accountUint, err := address.StringToUint160(param.SignerAddress)
 	if err != nil {
 		return "", err
 	}
@@ -179,7 +277,7 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 		})
 	}
 
-	if err := n.SignTx(tx, param.Address); err != nil {
+	if err := n.SignTx(tx, param.SignerAddress); err != nil {
 		return "", fmt.Errorf("signTx: %s", err)
 	}
 
@@ -234,8 +332,8 @@ func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (st
 
 	tx.Scripts = witness
 
-	n.logger.Debug(hex.EncodeToString(tx.Bytes()))
-	n.logger.Debug(u.ToIndentString(tx))
+	n.logger.Debug("tx hex: ", hex.EncodeToString(tx.Bytes()))
+	n.logger.Debug("tx detail: ", u.ToIndentString(tx))
 
 	if err := n.client.SendRawTransaction(tx); err != nil {
 		return "", fmt.Errorf("sendRawTransaction: %s", err)
@@ -301,7 +399,7 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 
 func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, uint32, error) {
 	var txHeight uint32
-	cTicker := time.NewTicker(2 * time.Second)
+	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
@@ -312,7 +410,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, u
 			}
 			txHeight, err = n.client.GetTransactionHeight(hash)
 			if err != nil {
-				n.logger.Debugf("get neo tx [%s] height err: %s", hash, err)
+				n.logger.Debugf("get neo tx [%s] height err: %s", txHash, err)
 			} else {
 				goto HeightConfirmed
 			}
@@ -322,7 +420,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, u
 	}
 
 HeightConfirmed:
-	nTicker := time.NewTicker(5 * time.Second)
+	nTicker := time.NewTicker(6 * time.Second)
 	nTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {

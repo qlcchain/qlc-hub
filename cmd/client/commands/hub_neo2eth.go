@@ -1,6 +1,9 @@
 package commands
 
 import (
+	"fmt"
+	"github.com/qlcchain/qlc-hub/pkg/types"
+	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	"log"
 	"time"
 
@@ -49,42 +52,43 @@ func hNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 var depositAmount = 130000000
 
 func hNeo2Eth() {
-	//rOrigin, rHash := hubUtil.Sha256Hash()
-	//logger.Info("hash: ", rOrigin, "==>", rHash)
-	//
-	//// user lock (neo)
-	//tx, err := neoTrasaction.UserLock(neoUserWif, neoWrapperAccount.Address, rHash, depositAmount)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//logger.Info("neo UserLock hash: ", tx)
-	//
-	//paras := fmt.Sprintf(`{
-	//	"nep5TxHash": "%s",
-	//	"amount": %d,
-	//	"rHash": "%s",
-	//	"addr": "%s"
-	//}`, tx, lockAmount, rHash, ethWrapperAccount.String())
-	//r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
-	//if err != nil || !r {
-	//	logger.Fatal(err, r)
-	//}
-	//
-	//// wait for wrapper state
-	//if !waitForLockerState(rHash, types.DepositEthLockedDone) {
-	//	logger.Fatal(err)
-	//}
-	//
-	//// user unlock (eth)
-	//etx, err := eth.UserUnlock(rHash, rOrigin, ethUserPrikey, ethContract, ethTransaction)
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
-	//logger.Info("UserUnlock eth hash: ", etx)
-	//if !waitForLockerState(rHash, types.DepositNeoUnLockedDone) {
-	//	logger.Fatal(err)
-	//}
-	//logger.Info("successfully")
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	log.Println("hash: ", rOrigin, " ==> ", rHash)
+
+	// user lock (neo)
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, 290000000)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user lock tx: ", tx)
+
+	// wrapper lock (eth)
+	paras := fmt.Sprintf(`{
+		"nep5TxHash": "%s",
+		"amount": %d,
+		"rHash": "%s",
+		"addr": "%s"
+	}`, tx, lockAmount, rHash, ethWrapperSignerAddress)
+	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
+	if err != nil || !r {
+		log.Fatal(err, r)
+	}
+
+	if !waitForLockerState(rHash, types.DepositEthLockedDone) {
+		log.Fatal(err)
+	}
+
+	// user unlock (eth) -> event -> wrapper unlock (neo)
+	etx, err := ethTransaction.UserUnlock(rHash, rOrigin, ethUserAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("UserUnlock eth hash: ", etx)
+	if !waitForLockerState(rHash, types.DepositNeoUnLockedDone) {
+		log.Fatal(err)
+	}
+	log.Println("successfully")
 }
 
 func hNeo2EthFetch() {
@@ -151,14 +155,13 @@ func waitForEthIntervalTimerOut(rHash string) {
 }
 
 func sleepForHashTimer(n uint32, c *neo.Transaction) {
-	log.Printf("waiting for %d block confirmed ... \n", n)
 	cHeight, err := c.Client().GetStateHeight()
 	if err != nil {
 		log.Fatal(err)
 	}
 	ch := cHeight.BlockHeight
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(60 * time.Second)
 		nHeight, err := c.Client().GetStateHeight()
 		if err != nil {
 			log.Println(err)
@@ -166,6 +169,8 @@ func sleepForHashTimer(n uint32, c *neo.Transaction) {
 			nh := nHeight.BlockHeight
 			if nh-ch > n {
 				break
+			} else {
+				log.Printf("waiting for %d/%d block confirmed ... \n", nh-ch, n)
 			}
 		}
 	}

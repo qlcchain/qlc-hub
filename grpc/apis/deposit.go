@@ -115,7 +115,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
 
 		// wrapper to eth lock
-		tx, err := d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.Address, swapInfo.Amount)
+		tx, err := d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.SignerAddress, swapInfo.Amount)
 		if err != nil {
 			d.logger.Error(err)
 			return
@@ -133,7 +133,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 }
 
 func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
-	address := d.cfg.EthereumCfg.Address
+	address := d.cfg.EthereumCfg.SignerAddress
 
 	if address != request.GetAddr() {
 		return fmt.Errorf("invalid wrapper eth address, want [%s], but get [%s]", address, request.GetAddr())

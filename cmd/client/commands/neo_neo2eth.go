@@ -55,38 +55,38 @@ func nNeo2Eth() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := n.UserLock(neoUserAddr, neoWrapperSignerAddress, rHash, 230000000)
+	tx, err := n.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, 2200000000)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("user lock: ", tx)
+	log.Println("user lock tx: ", tx)
 
 	b, _, err := n.TxVerifyAndConfirmed(tx, 1)
 	if err != nil {
 		log.Fatal(b, err)
 	}
 
-	//tx, err = n.WrapperUnlock(rOrigin, wrapperWif, userEthAddress)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//log.Println("wrapper unlock: ", tx)
+	tx, err = n.WrapperUnlock(rOrigin, neoWrapperSignerAddress, userEthAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("wrapper unlock tx: ", tx)
 }
 
 func nNeo2EthFetch() {
 	log.Println("====neo2ethRefund====")
-	//n, err := neo.NewTransaction(url, contractAddress)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//rOrigin, rHash := hubUtil.Sha256Hash()
-	//log.Println("hash: ", rOrigin, "==>", rHash)
-	//
-	//tx, err := n.UserLock(userWif, wrapperAccount.Address, rHash, 130000000)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//log.Println("user lock: ", tx)
-	//sleepForHashTimer(40, n)
-	//n.RefundUser(rOrigin, userWif)
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	log.Println("hash: ", rOrigin, "==>", rHash)
+
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, 230000000)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user lock tx: ", tx)
+	sleepForHashTimer(40, neoTrasaction)
+	tx, err = neoTrasaction.RefundUser(rOrigin, neoWrapperSignerAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user refund tx: ", tx)
 }
