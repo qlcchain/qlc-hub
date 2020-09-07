@@ -7,20 +7,20 @@ import (
 )
 
 // deposit
-func (n *Transaction) UserLock(address, wrapperAddress, rHash string, amount int) (string, error) {
+func (n *Transaction) UserLock(userAddress, assetsAddr, rHash string, amount int) (string, error) {
 	params := []request.Param{
 		FunctionName("userLock"),
 		ArrayParams([]request.Param{
 			ArrayTypeParam(rHash),
-			AddressParam(address),
+			AddressParam(userAddress),
 			IntegerTypeParam(amount),
-			AddressParam(wrapperAddress),
+			AddressParam(assetsAddr),
 			IntegerTypeParam(10), //todo
 		}),
 	}
 	r, err := n.CreateTransaction(TransactionParam{
-		Params:  params,
-		Address: address,
+		Params:        params,
+		SignerAddress: userAddress,
 	})
 	if err != nil {
 		return "", fmt.Errorf("UserLock/CreateTransaction: %s", err)
@@ -28,20 +28,20 @@ func (n *Transaction) UserLock(address, wrapperAddress, rHash string, amount int
 	return r, nil
 }
 
-func (n *Transaction) WrapperUnlock(rOrigin, address, userEthAddress string) (string, error) {
+func (n *Transaction) WrapperUnlock(rOrigin, signerAddress, userEthAddress string) (string, error) {
 	params := []request.Param{
 		FunctionName("wrapperUnlock"),
 		ArrayParams([]request.Param{
 			StringTypeParam(rOrigin),
-			AddressParam(address),
 			ArrayTypeParam(userEthAddress),
 		}),
 	}
-	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Address:  address,
-		ROrigin:  rOrigin,
-		FuncName: "wrapperUnlock",
+	r, err := n.CreateTransactionAppendWitness2(TransactionParam{
+		Params:        params,
+		SignerAddress: signerAddress,
+		ROrigin:       rOrigin,
+		FuncName:      "wrapperUnlock",
+		EmitIndex:     "1",
 	})
 	if err != nil {
 		return "", fmt.Errorf("wrapperUnlock/createTransaction: %s", err)
@@ -49,19 +49,19 @@ func (n *Transaction) WrapperUnlock(rOrigin, address, userEthAddress string) (st
 	return r, nil
 }
 
-func (n *Transaction) RefundUser(rOrigin string, address string) (string, error) {
+func (n *Transaction) RefundUser(rOrigin string, signerAddress string) (string, error) {
 	params := []request.Param{
 		FunctionName("refundUser"),
 		ArrayParams([]request.Param{
 			StringTypeParam(rOrigin),
-			AddressParam(address),
 		}),
 	}
-	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Address:  address,
-		ROrigin:  rOrigin,
-		FuncName: "refundUser",
+	r, err := n.CreateTransactionAppendWitness2(TransactionParam{
+		Params:        params,
+		SignerAddress: signerAddress,
+		ROrigin:       rOrigin,
+		FuncName:      "refundUser",
+		EmitIndex:     "2",
 	})
 	if err != nil {
 		return "", fmt.Errorf("refundUser/createTransaction: %s", err)
@@ -71,20 +71,20 @@ func (n *Transaction) RefundUser(rOrigin string, address string) (string, error)
 
 // withdraw
 
-func (n *Transaction) WrapperLock(address, userEthAddress, rHash string, amount int) (string, error) {
+func (n *Transaction) WrapperLock(assetsAddr, userEthAddress, rHash string, amount, timerInterval int) (string, error) {
 	params := []request.Param{
 		FunctionName("wrapperLock"),
 		ArrayParams([]request.Param{
 			ArrayTypeParam(rHash),
-			AddressParam(address),
+			AddressParam(assetsAddr),
 			IntegerTypeParam(amount),
 			ArrayTypeParam(userEthAddress),
-			IntegerTypeParam(10),
+			IntegerTypeParam(timerInterval),
 		}),
 	}
 	r, err := n.CreateTransaction(TransactionParam{
-		Params:  params,
-		Address: address,
+		Params:        params,
+		SignerAddress: assetsAddr,
 	})
 	if err != nil {
 		return "", fmt.Errorf("wrapperLock/createTransaction: %s", err)
@@ -92,19 +92,20 @@ func (n *Transaction) WrapperLock(address, userEthAddress, rHash string, amount 
 	return r, nil
 }
 
-func (n *Transaction) UserUnlock(rOrigin, address string) (string, error) {
+func (n *Transaction) UserUnlock(rOrigin, userAddr, signerAddress string) (string, error) {
 	params := []request.Param{
 		FunctionName("userUnlock"),
 		ArrayParams([]request.Param{
 			StringTypeParam(rOrigin),
-			AddressParam(address),
+			AddressParam(userAddr),
 		}),
 	}
 	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Address:  address,
-		ROrigin:  rOrigin,
-		FuncName: "userUnlock",
+		Params:        params,
+		SignerAddress: signerAddress,
+		ROrigin:       rOrigin,
+		FuncName:      "userUnlock",
+		EmitIndex:     "1",
 	})
 	if err != nil {
 		return "", fmt.Errorf("userUnlock/createTransaction: %s", err)
@@ -112,19 +113,19 @@ func (n *Transaction) UserUnlock(rOrigin, address string) (string, error) {
 	return r, nil
 }
 
-func (n *Transaction) RefundWrapper(rHash, address string) (string, error) {
+func (n *Transaction) RefundWrapper(rHash, signerAddr string) (string, error) {
 	params := []request.Param{
 		FunctionName("refundWrapper"),
 		ArrayParams([]request.Param{
 			ArrayTypeParam(rHash),
-			AddressParam(address),
 		}),
 	}
-	r, err := n.CreateTransactionAppendWitness(TransactionParam{
-		Params:   params,
-		Address:  address,
-		RHash:    rHash,
-		FuncName: "refundWrapper",
+	r, err := n.CreateTransactionAppendWitness2(TransactionParam{
+		Params:        params,
+		SignerAddress: signerAddr,
+		RHash:         rHash,
+		FuncName:      "refundWrapper",
+		EmitIndex:     "1",
 	})
 	if err != nil {
 		return "", fmt.Errorf("refundWrapper/createTransaction: %s", err)

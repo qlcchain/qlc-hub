@@ -14,12 +14,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -38,9 +37,9 @@ func NewTransaction(client *ethclient.Client, signer *signer.SignerClient, contr
 	}
 }
 
-func (t *Transaction) GetTransactor(ethAddress string) (transactor *QLCChainTransactor, opts *bind.TransactOpts, err error) {
+func (t *Transaction) GetTransactor(signerAddr string) (transactor *QLCChainTransactor, opts *bind.TransactOpts, err error) {
 	//TODO: fix it
-	auth, err := t.getTransactOpts(ethAddress)
+	auth, err := t.getTransactOpts(signerAddr)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,8 +72,8 @@ func (t *Transaction) GetTransactorSession(ethAddress string) (*QLCChainSession,
 	return session, nil
 }
 
-func (t *Transaction) getTransactOpts(ethAddr string) (*bind.TransactOpts, error) {
-	addr := common.HexToAddress(ethAddr)
+func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, error) {
+	addr := common.HexToAddress(signerAddr)
 	//todo rethink auth parameter settings
 	ctx := context.Background()
 	nonce, err := t.client.PendingNonceAt(ctx, addr)
@@ -93,7 +92,7 @@ func (t *Transaction) getTransactOpts(ethAddr string) (*bind.TransactOpts, error
 				t.logger.Error("no authorize account")
 				return nil, errors.New("not authorized to sign this account")
 			}
-			signature, err := t.signer.Sign(proto.SignType_ETH, ethAddr, signer.Hash(tx).Bytes())
+			signature, err := t.signer.Sign(proto.SignType_ETH, signerAddr, signer.Hash(tx).Bytes())
 			if err != nil {
 				t.logger.Error(err)
 				return nil, err
@@ -195,37 +194,37 @@ func (h *HashTimer) String() string {
 	return string(v)
 }
 
-func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) (bool, error) {
-	cTicker := time.NewTicker(2 * time.Second)
+func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) error {
+	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
 		case <-cTicker.C:
 			_, p, err := t.client.TransactionByHash(context.Background(), common.HexToHash(txHash))
 			if err != nil {
-				return false, fmt.Errorf("eth tx by hash: %s", err)
+				return fmt.Errorf("eth tx by hash: %s", err)
 			}
 			if !p {
 				goto HeightConfirmed
 			}
 		case <-cTimer.C:
-			return false, fmt.Errorf("eth tx by hash timeout: %s", txHash)
+			return fmt.Errorf("eth tx by hash timeout: %s", txHash)
 		}
 	}
 
 HeightConfirmed:
 
-	vTicker := time.NewTicker(5 * time.Second)
+	vTicker := time.NewTicker(6 * time.Second)
 	vTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
 		case <-vTicker.C:
 			b, _ := t.HasConfirmedBlocksHeight(txHeight, interval)
 			if b {
-				return true, nil
+				return nil
 			}
 		case <-vTimer.C:
-			return false, fmt.Errorf("eth tx by hash timeout: %s", txHash)
+			return fmt.Errorf("eth tx by hash timeout: %s", txHash)
 		}
 	}
 }

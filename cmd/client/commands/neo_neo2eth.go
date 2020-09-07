@@ -2,9 +2,9 @@ package commands
 
 import (
 	"log"
+	"time"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -47,6 +47,8 @@ func nNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 }
 
 func nNeo2Eth() {
+	amount := 220000000
+
 	log.Println("====neo2eth====")
 	n, err := neo.NewTransaction(neoUrl, neoContract, singerClient)
 	if err != nil {
@@ -55,38 +57,62 @@ func nNeo2Eth() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := n.UserLock(neoUserAddr, neoWrapperSignerAddress, rHash, 230000000)
+	tx, err := n.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("user lock: ", tx)
+	log.Println("user lock tx: ", tx)
 
-	b, _, err := n.TxVerifyAndConfirmed(tx, 1)
+	_, err = n.TxVerifyAndConfirmed(tx, 1)
 	if err != nil {
-		log.Fatal(b, err)
+		log.Fatal(err)
 	}
 
-	//tx, err = n.WrapperUnlock(rOrigin, wrapperWif, userEthAddress)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//log.Println("wrapper unlock: ", tx)
+	tx, err = n.WrapperUnlock(rOrigin, neoWrapperSignerAddress, userEthAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("wrapper unlock tx: ", tx)
 }
 
 func nNeo2EthFetch() {
+	amount := 230000000
+
 	log.Println("====neo2ethRefund====")
-	//n, err := neo.NewTransaction(url, contractAddress)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//rOrigin, rHash := hubUtil.Sha256Hash()
-	//log.Println("hash: ", rOrigin, "==>", rHash)
-	//
-	//tx, err := n.UserLock(userWif, wrapperAccount.Address, rHash, 130000000)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//log.Println("user lock: ", tx)
-	//sleepForHashTimer(40, n)
-	//n.RefundUser(rOrigin, userWif)
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	log.Println("hash: ", rOrigin, "==>", rHash)
+
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user lock tx: ", tx)
+	waitingForNeoBlocksConfirmed(40)
+	tx, err = neoTrasaction.RefundUser(rOrigin, neoWrapperSignerAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("user refund tx: ", tx)
+}
+
+func waitingForNeoBlocksConfirmed(n uint32) {
+	cHeight, err := neoTrasaction.Client().GetStateHeight()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ch := cHeight.BlockHeight
+	for {
+		time.Sleep(40 * time.Second)
+		nHeight, err := neoTrasaction.Client().GetStateHeight()
+		if err != nil {
+			log.Println(err)
+		} else {
+			nh := nHeight.BlockHeight
+			if nh-ch > n {
+				break
+			} else {
+				log.Printf("waiting for %d/%d block confirmed ... \n", nh-ch, n)
+			}
+		}
+	}
 }

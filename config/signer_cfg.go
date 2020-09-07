@@ -7,14 +7,12 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
-
 	"github.com/ethereum/go-ethereum/crypto"
-	"gopkg.in/validator.v2"
-
+	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	"gopkg.in/validator.v2"
 )
 
 const (

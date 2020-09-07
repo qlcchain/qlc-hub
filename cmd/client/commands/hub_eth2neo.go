@@ -1,10 +1,12 @@
 package commands
 
 import (
+	"fmt"
 	"log"
-	"time"
 
 	"github.com/abiosoft/ishell"
+	"github.com/qlcchain/qlc-hub/pkg/types"
+	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 func hEth2NeoCmd(parentCmd *ishell.Cmd) {
@@ -32,87 +34,53 @@ func hEth2NeoFetchCmd(parentCmd *ishell.Cmd) {
 var withdrawAmount = 110000000
 
 func hEth2Neo() {
-	//rOrigin, rHash := hubUtil.Sha256Hash()
-	//logger.Info("hash: ", rOrigin, "==>", rHash)
-	//
-	//// eth - user lock
-	//_, address, err := eth.GetAccountByPriKey(ethWrapperPrikey)
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
-	//tx, err := eth.UserLock(rHash, ethUserPrikey, address.String(), ethContract, int64(withdrawAmount), ethTransaction)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//logger.Info("eth user lock hash: ", tx)
-	//
-	//if !waitForLockerState(rHash, types.WithDrawNeoLockedDone) {
-	//	logger.Fatal(err)
-	//}
-	//
-	//// neo - user unlock
-	//tx, err = neoTrasaction.UserUnlock(rOrigin, neoUserWif)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//log.Println("neo user unlock hash: ", tx)
-	//
-	//// eth - wrapper unlock
-	//paras := fmt.Sprintf(`{
-	//	"nep5TxHash": "%s",
-	//	"rOrigin": "%s",
-	//	"rHash": "%s"
-	//}`, tx, rOrigin, rHash)
-	//r, err := post(paras, fmt.Sprintf("%s/withdraw/unlock", hubUrl))
-	//if !r || err != nil {
-	//	logger.Fatal(err)
-	//}
-	//if !waitForLockerState(rHash, types.WithDrawEthUnlockDone) {
-	//	logger.Fatal(err)
-	//}
-	//logger.Info("successfully")
-}
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	log.Println("hash: ", rOrigin, " ==> ", rHash)
 
-func hEth2NeoFetch() {
-	//rOrigin, rHash := hubUtil.Sha256Hash()
-	//logger.Info("hash: ", rOrigin, "==>", rHash)
-	//
-	//// eth - user lock
-	//_, address, err := eth.GetAccountByPriKey(ethWrapperPrikey)
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
-	//tx, err := eth.UserLock(rHash, ethUserPrikey, address.String(), ethContract, int64(withdrawAmount), ethTransaction)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//logger.Info("eth user lock hash: ", tx)
-	//
-	//if !waitForWithdrawEthTimeout(rHash) {
-	//	logger.Fatal("timeout")
-	//}
-	//
-	//tx, err = eth.UserFetch(rHash, ethUserPrikey, ethContract, ethTransaction)
-	//if err != nil {
-	//	logger.Fatal(err)
-	//}
-	//logger.Info("eth user fetch hash: ", tx)
-}
-
-func waitForNeoIntervalTimerOut(txHash string) {
-	log.Printf("waiting for timeout  ... \n")
-	cHeight, err := neoTrasaction.Client().GetStateHeight()
+	//  user lock(eth)
+	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, int64(withdrawAmount))
 	if err != nil {
 		log.Fatal(err)
 	}
-	ch := cHeight.BlockHeight
+	log.Println("eth user lock hash: ", tx)
 
-	for i := 0; i < neoIntervalHeight*12; i++ {
-		time.Sleep(10 * time.Second)
-		b, _ := neoTrasaction.HasConfirmedBlocksHeight(ch, int64(ethIntervalHeight))
-		if b {
-			return
-		}
+	if !hubWaitingForLockerState(rHash, types.WithDrawNeoLockedDone) {
+		log.Fatal(err)
 	}
-	logger.Fatal("timeout ")
+
+	// eth - wrapper unlock
+	paras := fmt.Sprintf(`{
+		"rOrigin": "%s",
+		"userNep5Addr": "%s"
+	}`, rOrigin, neoUserAddr)
+	r, err := post(paras, fmt.Sprintf("%s/withdraw/claim", hubUrl))
+	if !r || err != nil {
+		log.Fatal(err)
+	}
+	if !hubWaitingForLockerState(rHash, types.WithDrawEthUnlockDone) {
+		log.Fatal(err)
+	}
+	log.Println("successfully")
+}
+
+func hEth2NeoFetch() {
+	rOrigin, rHash := hubUtil.Sha256Hash()
+	log.Println("hash: ", rOrigin, " ==> ", rHash)
+
+	//  user lock(eth)
+	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, int64(withdrawAmount))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("eth user lock hash: ", tx)
+
+	if !hubWaitingForWithdrawEthTimeout(rHash) {
+		log.Fatal("timeout")
+	}
+
+	tx, err = ethTransaction.UserFetch(rHash, ethUserAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("eth user fetch hash: ", tx)
 }

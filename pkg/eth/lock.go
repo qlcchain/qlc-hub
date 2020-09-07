@@ -5,13 +5,12 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 // withdraw
-func (t *Transaction) UserLock(rHash, userPriKey, wrapperAddr string, amount int64) (string, error) {
-	instance, opts, err := t.GetTransactor(userPriKey)
+func (t *Transaction) UserLock(rHash, signerAddr, wrapperAddr string, amount int64) (string, error) {
+	instance, opts, err := t.GetTransactor(signerAddr)
 	if err != nil {
 		return "", fmt.Errorf("UserLock/GetTransactor: %s", err)
 	}
@@ -28,8 +27,8 @@ func (t *Transaction) UserLock(rHash, userPriKey, wrapperAddr string, amount int
 	return tx.Hash().Hex(), nil
 }
 
-func (t *Transaction) WrapperUnlock(rHash, rOrigin, address string) (string, error) {
-	instance, opts, err := t.GetTransactor(address)
+func (t *Transaction) WrapperUnlock(rHash, rOrigin, signerAddr string) (string, error) {
+	instance, opts, err := t.GetTransactor(signerAddr)
 	if err != nil {
 		return "", fmt.Errorf("WrapperUnlock/GetTransactor: %s", err)
 	}
@@ -48,8 +47,8 @@ func (t *Transaction) WrapperUnlock(rHash, rOrigin, address string) (string, err
 	return tx.Hash().Hex(), nil
 }
 
-func (t *Transaction) UserFetch(rHash, userPrikey string) (string, error) {
-	instance, opts, err := t.GetTransactor(userPrikey)
+func (t *Transaction) UserFetch(rHash, signerAddr string) (string, error) {
+	instance, opts, err := t.GetTransactor(signerAddr)
 	if err != nil {
 		return "", err
 	}
@@ -66,8 +65,8 @@ func (t *Transaction) UserFetch(rHash, userPrikey string) (string, error) {
 }
 
 // deposit
-func (t *Transaction) WrapperLock(rHash, address string, amount int64) (string, error) {
-	instance, opts, err := t.GetTransactor(address)
+func (t *Transaction) WrapperLock(rHash, signerAddr string, amount int64) (string, error) {
+	instance, opts, err := t.GetTransactor(signerAddr)
 	if err != nil {
 		return "", err
 	}
@@ -105,8 +104,8 @@ func (t *Transaction) UserUnlock(rHash, rOrigin, userPriKey string) (string, err
 	return tx.Hash().Hex(), nil
 }
 
-func (t *Transaction) WrapperFetch(rHash, address string) (string, error) {
-	instance, opts, err := t.GetTransactor(address)
+func (t *Transaction) WrapperFetch(rHash, signerAddr string) (string, error) {
+	instance, opts, err := t.GetTransactor(signerAddr)
 	if err != nil {
 		return "", err
 	}

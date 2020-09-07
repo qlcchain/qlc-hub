@@ -8,10 +8,6 @@ import (
 	"go.uber.org/zap"
 )
 
-func sha256(r string) string {
-	panic("implement me")
-}
-
 var maxRHashSzie = 10240
 var timeout = 24 * time.Hour
 

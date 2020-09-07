@@ -87,6 +87,16 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 			if err != nil {
 				return
 			}
+		case "neoTimerInterval":
+			z.NeoTimerInterval, err = dc.ReadInt64()
+			if err != nil {
+				return
+			}
+		case "ethTimerInterval":
+			z.EthTimerInterval, err = dc.ReadInt64()
+			if err != nil {
+				return
+			}
 		case "startTime":
 			z.StartTime, err = dc.ReadInt64()
 			if err != nil {
@@ -129,9 +139,9 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 19
+	// map header, size 21
 	// write "state"
-	err = en.Append(0xde, 0x0, 0x13, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	err = en.Append(0xde, 0x0, 0x15, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	if err != nil {
 		return
 	}
@@ -247,6 +257,24 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
+	// write "neoTimerInterval"
+	err = en.Append(0xb0, 0x6e, 0x65, 0x6f, 0x54, 0x69, 0x6d, 0x65, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt64(z.NeoTimerInterval)
+	if err != nil {
+		return
+	}
+	// write "ethTimerInterval"
+	err = en.Append(0xb0, 0x65, 0x74, 0x68, 0x54, 0x69, 0x6d, 0x65, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c)
+	if err != nil {
+		return
+	}
+	err = en.WriteInt64(z.EthTimerInterval)
+	if err != nil {
+		return
+	}
 	// write "startTime"
 	err = en.Append(0xa9, 0x73, 0x74, 0x61, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65)
 	if err != nil {
@@ -307,9 +335,9 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 // MarshalMsg implements msgp.Marshaler
 func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 19
+	// map header, size 21
 	// string "state"
-	o = append(o, 0xde, 0x0, 0x13, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	o = append(o, 0xde, 0x0, 0x15, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	o, err = z.State.MarshalMsg(o)
 	if err != nil {
 		return
@@ -350,6 +378,12 @@ func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	// string "ueHeight"
 	o = append(o, 0xa8, 0x75, 0x65, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74)
 	o = msgp.AppendUint32(o, z.UnlockedErc20Height)
+	// string "neoTimerInterval"
+	o = append(o, 0xb0, 0x6e, 0x65, 0x6f, 0x54, 0x69, 0x6d, 0x65, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c)
+	o = msgp.AppendInt64(o, z.NeoTimerInterval)
+	// string "ethTimerInterval"
+	o = append(o, 0xb0, 0x65, 0x74, 0x68, 0x54, 0x69, 0x6d, 0x65, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c)
+	o = msgp.AppendInt64(o, z.EthTimerInterval)
 	// string "startTime"
 	o = append(o, 0xa9, 0x73, 0x74, 0x61, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65)
 	o = msgp.AppendInt64(o, z.StartTime)
@@ -452,6 +486,16 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 			if err != nil {
 				return
 			}
+		case "neoTimerInterval":
+			z.NeoTimerInterval, bts, err = msgp.ReadInt64Bytes(bts)
+			if err != nil {
+				return
+			}
+		case "ethTimerInterval":
+			z.EthTimerInterval, bts, err = msgp.ReadInt64Bytes(bts)
+			if err != nil {
+				return
+			}
 		case "startTime":
 			z.StartTime, bts, err = msgp.ReadInt64Bytes(bts)
 			if err != nil {
@@ -495,6 +539,6 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *LockerInfo) Msgsize() (s int) {
-	s = 3 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 9 + msgp.StringPrefixSize + len(z.UserAddr) + 7 + msgp.StringPrefixSize + len(z.LockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedErc20Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedErc20Hash) + 9 + msgp.Uint32Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 11 + msgp.BoolSize + 11 + msgp.BoolSize + 5 + msgp.BoolSize + 7 + msgp.StringPrefixSize + len(z.Remark)
+	s = 3 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 9 + msgp.StringPrefixSize + len(z.UserAddr) + 7 + msgp.StringPrefixSize + len(z.LockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedErc20Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedErc20Hash) + 9 + msgp.Uint32Size + 17 + msgp.Int64Size + 17 + msgp.Int64Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 11 + msgp.BoolSize + 11 + msgp.BoolSize + 5 + msgp.BoolSize + 7 + msgp.StringPrefixSize + len(z.Remark)
 	return
 }

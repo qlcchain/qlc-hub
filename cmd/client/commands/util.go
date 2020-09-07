@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
-func waitForWithdrawEthTimeout(rHash string) bool {
-	cTicker := time.NewTicker(30 * time.Second)
+func hubWaitingForWithdrawEthTimeout(rHash string) bool {
+	cTicker := time.NewTicker(40 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
 		state, err := getLockerState(rHash)
@@ -20,16 +21,34 @@ func waitForWithdrawEthTimeout(rHash string) bool {
 			fmt.Println(err)
 			continue
 		}
-		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
 		if state["ethTimeout"].(bool) {
 			return true
 		}
 	}
-	logger.Error("timeout")
+	log.Fatal("timeout")
 	return false
 }
 
-func waitForDepositNeoTimeout(rHash string) bool {
+func hubWaitingForDepositNeoTimeout(rHash string) bool {
+	cTicker := time.NewTicker(40 * time.Second)
+	for i := 0; i < 100; i++ {
+		<-cTicker.C
+		state, err := getLockerState(rHash)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
+		if state["neoTimeout"].(bool) {
+			return true
+		}
+	}
+	log.Fatal("timeout")
+	return false
+}
+
+func hubWaitingForLockerState(rHash string, lockerState types.LockerState) bool {
 	cTicker := time.NewTicker(30 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
@@ -38,34 +57,16 @@ func waitForDepositNeoTimeout(rHash string) bool {
 			fmt.Println(err)
 			continue
 		}
-		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
-		if state["neoTimeout"].(bool) {
-			return true
-		}
-	}
-	logger.Error("timeout")
-	return false
-}
-
-func waitForLockerState(rHash string, lockerState types.LockerState) bool {
-	cTicker := time.NewTicker(6 * time.Second)
-	for i := 0; i < 100; i++ {
-		<-cTicker.C
-		state, err := getLockerState(rHash)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
 		if state["fail"].(bool) {
-			logger.Debugf("rHash [%s] fail: [%s] ", rHash, state["remark"].(string))
+			log.Printf("rHash [%s] fail: [%s] \n", rHash, state["remark"].(string))
 			return false
 		}
 		if state["stateStr"].(string) == types.LockerStateToString(lockerState) {
 			return true
 		}
 	}
-	logger.Error("timeout")
+	log.Fatal("timeout")
 	return false
 }
 
@@ -112,27 +113,27 @@ func post(paras string, url string) (bool, error) {
 	ioBody := bytes.NewBuffer(jsonStr)
 	request, err := http.NewRequest("POST", url, ioBody)
 	if err != nil {
-		logger.Fatal("request ", err)
+		log.Fatal("request ", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
 	client := http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		logger.Fatal("do ", err)
+		log.Fatal("do ", err)
 	}
 	defer response.Body.Close()
 	if response.StatusCode > 200 {
-		logger.Fatalf("%d status code returned ,%s", response.StatusCode, url)
+		log.Fatalf("%d status code returned ,%s", response.StatusCode, url)
 	}
 	bytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	ret := make(map[string]interface{})
 	err = json.Unmarshal(bytes, &ret)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	if r, ok := ret["value"]; ok != false {
 		return r.(bool), nil

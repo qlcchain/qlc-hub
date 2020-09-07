@@ -2,9 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -46,26 +47,87 @@ func eNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 }
 
 func eNeo2Eth() {
+	var amount int64 = 1300000000
+
+	log.Println("=====neo2eth: issue====")
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperSignerAddress, 1300000000)
+	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Wrapper Lock: ", tx)
 
-	b, err := ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
-	}
-	tx2, err := ethTransaction.UserUnlock(rHash, rOrigin, ethUserAddress)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
-	fmt.Println("User Unlock: ", tx2)
+	tx, err = ethTransaction.UserUnlock(rHash, rOrigin, ethUserAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("User Unlock: ", tx)
+
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("successfully")
 }
 
 func eNeo2EthFetch() {
+	var amount int64 = 1300000000
 
+	log.Println("=====neo2eth: issue====")
+	rOrigin, rHash := util.Sha256Hash()
+	fmt.Println("hash: ", rOrigin, "==>", rHash)
+
+	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("wrapper Lock: ", tx)
+
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	waitingForEthBlocksConfirmed(20)
+
+	tx, err = ethTransaction.WrapperFetch(rHash, ethWrapperOwnerAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("wrapper fetch: ", tx)
+
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("successfully")
+}
+
+func waitingForEthBlocksConfirmed(n int64) {
+	cHeight, err := ethTransaction.GetBestBlockHeight()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for {
+		time.Sleep(40 * time.Second)
+		ch, err := ethTransaction.GetBestBlockHeight()
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			if ch-cHeight > n {
+				break
+			} else {
+				log.Printf("waiting for %d/%d block confirmed ... \n", ch-cHeight, n)
+			}
+		}
+	}
 }

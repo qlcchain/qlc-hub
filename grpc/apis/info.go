@@ -7,14 +7,13 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type InfoAPI struct {
@@ -36,9 +35,9 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, s *store.Store) *InfoAP
 func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
 		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoAddress:  i.cfg.NEOCfg.Address,
+		NeoAddress:  i.cfg.NEOCfg.SignerAddress,
 		EthContract: i.cfg.EthereumCfg.Contract,
-		EthAddress:  i.cfg.EthereumCfg.Address,
+		EthAddress:  i.cfg.EthereumCfg.SignerAddress,
 	}, nil
 }
 
@@ -120,7 +119,6 @@ func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
 		RHash:               s.RHash,
 		ROrigin:             s.ROrigin,
 		Amount:              s.Amount,
-		UserAddr:            s.UserAddr,
 		LockedNep5Hash:      s.LockedNep5Hash,
 		LockedNep5Height:    s.LockedNep5Height,
 		LockedErc20Hash:     s.LockedErc20Hash,
@@ -129,8 +127,11 @@ func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
 		UnlockedNep5Height:  s.UnlockedNep5Height,
 		UnlockedErc20Hash:   s.UnlockedErc20Hash,
 		UnlockedErc20Height: s.UnlockedErc20Height,
+		NeoTimerInterval:    uint32(s.NeoTimerInterval),
+		EthTimerInterval:    uint32(s.EthTimerInterval),
 		StartTime:           time.Unix(s.StartTime, 0).Format(time.RFC3339),
 		LastModifyTime:      time.Unix(s.LastModifyTime, 0).Format(time.RFC3339),
+		UserAddr:            s.UserAddr,
 		NeoTimeout:          s.NeoTimeout,
 		EthTimeout:          s.EthTimeout,
 		Fail:                s.Fail,

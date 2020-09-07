@@ -15,6 +15,8 @@ type LockerInfo struct {
 	UnlockedNep5Height  uint32      `msg:"unHeight" json:"unlockedNep5Height"`
 	UnlockedErc20Hash   string      `msg:"ueHash" json:"unlockedErc20Hash"`
 	UnlockedErc20Height uint32      `msg:"ueHeight" json:"unlockedErc20Height"`
+	NeoTimerInterval    int64       `msg:"neoTimerInterval" json:"neoTimerInterval"`
+	EthTimerInterval    int64       `msg:"ethTimerInterval" json:"ethTimerInterval"`
 	StartTime           int64       `msg:"startTime" json:"startTime"`
 	LastModifyTime      int64       `msg:"lastModifyTime" json:"lastModifyTime"`
 	NeoTimeout          bool        `msg:"neoTimeout" json:"neoTimeout"`

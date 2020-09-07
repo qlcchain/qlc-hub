@@ -3,10 +3,10 @@ package commands
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"log"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/grpc/proto"
@@ -32,12 +32,12 @@ func run() {
 	}
 
 	if err := signerCfg.Verify(); err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	signerServer, err := grpc.NewSignerServer(signerCfg)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	defer func() {
 		signerServer.Stop()
@@ -45,7 +45,7 @@ func run() {
 
 	token, err := signerCfg.JwtManager.Generate(jwt.User)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	cfg := &config.Config{
 		Verbose:        true,
@@ -55,21 +55,21 @@ func run() {
 	}
 	signer, err := signer.NewSigner(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	defer func() {
 		signer.Stop()
 	}()
 
 	if r1, err := signer.AddressList(proto.SignType_NEO); err == nil {
-		logger.Debug(r1.Address)
+		log.Println(r1.Address)
 	} else {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	if r1, err := signer.AddressList(proto.SignType_ETH); err == nil {
-		logger.Debug(r1.Address)
+		log.Println(r1.Address)
 	} else {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	rawData := []byte(util.String(120))
@@ -79,10 +79,10 @@ func run() {
 	sign := neoPriv.Sign(rawData)
 	if neoResp, err := signer.Sign(proto.SignType_NEO, neoAddress, rawData); err == nil {
 		if !bytes.Equal(sign, neoResp.Sign) {
-			logger.Fatalf("got: %v, exp: %v", neoResp.Sign, sign)
+			log.Fatalf("got: %v, exp: %v", neoResp.Sign, sign)
 		}
 	} else {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	eth := "5d5f13593918431c70354607060d67e931a8bdc0575b4328e8ebb367b0d86d1d"
@@ -94,9 +94,9 @@ func run() {
 
 	if ethResp, err := signer.Sign(proto.SignType_ETH, ethAddress, h); err == nil {
 		if !bytes.Equal(ethSign, ethResp.Sign) {
-			logger.Fatalf("got: %v, exp: %v", ethResp.Sign, sign)
+			log.Fatalf("got: %v, exp: %v", ethResp.Sign, sign)
 		}
 	} else {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 }
