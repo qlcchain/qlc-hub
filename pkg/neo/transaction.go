@@ -22,11 +22,12 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
-	"go.uber.org/zap"
 )
 
 type Transaction struct {
