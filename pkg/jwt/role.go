@@ -13,8 +13,9 @@ import (
 
 var (
 	ErrInvalidRoleclaims = errors.New("invalid role claims")
-	Admin                = []string{admin, user}
+	Admin                = []string{admin}
 	User                 = []string{user}
+	Both                 = []string{admin, user}
 )
 
 const (
@@ -65,11 +66,17 @@ func NewJWTManager(secretKey string, tokenDuration time.Duration) (*JWTManager, 
 }
 
 func (m *JWTManager) Generate(roles []string) (string, error) {
+	var expiresAt int64
+	if m.tokenDuration == 0 {
+		expiresAt = 0
+	} else {
+		expiresAt = time.Now().Add(m.tokenDuration).Unix()
+	}
 	user := &RoleClaims{
 		Roles: roles,
 		StandardClaims: jwt.StandardClaims{
 			Audience:  "QLCChain Bot",
-			ExpiresAt: time.Now().Add(m.tokenDuration).Unix(),
+			ExpiresAt: expiresAt,
 			Id:        uuid.New().String(),
 			IssuedAt:  time.Now().Unix(),
 			Issuer:    "QLCChain Bot",
@@ -97,8 +104,10 @@ func (m *JWTManager) Verify(token string) (*RoleClaims, error) {
 
 func (m *JWTManager) Refresh(token string) (string, error) {
 	if user, err := m.Verify(token); err == nil {
-		if user.Valid(); err == nil {
-			user.ExpiresAt = time.Now().Add(m.tokenDuration).Unix()
+		if err := user.Valid(); err == nil {
+			if user.ExpiresAt != 0 {
+				user.ExpiresAt = time.Now().Add(m.tokenDuration).Unix()
+			}
 			token := jwt.NewWithClaims(jwt.SigningMethodES512, user)
 			return token.SignedString(m.privateKey)
 		} else {

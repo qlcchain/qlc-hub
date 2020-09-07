@@ -2,21 +2,15 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/qlcchain/qlc-hub/grpc"
+
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
-	rpc "github.com/qlcchain/qlc-hub/grpc"
-
 	"github.com/qlcchain/qlc-hub/config"
-	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 
 	flag "github.com/jessevdk/go-flags"
@@ -59,7 +53,7 @@ func main() {
 	}
 	_ = log.Setup(cfg.LogDir(), cfg.LogLevel)
 
-	logger := log.NewLogger("main")
+	logger := log.NewLogger("signer/main")
 	logger.Info(util.ToIndentString(cfg))
 
 	r1 := cfg.AddressList(pb.SignType_NEO)
@@ -74,7 +68,7 @@ func main() {
 		}
 	}
 
-	server, err := NewServer(cfg)
+	server, err := grpc.NewSignerServer(cfg)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -103,46 +97,4 @@ func logo() string {
 |__|__||_____| \___/ |_____| |__|  |__|__|      \___||____||___,_||__|__||_____||__|\_|
                                                                                        
 `
-}
-
-type Server struct {
-	srv    *grpc.Server
-	cfg    *config.SignerConfig
-	logger *zap.SugaredLogger
-}
-
-func NewServer(cfg *config.SignerConfig) (*Server, error) {
-	i := rpc.NewAuthInterceptor(cfg.JwtManager)
-	srv := grpc.NewServer(grpc.UnaryInterceptor(i.Unary()), grpc.StreamInterceptor(i.Stream()))
-
-	return &Server{
-		srv:    srv,
-		cfg:    cfg,
-		logger: log.NewLogger("signer/srv"),
-	}, nil
-}
-
-func (s *Server) Start() error {
-	network, address, err := util.Scheme(s.cfg.GRPCListenAddress)
-	if err != nil {
-		return err
-	}
-
-	lis, err := net.Listen(network, address)
-	if err != nil {
-		return fmt.Errorf("failed to listen: %s", err)
-	}
-	s.registerApi()
-	s.logger.Debugf("server start at %s", address)
-	reflection.Register(s.srv)
-	return s.srv.Serve(lis)
-}
-
-func (s *Server) Stop() {
-	s.srv.Stop()
-}
-
-func (s *Server) registerApi() {
-	pb.RegisterSignServiceServer(s.srv, apis.NewSignerService(s.cfg))
-	pb.RegisterTokenServiceServer(s.srv, apis.NewTokenService(s.cfg))
 }
