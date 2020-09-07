@@ -70,7 +70,7 @@ func (n *Transaction) RefundUser(rOrigin string, signerAddress string) (string, 
 
 // withdraw
 
-func (n *Transaction) WrapperLock(assetsAddr, userEthAddress, rHash string, amount int) (string, error) {
+func (n *Transaction) WrapperLock(assetsAddr, userEthAddress, rHash string, amount, timerInterval int) (string, error) {
 	params := []request.Param{
 		FunctionName("wrapperLock"),
 		ArrayParams([]request.Param{
@@ -78,7 +78,7 @@ func (n *Transaction) WrapperLock(assetsAddr, userEthAddress, rHash string, amou
 			AddressParam(assetsAddr),
 			IntegerTypeParam(amount),
 			ArrayTypeParam(userEthAddress),
-			IntegerTypeParam(10), //todo
+			IntegerTypeParam(timerInterval),
 		}),
 	}
 	r, err := n.CreateTransaction(TransactionParam{

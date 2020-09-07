@@ -64,9 +64,9 @@ func nNeo2Eth() {
 	}
 	log.Println("user lock tx: ", tx)
 
-	b, _, err := n.TxVerifyAndConfirmed(tx, 1)
+	_, err = n.TxVerifyAndConfirmed(tx, 1)
 	if err != nil {
-		log.Fatal(b, err)
+		log.Fatal(err)
 	}
 
 	tx, err = n.WrapperUnlock(rOrigin, neoWrapperSignerAddress, userEthAddress)

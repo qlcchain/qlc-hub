@@ -25,9 +25,8 @@ message FetchRequest{
 }
 
 message ClaimRequest{
-  string nep5TxHash = 1;
-  string rOrigin    = 2;
-  string rHash      = 3;
+  string rOrigin        = 1;
+  string userNep5Addr   = 2;
 }
 
 message EventResponse {
@@ -51,13 +50,15 @@ message LockerStateResponse {
   uint32 unlockedNep5Height  = 11;
   string unlockedErc20Hash   = 12;
   uint32 unlockedErc20Height = 13;
-  string startTime           = 14;
-  string lastModifyTime      = 15;
-  string userAddr            = 16;
-  bool   neoTimeout          = 17;
-  bool   ethTimeout          = 18;
-  bool   fail                = 19;
-  string remark              = 20;
+  uint32 neoTimerInterval    = 14;
+  uint32 ethTimerInterval    = 15;
+  string startTime           = 16;
+  string lastModifyTime      = 17;
+  string userAddr            = 18;
+  bool   neoTimeout          = 19;
+  bool   ethTimeout          = 20;
+  bool   fail                = 21;
+  string remark              = 22;
 }
 
 message Offset {

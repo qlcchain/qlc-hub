@@ -382,13 +382,10 @@
     "protoClaimRequest": {
       "type": "object",
       "properties": {
-        "nep5TxHash": {
-          "type": "string"
-        },
         "rOrigin": {
           "type": "string"
         },
-        "rHash": {
+        "userNep5Addr": {
           "type": "string"
         }
       }
@@ -511,6 +508,14 @@
           "type": "string"
         },
         "unlockedErc20Height": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "neoTimerInterval": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "ethTimerInterval": {
           "type": "integer",
           "format": "int64"
         },

@@ -35,15 +35,15 @@ func nEth2Neo() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount)
+	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("wrapper lock tx: ", tx)
 
-	b, _, err := neoTrasaction.TxVerifyAndConfirmed(tx, 1)
+	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, 1)
 	if err != nil {
-		log.Fatal(b, err)
+		log.Fatal(err)
 	}
 
 	tx, err = neoTrasaction.UserUnlock(rOrigin, neoUserAddr, neoWrapperSignerAddress)
@@ -60,13 +60,14 @@ func nEth2NeoFetch() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount)
+	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("wrapper lock tx: ", tx)
 
 	waitingForNeoBlocksConfirmed(20)
+
 	tx, err = neoTrasaction.RefundWrapper(rHash, neoWrapperSignerAddress)
 	if err != nil {
 		log.Fatal(err)

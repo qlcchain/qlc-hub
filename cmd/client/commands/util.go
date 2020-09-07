@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -20,12 +21,12 @@ func hubWaitingForWithdrawEthTimeout(rHash string) bool {
 			fmt.Println(err)
 			continue
 		}
-		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
 		if state["ethTimeout"].(bool) {
 			return true
 		}
 	}
-	logger.Error("timeout")
+	log.Fatal("timeout")
 	return false
 }
 
@@ -38,12 +39,12 @@ func hubWaitingForDepositNeoTimeout(rHash string) bool {
 			fmt.Println(err)
 			continue
 		}
-		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
 		if state["neoTimeout"].(bool) {
 			return true
 		}
 	}
-	logger.Error("timeout")
+	log.Fatal("timeout")
 	return false
 }
 
@@ -56,16 +57,16 @@ func hubWaitingForLockerState(rHash string, lockerState types.LockerState) bool 
 			fmt.Println(err)
 			continue
 		}
-		logger.Debugf("rHash [%s] state is [%s]", rHash, state["stateStr"])
+		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
 		if state["fail"].(bool) {
-			logger.Debugf("rHash [%s] fail: [%s] ", rHash, state["remark"].(string))
+			log.Printf("rHash [%s] fail: [%s] \n", rHash, state["remark"].(string))
 			return false
 		}
 		if state["stateStr"].(string) == types.LockerStateToString(lockerState) {
 			return true
 		}
 	}
-	logger.Error("timeout")
+	log.Fatal("timeout")
 	return false
 }
 
@@ -112,27 +113,27 @@ func post(paras string, url string) (bool, error) {
 	ioBody := bytes.NewBuffer(jsonStr)
 	request, err := http.NewRequest("POST", url, ioBody)
 	if err != nil {
-		logger.Fatal("request ", err)
+		log.Fatal("request ", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
 	client := http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		logger.Fatal("do ", err)
+		log.Fatal("do ", err)
 	}
 	defer response.Body.Close()
 	if response.StatusCode > 200 {
-		logger.Fatalf("%d status code returned ,%s", response.StatusCode, url)
+		log.Fatalf("%d status code returned ,%s", response.StatusCode, url)
 	}
 	bytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
 	ret := make(map[string]interface{})
 	err = json.Unmarshal(bytes, &ret)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	if r, ok := ret["value"]; ok != false {
 		return r.(bool), nil

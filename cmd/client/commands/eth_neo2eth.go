@@ -56,23 +56,23 @@ func eNeo2Eth() {
 
 	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("Wrapper Lock: ", tx)
 
-	b, err := ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 	tx, err = ethTransaction.UserUnlock(rHash, rOrigin, ethUserAddress)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("User Unlock: ", tx)
 
-	b, err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Println("successfully")
@@ -87,26 +87,26 @@ func eNeo2EthFetch() {
 
 	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("wrapper Lock: ", tx)
 
-	b, err := ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	waitingForEthBlocksConfirmed(20)
 
 	tx, err = ethTransaction.WrapperFetch(rHash, ethWrapperOwnerAddress)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("wrapper fetch: ", tx)
 
-	b, err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Println("successfully")

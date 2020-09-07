@@ -21,6 +21,7 @@ const (
 	WithDrawEthLockedDone = iota
 	WithDrawNeoLockedPending
 	WithDrawNeoLockedDone
+	WithDrawNeoUnLockedPending
 	WithDrawNeoUnLockedDone
 	WithDrawEthUnlockPending
 	WithDrawEthUnlockDone
@@ -28,7 +29,6 @@ const (
 	WithDrawNeoFetchDone
 	WithDrawEthFetchDone
 
-	Failed
 	Invalid
 )
 
@@ -52,6 +52,8 @@ func LockerStateToString(t LockerState) string {
 		return "DepositEthFetchPending"
 	case DepositEthFetchDone:
 		return "DepositEthFetchDone"
+	case DepositNeoFetchPending:
+		return "DepositNeoFetchPending"
 	case DepositNeoFetchDone:
 		return "DepositNeoFetchDone"
 	case WithDrawEthLockedDone:
@@ -60,6 +62,8 @@ func LockerStateToString(t LockerState) string {
 		return "WithDrawNeoLockedPending"
 	case WithDrawNeoLockedDone:
 		return "WithDrawNeoLockedDone"
+	case WithDrawNeoUnLockedPending:
+		return "WithDrawNeoUnLockedPending"
 	case WithDrawNeoUnLockedDone:
 		return "WithDrawNeoUnLockedDone"
 	case WithDrawEthUnlockPending:
@@ -72,8 +76,6 @@ func LockerStateToString(t LockerState) string {
 		return "WithDrawNeoFetchDone"
 	case WithDrawEthFetchDone:
 		return "WithDrawEthFetchDone"
-	case Failed:
-		return "Failed"
 	default:
 		return "Invalid"
 	}

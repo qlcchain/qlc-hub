@@ -98,7 +98,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		}
 		d.logger.Infof("swap info: %s", util.ToString(swapInfo))
 
-		if b, h := d.neo.HasConfirmedBlocksHeight(height, getLockDeadLineHeight(d.cfg.NEOCfg.DepositInterval)); b {
+		if b, h := d.neo.HasConfirmedBlocksHeight(height, getLockDeadLineHeight(swapInfo.OvertimeBlocks)); b {
 			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, height, h)
 			d.logger.Error(err)
 			return
@@ -108,6 +108,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		info.LockedNep5Height = height
 		info.Amount = swapInfo.Amount
 		info.UserAddr = swapInfo.UserNeoAddress
+		info.NeoTimerInterval = swapInfo.OvertimeBlocks
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
 			return
@@ -123,6 +124,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		d.logger.Infof("deposit/wrapper eth lock: %s [%s]", request.GetRHash(), tx)
 		info.State = types.DepositEthLockedPending
 		info.LockedErc20Hash = tx
+		info.EthTimerInterval = d.cfg.EthereumCfg.DepositInterval
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
 			return
@@ -144,12 +146,10 @@ func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
 func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.Boolean, error) {
 	d.logger.Info("api - deposit fetch: ", request.String())
 	rHash := util.Sha256(request.GetROrigin())
-	info, err := d.store.GetLockerInfo(rHash)
-	if err != nil {
+	if info, err := d.store.GetLockerInfo(rHash); err != nil {
 		//d.logger.Errorf("%s: %s", rHash, err)
 		return nil, err
-	}
-	if !info.NeoTimeout {
+	} else if !info.NeoTimeout {
 		//d.logger.Errorf("current state is %s, [%s], not timeout", types.LockerStateToString(info.State), info.RHash)
 		return nil, fmt.Errorf("not yet timeout, state: %s", types.LockerStateToString(info.State))
 	}
@@ -173,7 +173,7 @@ func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.B
 		}
 
 		var tx string
-		tx, err = d.neo.RefundUser(request.ROrigin, request.UserNep5Addr)
+		tx, err = d.neo.RefundUser(request.ROrigin, d.cfg.NEOCfg.SignerAddress)
 		if err != nil {
 			d.logger.Errorf("refund user: %s [%s]", err, rHash)
 			return
@@ -181,6 +181,7 @@ func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.B
 
 		d.logger.Infof("deposit user fetch(neo): %s [%s] ", tx, rHash)
 
+		info, _ = d.store.GetLockerInfo(rHash)
 		info.State = types.DepositNeoFetchPending
 		info.UnlockedNep5Hash = tx
 		if err := d.store.UpdateLockerInfo(info); err != nil {
@@ -189,10 +190,9 @@ func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.B
 		}
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchPending))
 
-		var b bool
 		var height uint32
-		b, height, err = d.neo.TxVerifyAndConfirmed(tx, d.cfg.NEOCfg.ConfirmedHeight)
-		if !b || err != nil {
+		height, err = d.neo.TxVerifyAndConfirmed(tx, d.cfg.NEOCfg.ConfirmedHeight)
+		if err != nil {
 			d.logger.Errorf("tx %s verify: %s [%s]", tx, err, rHash)
 			return
 		}

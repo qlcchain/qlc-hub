@@ -195,7 +195,7 @@ func (h *HashTimer) String() string {
 	return string(v)
 }
 
-func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) (bool, error) {
+func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) error {
 	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
@@ -203,13 +203,13 @@ func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interv
 		case <-cTicker.C:
 			_, p, err := t.client.TransactionByHash(context.Background(), common.HexToHash(txHash))
 			if err != nil {
-				return false, fmt.Errorf("eth tx by hash: %s", err)
+				return fmt.Errorf("eth tx by hash: %s", err)
 			}
 			if !p {
 				goto HeightConfirmed
 			}
 		case <-cTimer.C:
-			return false, fmt.Errorf("eth tx by hash timeout: %s", txHash)
+			return fmt.Errorf("eth tx by hash timeout: %s", txHash)
 		}
 	}
 
@@ -222,10 +222,10 @@ HeightConfirmed:
 		case <-vTicker.C:
 			b, _ := t.HasConfirmedBlocksHeight(txHeight, interval)
 			if b {
-				return true, nil
+				return nil
 			}
 		case <-vTimer.C:
-			return false, fmt.Errorf("eth tx by hash timeout: %s", txHash)
+			return fmt.Errorf("eth tx by hash timeout: %s", txHash)
 		}
 	}
 }

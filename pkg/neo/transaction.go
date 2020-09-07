@@ -387,7 +387,7 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 	return info, nil
 }
 
-func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, uint32, error) {
+func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (uint32, error) {
 	var txHeight uint32
 	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
@@ -396,7 +396,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, u
 		case <-cTicker.C:
 			hash, err := util.Uint256DecodeStringLE(txHash)
 			if err != nil {
-				return false, 0, fmt.Errorf("tx verify decode hash: %s", err)
+				return 0, fmt.Errorf("tx verify decode hash: %s", err)
 			}
 			txHeight, err = n.client.GetTransactionHeight(hash)
 			if err != nil {
@@ -405,7 +405,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (bool, u
 				goto HeightConfirmed
 			}
 		case <-cTimer.C:
-			return false, 0, fmt.Errorf("neo tx by hash timeout: %s", txHash)
+			return 0, fmt.Errorf("neo tx by hash timeout: %s", txHash)
 		}
 	}
 
@@ -417,16 +417,16 @@ HeightConfirmed:
 		case <-nTicker.C:
 			nHeight, err := n.Client().GetStateHeight()
 			if err != nil {
-				return false, 0, err
+				return 0, err
 			} else {
 				nh := nHeight.BlockHeight
 				n.logger.Debugf("tx [%s] current confirmed height (%d, %d)", txHash, txHeight, nh)
 				if nh-txHeight >= uint32(interval) {
-					return true, txHeight, nil
+					return txHeight, nil
 				}
 			}
 		case <-nTimer.C:
-			return false, 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
+			return 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
 		}
 	}
 }
@@ -480,9 +480,9 @@ func (n *Transaction) LockerEventFromApplicationLog(hash string) (string, State,
 
 func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int, state State) (uint32, error) {
 	n.logger.Infof("waiting for neo tx %s confirmed", txHash)
-	b, height, err := n.TxVerifyAndConfirmed(txHash, confirmedHeight)
-	if !b || err != nil {
-		return 0, fmt.Errorf("neo tx confirmed: %s, %v , %s, [%s]", err, b, txHash, rHash)
+	height, err := n.TxVerifyAndConfirmed(txHash, confirmedHeight)
+	if err != nil {
+		return 0, fmt.Errorf("neo tx confirmed: %s, %s, [%s]", err, txHash, rHash)
 	}
 
 	rHashEvent, stateEvent, err := n.LockerEventFromApplicationLog(txHash)

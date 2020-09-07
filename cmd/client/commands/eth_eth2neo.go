@@ -38,23 +38,23 @@ func eEth2Neo() {
 
 	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, amount)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("user lock tx: ", tx)
 
-	b, err := ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 	tx, err = ethTransaction.WrapperUnlock(rHash, rOrigin, ethWrapperOwnerAddress)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("wrapper unlock tx: ", tx)
 
-	b, err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Println("successfully")
@@ -69,26 +69,26 @@ func eEth2NeoFetch() {
 
 	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, amount)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("user lock tx: ", tx)
 
-	b, err := ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	waitingForEthBlocksConfirmed(40)
 
 	tx, err = ethTransaction.UserFetch(rHash, ethUserAddress)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	fmt.Println("user fetch: ", tx)
 
-	b, err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
-	if !b || err != nil {
-		logger.Fatal(err)
+	err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Println("successfully")

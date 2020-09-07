@@ -125,4 +125,11 @@ func hNeo2EthFetch() {
 	if err != nil || !r2 {
 		log.Fatal(err, r2)
 	}
+
+	if !hubWaitingForLockerState(rHash, types.DepositNeoFetchDone) {
+		log.Fatal("timeout")
+	}
+
+	log.Println("successfully")
+
 }
