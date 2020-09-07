@@ -7,22 +7,20 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/qlcchain/qlc-hub/signer"
-
-	"github.com/qlcchain/qlc-hub/pkg/util"
-
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
+	"github.com/qlcchain/qlc-hub/pkg/util"
+	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Server struct {
@@ -32,7 +30,7 @@ type Server struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 	cfg    *config.Config
-	eth    *ethclient.Client
+	eth    *eth.Transaction
 	neo    *neo.Transaction
 	store  *store.Store
 	logger *zap.SugaredLogger
@@ -55,6 +53,7 @@ func (g *Server) Start() error {
 	if err := g.checkBaseInfo(); err != nil {
 		return err
 	}
+	g.logger.Info("config info checked")
 
 	network, address, err := util.Scheme(g.cfg.RPCCfg.GRPCListenAddress)
 	if err != nil {
@@ -84,22 +83,21 @@ func (g *Server) Start() error {
 }
 
 func (g *Server) checkBaseInfo() error {
-	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint)
-	if err != nil {
-		return fmt.Errorf("eth dail: %s", err)
-	}
-
-	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
-		return fmt.Errorf("eth node connect timeout: %s", err)
-	}
-	g.eth = eClient
-
 	signer, err := signer.NewSigner(g.cfg)
 	if err != nil {
 		return err
 	}
-
 	g.signer = signer
+
+	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint)
+	if err != nil {
+		return fmt.Errorf("eth dail: %s", err)
+	}
+	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
+		return fmt.Errorf("eth node connect timeout: %s", err)
+	}
+	eTransaction := eth.NewTransaction(eClient, signer, g.cfg.EthereumCfg.Contract)
+	g.eth = eTransaction
 
 	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract, signer)
 	if err != nil {
@@ -165,7 +163,7 @@ func (g *Server) Stop() {
 			g.logger.Errorf("RESTful server shutdown failed:%+v", err)
 		}
 	}
-	g.eth.Close()
+	g.eth.Client().Close()
 	g.rpc.Stop()
 	g.signer.Stop()
 

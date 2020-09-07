@@ -107,9 +107,9 @@
         ]
       }
     },
-    "/deposit/fetchNotice": {
+    "/deposit/fetch": {
       "post": {
-        "operationId": "DepositAPI_FetchNotice",
+        "operationId": "DepositAPI_Fetch",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -130,7 +130,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoFetchNoticeRequest"
+              "$ref": "#/definitions/protoFetchRequest"
             }
           }
         ],
@@ -336,9 +336,9 @@
         ]
       }
     },
-    "/withdraw/unlock": {
+    "/withdraw/claim": {
       "post": {
-        "operationId": "WithdrawAPI_Unlock",
+        "operationId": "WithdrawAPI_Claim",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -359,7 +359,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoWithdrawUnlockRequest"
+              "$ref": "#/definitions/protoClaimRequest"
             }
           }
         ],
@@ -376,6 +376,20 @@
         "value": {
           "type": "boolean",
           "format": "boolean"
+        }
+      }
+    },
+    "protoClaimRequest": {
+      "type": "object",
+      "properties": {
+        "nep5TxHash": {
+          "type": "string"
+        },
+        "rOrigin": {
+          "type": "string"
+        },
+        "rHash": {
+          "type": "string"
         }
       }
     },
@@ -415,13 +429,13 @@
         }
       }
     },
-    "protoFetchNoticeRequest": {
+    "protoFetchRequest": {
       "type": "object",
       "properties": {
-        "rHash": {
+        "rOrigin": {
           "type": "string"
         },
-        "nep5TxHash": {
+        "userNep5Addr": {
           "type": "string"
         }
       }
@@ -550,20 +564,6 @@
           "type": "string"
         },
         "neoAddress": {
-          "type": "string"
-        }
-      }
-    },
-    "protoWithdrawUnlockRequest": {
-      "type": "object",
-      "properties": {
-        "nep5TxHash": {
-          "type": "string"
-        },
-        "rOrigin": {
-          "type": "string"
-        },
-        "rHash": {
           "type": "string"
         }
       }

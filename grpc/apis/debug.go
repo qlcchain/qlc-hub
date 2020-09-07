@@ -5,27 +5,25 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/golang/protobuf/ptypes/empty"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"go.uber.org/zap"
 )
 
 type DebugAPI struct {
 	cfg    *config.Config
-	eth    *ethclient.Client
+	eth    *eth.Transaction
 	ctx    context.Context
 	store  *store.Store
 	logger *zap.SugaredLogger
 }
 
-func NewDebugAPI(ctx context.Context, cfg *config.Config, eth *ethclient.Client, s *store.Store) *DebugAPI {
+func NewDebugAPI(ctx context.Context, cfg *config.Config, eth *eth.Transaction, s *store.Store) *DebugAPI {
 	return &DebugAPI{
 		ctx:    ctx,
 		cfg:    cfg,
@@ -36,7 +34,7 @@ func NewDebugAPI(ctx context.Context, cfg *config.Config, eth *ethclient.Client,
 }
 
 func (d *DebugAPI) HashTimer(ctx context.Context, s *pb.String) (*pb.HashTimerResponse, error) {
-	timer, err := eth.GetHashTimer(d.eth, d.cfg.EthereumCfg.Contract, s.GetValue())
+	timer, err := d.eth.GetHashTimer(s.GetValue())
 	if err != nil {
 		return nil, err
 	}

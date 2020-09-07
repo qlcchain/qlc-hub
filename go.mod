@@ -1,6 +1,8 @@
 module github.com/qlcchain/qlc-hub
 
 require (
+	github.com/abiosoft/ishell v2.0.0+incompatible
+	github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db
 	github.com/bluele/gcache v0.0.0-20190518031135-bc40bd653833
 	github.com/dgraph-io/badger/v2 v2.2007.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

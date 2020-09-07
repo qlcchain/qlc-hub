@@ -14,6 +14,7 @@ const (
 	DepositNeoUnLockedDone
 	DepositEthFetchPending
 	DepositEthFetchDone
+	DepositNeoFetchPending
 	DepositNeoFetchDone
 
 	// withdraw

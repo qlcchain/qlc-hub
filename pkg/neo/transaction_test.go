@@ -7,7 +7,6 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -28,7 +27,7 @@ var (
 )
 
 func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
-	c, err := NewTransaction(url, contractAddress)
+	c, err := NewTransaction(url, contractAddress, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +46,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 }
 
 func TestTransaction_RHashFromApplicationLog(t *testing.T) {
-	c, err := NewTransaction(url, contractAddress)
+	c, err := NewTransaction(url, contractAddress, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

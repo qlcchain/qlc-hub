@@ -66,8 +66,8 @@ func local_request_DepositAPI_Lock_0(ctx context.Context, marshaler runtime.Mars
 
 }
 
-func request_DepositAPI_FetchNotice_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FetchNoticeRequest
+func request_DepositAPI_Fetch_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq FetchRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -78,13 +78,13 @@ func request_DepositAPI_FetchNotice_0(ctx context.Context, marshaler runtime.Mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.FetchNotice(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.Fetch(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_DepositAPI_FetchNotice_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq FetchNoticeRequest
+func local_request_DepositAPI_Fetch_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq FetchRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -95,13 +95,13 @@ func local_request_DepositAPI_FetchNotice_0(ctx context.Context, marshaler runti
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.FetchNotice(ctx, &protoReq)
+	msg, err := server.Fetch(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_WithdrawAPI_Unlock_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq WithdrawUnlockRequest
+func request_WithdrawAPI_Claim_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ClaimRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -112,13 +112,13 @@ func request_WithdrawAPI_Unlock_0(ctx context.Context, marshaler runtime.Marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.Unlock(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.Claim(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_WithdrawAPI_Unlock_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq WithdrawUnlockRequest
+func local_request_WithdrawAPI_Claim_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ClaimRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -129,7 +129,7 @@ func local_request_WithdrawAPI_Unlock_0(ctx context.Context, marshaler runtime.M
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.Unlock(ctx, &protoReq)
+	msg, err := server.Claim(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -392,7 +392,7 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_FetchNotice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_Fetch_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -401,14 +401,14 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DepositAPI_FetchNotice_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DepositAPI_Fetch_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_FetchNotice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_Fetch_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -420,7 +420,7 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 func RegisterWithdrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WithdrawAPIServer) error {
 
-	mux.Handle("POST", pattern_WithdrawAPI_Unlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawAPI_Claim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -429,14 +429,14 @@ func RegisterWithdrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithdrawAPI_Unlock_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WithdrawAPI_Claim_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawAPI_Unlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawAPI_Claim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -672,7 +672,7 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_FetchNotice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_Fetch_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -681,14 +681,14 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DepositAPI_FetchNotice_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DepositAPI_Fetch_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_FetchNotice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_Fetch_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -698,13 +698,13 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 var (
 	pattern_DepositAPI_Lock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "lock"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DepositAPI_FetchNotice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "fetchNotice"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DepositAPI_Fetch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "fetch"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
 	forward_DepositAPI_Lock_0 = runtime.ForwardResponseMessage
 
-	forward_DepositAPI_FetchNotice_0 = runtime.ForwardResponseMessage
+	forward_DepositAPI_Fetch_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterWithdrawAPIHandlerFromEndpoint is same as RegisterWithdrawAPIHandler but
@@ -745,7 +745,7 @@ func RegisterWithdrawAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn
 // "WithdrawAPIClient" to call the correct interceptors.
 func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WithdrawAPIClient) error {
 
-	mux.Handle("POST", pattern_WithdrawAPI_Unlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawAPI_Claim_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -754,14 +754,14 @@ func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithdrawAPI_Unlock_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WithdrawAPI_Claim_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawAPI_Unlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawAPI_Claim_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -769,11 +769,11 @@ func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 }
 
 var (
-	pattern_WithdrawAPI_Unlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "unlock"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawAPI_Claim_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "claim"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_WithdrawAPI_Unlock_0 = runtime.ForwardResponseMessage
+	forward_WithdrawAPI_Claim_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterEventAPIHandlerFromEndpoint is same as RegisterEventAPIHandler but
