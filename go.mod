@@ -16,7 +16,7 @@ require (
 	github.com/nspcc-dev/neo-go v0.77.0
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/tinylib/msgp v1.1.2
-	go.uber.org/zap v1.15.0
+	go.uber.org/zap v1.16.0
 	google.golang.org/genproto v0.0.0-20200828030656-73b5761be4c5
 	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
