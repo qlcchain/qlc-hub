@@ -5,9 +5,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
-
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/util"

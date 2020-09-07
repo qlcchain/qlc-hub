@@ -2,10 +2,11 @@ package commands
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/abiosoft/ishell"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
-	"log"
 )
 
 func addHubCmd(shell *ishell.Shell) {

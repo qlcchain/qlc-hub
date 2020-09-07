@@ -6,15 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/qlcchain/qlc-hub/grpc"
-
-	"github.com/qlcchain/qlc-hub/pkg/jwt"
-
-	"github.com/qlcchain/qlc-hub/config"
-	pb "github.com/qlcchain/qlc-hub/grpc/proto"
-
 	flag "github.com/jessevdk/go-flags"
-
+	"github.com/qlcchain/qlc-hub/config"
+	"github.com/qlcchain/qlc-hub/grpc"
+	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )

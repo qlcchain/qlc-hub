@@ -3,10 +3,6 @@ package apis
 import (
 	"context"
 	"fmt"
-	"github.com/qlcchain/qlc-hub/pkg/types"
-	"github.com/qlcchain/qlc-hub/pkg/util"
-
-	"go.uber.org/zap"
 
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
@@ -14,6 +10,9 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
+	"github.com/qlcchain/qlc-hub/pkg/types"
+	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type WithdrawAPI struct {

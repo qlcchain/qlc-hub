@@ -8,9 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
-
 	"github.com/qlcchain/qlc-hub/config"
-
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 )
 

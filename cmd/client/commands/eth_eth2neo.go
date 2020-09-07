@@ -2,9 +2,10 @@ package commands
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/abiosoft/ishell"
 	"github.com/qlcchain/qlc-hub/pkg/util"
-	"log"
 )
 
 func eEth2NeoCmd(parentCmd *ishell.Cmd) {

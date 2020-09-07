@@ -2,6 +2,7 @@ package neo
 
 import (
 	"fmt"
+
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 )
 
