@@ -29,11 +29,13 @@ func nEth2NeoFetchCmd(parentCmd *ishell.Cmd) {
 }
 
 func nEth2Neo() {
+	amount := 140000000
+
 	log.Println("====eth2neo====")
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, 140000000)
+	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,17 +54,19 @@ func nEth2Neo() {
 }
 
 func nEth2NeoFetch() {
+	amount := 160000000
+
 	log.Println("====eth2neoRefund====")
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, 160000000)
+	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("wrapper lock tx: ", tx)
 
-	sleepForHashTimer(20, neoTrasaction)
+	waitingForNeoBlocksConfirmed(20)
 	tx, err = neoTrasaction.RefundWrapper(rHash, neoWrapperSignerAddress)
 	if err != nil {
 		log.Fatal(err)

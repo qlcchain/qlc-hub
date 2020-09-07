@@ -4,27 +4,25 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-	"github.com/nspcc-dev/neo-go/pkg/wallet"
 
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 var (
 	url             = "http://seed2.ngd.network:20332"
-	contractAddress = "e0abb5fde5a0b870c13f3e60258856e38a939187"
+	contractAddress = "278df62f9ba1312f1e1f4b5d239f07beaa1b5b94"
 	contractLE, _   = util.Uint160DecodeStringLE(contractAddress)
 
-	userWif            = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
-	userAccount, _     = wallet.NewAccountFromWIF(userWif)
-	userAccountUint, _ = address.StringToUint160(userAccount.Address)
-
-	wrapperWif            = "L2BAaQsPTDxGu1D9Q3x9ZS2ipabyzjBCNJAdP3D3NwZzL6KUqEkg"
-	wrapperAccount, _     = wallet.NewAccountFromWIF(wrapperWif)
-	wrapperAccountUint, _ = address.StringToUint160(wrapperAccount.Address)
-
-	userEthAddress = "2e1ac6242bb084029a9eb29dfb083757d27fced4"
+	//userWif            = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
+	//userAccount, _     = wallet.NewAccountFromWIF(userWif)
+	//userAccountUint, _ = address.StringToUint160(userAccount.Address)
+	//
+	//wrapperWif            = "L2BAaQsPTDxGu1D9Q3x9ZS2ipabyzjBCNJAdP3D3NwZzL6KUqEkg"
+	//wrapperAccount, _     = wallet.NewAccountFromWIF(wrapperWif)
+	//wrapperAccountUint, _ = address.StringToUint160(wrapperAccount.Address)
+	//
+	//userEthAddress = "2e1ac6242bb084029a9eb29dfb083757d27fced4"
 )
 
 func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
@@ -33,7 +31,8 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rHash := "5601c1949d5e6bbc793e4e3ecf62b2b322b8381f71a41b9e1dac04308633fc0c"
+	rHash := "e15c6d4940bbe530f75ccbc06ada1a3674354bed56fe572f6eaf2dd65cf26958"
+
 	r, err := c.QuerySwapData(rHash)
 	if err != nil {
 		t.Fatal(err)

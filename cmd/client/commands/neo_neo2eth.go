@@ -2,6 +2,7 @@ package commands
 
 import (
 	"log"
+	"time"
 
 	"github.com/abiosoft/ishell"
 
@@ -47,6 +48,8 @@ func nNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 }
 
 func nNeo2Eth() {
+	amount := 220000000
+
 	log.Println("====neo2eth====")
 	n, err := neo.NewTransaction(neoUrl, neoContract, singerClient)
 	if err != nil {
@@ -55,7 +58,7 @@ func nNeo2Eth() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := n.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, 2200000000)
+	tx, err := n.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -74,19 +77,43 @@ func nNeo2Eth() {
 }
 
 func nNeo2EthFetch() {
+	amount := 230000000
+
 	log.Println("====neo2ethRefund====")
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, 230000000)
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user lock tx: ", tx)
-	sleepForHashTimer(40, neoTrasaction)
+	waitingForNeoBlocksConfirmed(40)
 	tx, err = neoTrasaction.RefundUser(rOrigin, neoWrapperSignerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user refund tx: ", tx)
+}
+
+func waitingForNeoBlocksConfirmed(n uint32) {
+	cHeight, err := neoTrasaction.Client().GetStateHeight()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ch := cHeight.BlockHeight
+	for {
+		time.Sleep(40 * time.Second)
+		nHeight, err := neoTrasaction.Client().GetStateHeight()
+		if err != nil {
+			log.Println(err)
+		} else {
+			nh := nHeight.BlockHeight
+			if nh-ch > n {
+				break
+			} else {
+				log.Printf("waiting for %d/%d block confirmed ... \n", nh-ch, n)
+			}
+		}
+	}
 }

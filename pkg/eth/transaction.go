@@ -38,9 +38,9 @@ func NewTransaction(client *ethclient.Client, signer *signer.SignerClient, contr
 	}
 }
 
-func (t *Transaction) GetTransactor(ethAddress string) (transactor *QLCChainTransactor, opts *bind.TransactOpts, err error) {
+func (t *Transaction) GetTransactor(signerAddr string) (transactor *QLCChainTransactor, opts *bind.TransactOpts, err error) {
 	//TODO: fix it
-	auth, err := t.getTransactOpts(ethAddress)
+	auth, err := t.getTransactOpts(signerAddr)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,8 +73,8 @@ func (t *Transaction) GetTransactorSession(ethAddress string) (*QLCChainSession,
 	return session, nil
 }
 
-func (t *Transaction) getTransactOpts(ethAddr string) (*bind.TransactOpts, error) {
-	addr := common.HexToAddress(ethAddr)
+func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, error) {
+	addr := common.HexToAddress(signerAddr)
 	//todo rethink auth parameter settings
 	ctx := context.Background()
 	nonce, err := t.client.PendingNonceAt(ctx, addr)
@@ -93,7 +93,7 @@ func (t *Transaction) getTransactOpts(ethAddr string) (*bind.TransactOpts, error
 				t.logger.Error("no authorize account")
 				return nil, errors.New("not authorized to sign this account")
 			}
-			signature, err := t.signer.Sign(proto.SignType_ETH, ethAddr, signer.Hash(tx).Bytes())
+			signature, err := t.signer.Sign(proto.SignType_ETH, signerAddr, signer.Hash(tx).Bytes())
 			if err != nil {
 				t.logger.Error(err)
 				return nil, err

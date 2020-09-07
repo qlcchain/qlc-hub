@@ -34,9 +34,9 @@ var (
 	userEthAddress          = "2e1ac6242bb084029a9eb29dfb083757d27fced4"
 
 	// eth setting
-	ethUrl                  string
-	ethContract             string
-	ethWrapperSignerAddress string
+	ethUrl                 string
+	ethContract            string
+	ethWrapperOwnerAddress string // also eth wrapper signer address
 	//ethUserPrikey           = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 	ethUserAddress = "0x6A786bf6E1c68E981D04139137f81dDA2d0acBF1"
 
@@ -62,7 +62,7 @@ func initParams(osArgs []string) {
 
 	ethUrl = cfg.EthereumCfg.EndPoint
 	ethContract = cfg.EthereumCfg.Contract
-	ethWrapperSignerAddress = cfg.EthereumCfg.SignerAddress
+	ethWrapperOwnerAddress = cfg.EthereumCfg.SignerAddress
 
 	var err error
 	if singerClient, err = signer.NewSigner(cfg); err != nil {

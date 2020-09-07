@@ -11,8 +11,8 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
-func waitForWithdrawEthTimeout(rHash string) bool {
-	cTicker := time.NewTicker(30 * time.Second)
+func hubWaitingForWithdrawEthTimeout(rHash string) bool {
+	cTicker := time.NewTicker(40 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
 		state, err := getLockerState(rHash)
@@ -29,8 +29,8 @@ func waitForWithdrawEthTimeout(rHash string) bool {
 	return false
 }
 
-func waitForDepositNeoTimeout(rHash string) bool {
-	cTicker := time.NewTicker(30 * time.Second)
+func hubWaitingForDepositNeoTimeout(rHash string) bool {
+	cTicker := time.NewTicker(40 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
 		state, err := getLockerState(rHash)
@@ -47,8 +47,8 @@ func waitForDepositNeoTimeout(rHash string) bool {
 	return false
 }
 
-func waitForLockerState(rHash string, lockerState types.LockerState) bool {
-	cTicker := time.NewTicker(10 * time.Second)
+func hubWaitingForLockerState(rHash string, lockerState types.LockerState) bool {
+	cTicker := time.NewTicker(30 * time.Second)
 	for i := 0; i < 100; i++ {
 		<-cTicker.C
 		state, err := getLockerState(rHash)

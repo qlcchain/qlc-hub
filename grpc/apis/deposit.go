@@ -107,7 +107,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		info.State = types.DepositNeoLockedDone
 		info.LockedNep5Height = height
 		info.Amount = swapInfo.Amount
-		info.UserAddr = swapInfo.UserNep5Address
+		info.UserAddr = swapInfo.UserNeoAddress
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
 			return
@@ -143,10 +143,10 @@ func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
 
 func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.Boolean, error) {
 	d.logger.Info("api - deposit fetch: ", request.String())
-	rHash := sha256(request.GetROrigin())
+	rHash := util.Sha256(request.GetROrigin())
 	info, err := d.store.GetLockerInfo(rHash)
 	if err != nil {
-		d.logger.Errorf("%s: %s", rHash, err)
+		//d.logger.Errorf("%s: %s", rHash, err)
 		return nil, err
 	}
 	if !info.NeoTimeout {
@@ -166,8 +166,8 @@ func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.B
 			d.logger.Errorf("query swap info: %s, [%s]", err, rHash)
 			return
 		}
-		if swapInfo.UserNep5Address != request.GetUserNep5Addr() {
-			err = fmt.Errorf("invalid user nep5 address, %s, %s", swapInfo.UserNep5Address, request.GetUserNep5Addr())
+		if swapInfo.UserNeoAddress != request.GetUserNep5Addr() {
+			err = fmt.Errorf("invalid user nep5 address, %s, %s", swapInfo.UserNeoAddress, request.GetUserNep5Addr())
 			d.logger.Error(err)
 			return
 		}

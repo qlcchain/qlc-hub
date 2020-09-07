@@ -103,6 +103,12 @@ func Sha256Hash() (string, string) {
 	return rOrigin, rHash
 }
 
+func Sha256(text string) string {
+	h := sha256.Sum256([]byte(text))
+	rHash := hex.EncodeToString(h[:])
+	return rHash
+}
+
 func RemoveHexPrefix(str string) string {
 	if len(str) == 66 || len(str) == 42 {
 		if strings.HasPrefix(str, "0x") {

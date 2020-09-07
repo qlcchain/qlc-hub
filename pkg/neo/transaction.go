@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	"math/big"
 	"math/rand"
 	"sort"
@@ -195,17 +196,6 @@ func (n *Transaction) CreateTransactionAppendWitness2(param TransactionParam) (s
 	})
 	// add witness
 	script := io.NewBufBinWriter()
-	if param.ROrigin != "" && param.RHash == "" {
-		//emit.String(script.BinWriter, param.ROrigin)
-	} else if param.ROrigin == "" && param.RHash != "" {
-		//rHex, err := hex.DecodeString(param.RHash)
-		//if err != nil {
-		//	return "", fmt.Errorf("decode error: %s", err)
-		//}
-		//emit.Bytes(script.BinWriter, rHex)
-	} else {
-		return "", errors.New("invalid r text")
-	}
 	emit.String(script.BinWriter, "1")
 	emit.Int(script.BinWriter, 1)
 	emit.Opcode(script.BinWriter, opcode.PACK)
@@ -365,20 +355,20 @@ func (n *Transaction) QuerySwapData(rHash string) (map[string]interface{}, error
 	}
 	r, err := n.client.InvokeFunction(n.contractAddr, "querySwapInfo", params, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invoke function: %s", err)
 	} else if r.State != "HALT" || len(r.Stack) == 0 {
 		return nil, errors.New("invalid VM state")
 	}
-
+	n.logger.Debug(hubUtil.ToString(r.Stack))
 	return StackToSwapInfo(r.Stack)
 }
 
 type SwapInfo struct {
-	Amount          int64  `json:"amount"`
-	UserNep5Address string `json:"userNep5Address"`
-	State           int    `json:"state"`
-	OriginText      string `json:"originText"`
-	OvertimeBlocks  int64  `json:"overtimeBlocks"`
+	Amount         int64  `json:"amount"`
+	UserNeoAddress string `json:"userNeoAddress"`
+	State          int    `json:"state"`
+	OriginText     string `json:"originText"`
+	OvertimeBlocks int64  `json:"overtimeBlocks"`
 }
 
 func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {

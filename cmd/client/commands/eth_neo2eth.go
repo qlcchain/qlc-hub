@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/abiosoft/ishell"
 
@@ -46,10 +48,13 @@ func eNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 }
 
 func eNeo2Eth() {
+	var amount int64 = 1300000000
+
+	log.Println("=====neo2eth: issue====")
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperSignerAddress, 1300000000)
+	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -59,13 +64,71 @@ func eNeo2Eth() {
 	if !b || err != nil {
 		logger.Fatal(err)
 	}
-	tx2, err := ethTransaction.UserUnlock(rHash, rOrigin, ethUserAddress)
+	tx, err = ethTransaction.UserUnlock(rHash, rOrigin, ethUserAddress)
 	if err != nil {
 		logger.Fatal(err)
 	}
-	fmt.Println("User Unlock: ", tx2)
+	fmt.Println("User Unlock: ", tx)
+
+	b, err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if !b || err != nil {
+		logger.Fatal(err)
+	}
+
+	log.Println("successfully")
 }
 
 func eNeo2EthFetch() {
+	var amount int64 = 1300000000
 
+	log.Println("=====neo2eth: issue====")
+	rOrigin, rHash := util.Sha256Hash()
+	fmt.Println("hash: ", rOrigin, "==>", rHash)
+
+	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	fmt.Println("wrapper Lock: ", tx)
+
+	b, err := ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if !b || err != nil {
+		logger.Fatal(err)
+	}
+
+	waitingForEthBlocksConfirmed(20)
+
+	tx, err = ethTransaction.WrapperFetch(rHash, ethWrapperOwnerAddress)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	fmt.Println("wrapper fetch: ", tx)
+
+	b, err = ethTransaction.TxVerifyAndConfirmed(tx, 0, 0)
+	if !b || err != nil {
+		logger.Fatal(err)
+	}
+
+	log.Println("successfully")
+}
+
+func waitingForEthBlocksConfirmed(n int64) {
+	cHeight, err := ethTransaction.GetBestBlockHeight()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for {
+		time.Sleep(40 * time.Second)
+		ch, err := ethTransaction.GetBestBlockHeight()
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			if ch-cHeight > n {
+				break
+			} else {
+				log.Printf("waiting for %d/%d block confirmed ... \n", ch-cHeight, n)
+			}
+		}
+	}
 }
