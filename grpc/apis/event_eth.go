@@ -9,10 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/types"
-	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 func (e *EventAPI) ethEventLister() {
@@ -87,7 +85,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 	var txHash string
 	switch eth.State(state) {
 	case eth.IssueLock:
-		info, _ := e.store.GetLockerInfo(rHash)
+		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State >= types.DepositEthLockedDone {
 			return
 		}
@@ -101,7 +99,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.DepositEthLockedDone))
 
 	case eth.IssueUnlock:
-		info, _ := e.store.GetLockerInfo(rHash)
+		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State >= types.DepositEthUnLockedDone {
 			return
 		}
@@ -143,7 +141,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.DepositNeoUnLockedDone))
 
 	case eth.IssueFetch: // wrapper Fetch
-		info, _ := e.store.GetLockerInfo(rHash)
+		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State >= types.DepositEthFetchDone {
 			return
 		}
@@ -160,7 +158,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 			return
 		}
 
-		info := new(types.LockerInfo)
+		info = new(types.LockerInfo)
 		info.State = types.WithDrawEthLockedDone
 		info.RHash = rHash
 		info.LockedEthHash = tx
@@ -208,7 +206,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawNeoLockedDone))
 
 	case eth.DestroyUnlock:
-		info, _ := e.store.GetLockerInfo(rHash)
+		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State >= types.WithDrawEthUnlockDone {
 			return
 		}
@@ -221,7 +219,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthUnlockDone))
 
 	case eth.DestroyFetch: // user fetch
-		info, _ := e.store.GetLockerInfo(rHash)
+		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State >= types.WithDrawEthFetchDone {
 			return
 		}
@@ -280,13 +278,15 @@ func (e *EventAPI) loopLockerState() {
 				}
 
 				switch info.State {
+				case types.DepositNeoLockedDone: // check if timeout
+					e.continueDepositNeoLockedDone(info.RHash)
 				case types.DepositEthLockedPending: // should confirmed tx
 					e.continueDepositEthLockedPending(info.RHash)
 				case types.DepositEthLockedDone: // check if timeout or eth already unlock
 					e.continueDepositEthLockedDone(info.RHash)
 				case types.DepositNeoUnLockedPending: // should confirmed tx
 					e.continueDepositNeoUnLockedPending(info.RHash)
-				case types.WithDrawNeoLockedDone: // check if timeout or neo already unlocked
+				case types.WithDrawNeoLockedDone: // check if timeout, waiting user claim
 					e.continueWithdrawNeoLockedDone(info.RHash)
 				case types.WithDrawNeoUnLockedDone: // wrapper should unlock on eth
 					e.continueWithDrawNeoUnLockedDone(info.RHash)
@@ -296,6 +296,19 @@ func (e *EventAPI) loopLockerState() {
 					e.continueWithDrawNeoFetchPending(info.RHash)
 				}
 			}
+		}
+	}
+}
+
+func (e *EventAPI) continueDepositNeoLockedDone(rHash string) {
+	info, _ := e.store.GetLockerInfo(rHash)
+	if !info.NeoTimeout {
+		if b, h := e.neo.HasConfirmedBlocksHeight(info.LockedNeoHeight, info.NeoTimerInterval); b {
+			info.NeoTimeout = true
+			if err := e.store.UpdateLockerInfo(info); err != nil {
+				e.logger.Errorf("loop/updateLocker: %s [%s]", err, info.RHash)
+			}
+			e.logger.Infof("loop/set neo timeout flag true, [%s], [%s, %d->%d]", info.RHash, types.LockerStateToString(info.State), info.LockedNeoHeight, h)
 		}
 	}
 }
@@ -456,55 +469,6 @@ func (e *EventAPI) continueWithdrawNeoLockedDone(rHash string) {
 			return
 		}
 		e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoFetchDone))
-	} else {
-		lock(rHash, e.logger)
-		defer unlock(rHash, e.logger)
-		info, _ := e.store.GetLockerInfo(rHash)
-		if info.State >= types.WithDrawNeoUnLockedDone {
-			return
-		}
-		swapInfo, err := e.neo.QuerySwapInfo(info.RHash)
-		if err != nil {
-			e.logger.Error(err)
-			return
-		}
-		if swapInfo.State == 50 { //todo need confirmed
-			e.logger.Infof("loop/continue withdraw neo locked done : %s", info.RHash)
-			e.logger.Infof("swap info : %s", util.ToString(swapInfo))
-
-			rOrigin := swapInfo.OriginText
-			unlockedTxHash := swapInfo.OriginText //todo
-
-			height, err := e.neo.TxVerifyAndConfirmed(unlockedTxHash, e.cfg.NEOCfg.ConfirmedHeight)
-			if err != nil {
-				e.logger.Errorf("neo tx confirmed: %s, %s [%s]", err, unlockedTxHash, info.RHash)
-				return
-			}
-
-			info.State = types.WithDrawNeoUnLockedDone
-			info.UnlockedNeoHeight = height
-			info.UnlockedNeoHash = unlockedTxHash
-			info.ROrigin = rOrigin
-			if err := e.store.UpdateLockerInfo(info); err != nil {
-				e.logger.Errorf("%s: %s", info.RHash, err)
-				return
-			}
-			e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
-
-			tx, err := e.eth.WrapperUnlock(info.RHash, rOrigin, e.cfg.EthereumCfg.SignerAddress)
-			if err != nil {
-				e.logger.Errorf("eth wrapper unlock: %s [%s]", err, info.RHash)
-				return
-			}
-			e.logger.Infof("loop/withdraw wrapper eth unlock: %s [%s] ", tx, info.RHash)
-			info.State = types.WithDrawEthUnlockPending
-			info.UnlockedEthHash = tx
-			if err := e.store.UpdateLockerInfo(info); err != nil {
-				e.logger.Errorf("%s: %s", info.RHash, err)
-				return
-			}
-			e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthUnlockPending))
-		}
 	}
 }
 

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -14,6 +12,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type DepositAPI struct {
@@ -98,12 +97,6 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		}
 		d.logger.Infof("swap info: %s", util.ToString(swapInfo))
 
-		if b, h := d.neo.HasConfirmedBlocksHeight(height, getLockDeadLineHeight(swapInfo.OvertimeBlocks)); b {
-			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, height, h)
-			d.logger.Error(err)
-			return
-		}
-
 		info.State = types.DepositNeoLockedDone
 		info.LockedNeoHeight = height
 		info.Amount = swapInfo.Amount
@@ -114,6 +107,12 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			return
 		}
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
+
+		if b, h := d.neo.HasConfirmedBlocksHeight(height, getLockDeadLineHeight(swapInfo.OvertimeBlocks)); b {
+			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, height, h)
+			d.logger.Error(err)
+			return
+		}
 
 		// wrapper to eth lock
 		tx, err := d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.SignerAddress, swapInfo.Amount)

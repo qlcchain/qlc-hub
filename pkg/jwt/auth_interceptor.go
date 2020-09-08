@@ -3,13 +3,12 @@ package jwt
 import (
 	"context"
 
+	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-
-	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
 type AuthInterceptor struct {
@@ -35,6 +34,7 @@ func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(ctx, info.FullMethod); err != nil {
+			i.logger.Error(err)
 			return nil, err
 		}
 		return handler(ctx, req)
@@ -48,8 +48,9 @@ func (i *AuthInterceptor) Stream() grpc.StreamServerInterceptor {
 		info *grpc.StreamServerInfo,
 		handler grpc.StreamHandler,
 	) error {
-		i.logger.Info(info.FullMethod)
+		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(stream.Context(), info.FullMethod); err != nil {
+			i.logger.Error(err)
 			return err
 		}
 		return handler(srv, stream)
@@ -80,7 +81,7 @@ func DefaultAuthorizer(jwtManager *JWTManager, accessibleRoles map[string][]stri
 		}
 		claims, err := jwtManager.Verify(accessToken)
 		if err != nil {
-			return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
+			return status.Errorf(codes.Unauthenticated, "access token is invalid: %v, %s", err, accessToken)
 		}
 
 		for _, role := range accessibleRoles {
