@@ -270,9 +270,53 @@
         ]
       }
     },
-    "/info/lockerInfosByAddr": {
+    "/info/lockerInfosByErc20Addr": {
       "get": {
-        "operationId": "InfoAPI_LockerInfosByAddr",
+        "operationId": "InfoAPI_LockerInfosByErc20Addr",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoLockerStatesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/lockerInfosByNep5Addr": {
+      "get": {
+        "operationId": "InfoAPI_LockerInfosByNep5Addr",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -396,10 +440,6 @@
         "nep5TxHash": {
           "type": "string"
         },
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        },
         "rHash": {
           "type": "string"
         },
@@ -483,31 +523,31 @@
           "type": "string",
           "format": "int64"
         },
-        "lockedNep5Hash": {
+        "lockedNeoHash": {
           "type": "string"
         },
-        "lockedNep5Height": {
+        "lockedNeoHeight": {
           "type": "integer",
           "format": "int64"
         },
-        "lockedErc20Hash": {
+        "lockedEthHash": {
           "type": "string"
         },
-        "lockedErc20Height": {
+        "lockedEthHeight": {
           "type": "integer",
           "format": "int64"
         },
-        "unlockedNep5Hash": {
+        "unlockedNeoHash": {
           "type": "string"
         },
-        "unlockedNep5Height": {
+        "unlockedNeoHeight": {
           "type": "integer",
           "format": "int64"
         },
-        "unlockedErc20Hash": {
+        "unlockedEthHash": {
           "type": "string"
         },
-        "unlockedErc20Height": {
+        "unlockedEthHeight": {
           "type": "integer",
           "format": "int64"
         },
@@ -525,7 +565,10 @@
         "lastModifyTime": {
           "type": "string"
         },
-        "userAddr": {
+        "neoUserAddr": {
+          "type": "string"
+        },
+        "ethUserAddr": {
           "type": "string"
         },
         "neoTimeout": {

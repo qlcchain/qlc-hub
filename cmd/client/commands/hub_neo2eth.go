@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
+
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -62,10 +63,9 @@ func hNeo2Eth() {
 	// wrapper lock (eth)
 	paras := fmt.Sprintf(`{
 		"nep5TxHash": "%s",
-		"amount": %d,
 		"rHash": "%s",
 		"addr": "%s"
-	}`, tx, lockAmount, rHash, ethWrapperOwnerAddress)
+	}`, tx, rHash, ethWrapperOwnerAddress)
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
 	if err != nil || !r {
 		log.Fatal(err, r)
@@ -104,10 +104,9 @@ func hNeo2EthFetch() {
 	// wrapper lock (eth)
 	paras := fmt.Sprintf(`{
 		"nep5TxHash": "%s",
-		"amount": %d,
 		"rHash": "%s",
 		"addr": "%s"
-	}`, tx, lockAmount, rHash, ethWrapperOwnerAddress)
+	}`, tx, rHash, ethWrapperOwnerAddress)
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
 	if err != nil || !r {
 		log.Fatal(err, r)

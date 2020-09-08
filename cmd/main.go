@@ -7,8 +7,10 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -50,6 +52,11 @@ func main() {
 	logger := log.NewLogger("main")
 	logger.Info(util.ToIndentString(cfg))
 
+	for i := 0; i < 10; i++ {
+		if token, err := cfg.JwtManager.Generate(jwt.User); err == nil {
+			logger.Infof("%d: %s", i, token)
+		}
+	}
 	server := grpc.NewServer(cfg)
 	if err := server.Start(); err != nil {
 		logger.Fatal(err)

@@ -14,9 +14,8 @@ message PingResponse {
 
 message DepositLockRequest{
    string nep5TxHash = 1;
-   int64  amount     = 2;
-   string rHash      = 3;
-   string addr       = 4;
+   string rHash      = 2;
+   string addr       = 3;
 }
 
 message FetchRequest{
@@ -42,23 +41,24 @@ message LockerStateResponse {
   string rHash        = 3;
   string rOrigin      = 4;
   int64  amount       = 5;
-  string lockedNep5Hash    = 6;
-  uint32 lockedNep5Height  = 7;
-  string lockedErc20Hash   = 8;
-  uint32 lockedErc20Height = 9;
-  string unlockedNep5Hash  = 10;
-  uint32 unlockedNep5Height  = 11;
-  string unlockedErc20Hash   = 12;
-  uint32 unlockedErc20Height = 13;
+  string lockedNeoHash       = 6;
+  uint32 lockedNeoHeight     = 7;
+  string lockedEthHash       = 8;
+  uint32 lockedEthHeight     = 9;
+  string unlockedNeoHash     = 10;
+  uint32 unlockedNeoHeight   = 11;
+  string unlockedEthHash     = 12;
+  uint32 unlockedEthHeight   = 13;
   uint32 neoTimerInterval    = 14;
   uint32 ethTimerInterval    = 15;
   string startTime           = 16;
   string lastModifyTime      = 17;
-  string userAddr            = 18;
-  bool   neoTimeout          = 19;
-  bool   ethTimeout          = 20;
-  bool   fail                = 21;
-  string remark              = 22;
+  string neoUserAddr         = 18;
+  string ethUserAddr         = 19;
+  bool   neoTimeout          = 20;
+  bool   ethTimeout          = 21;
+  bool   fail                = 22;
+  string remark              = 23;
 }
 
 message Offset {
@@ -123,9 +123,15 @@ service InfoAPI {
         };
     }
 
-    rpc LockerInfosByAddr(ParamAndOffset) returns (LockerStatesResponse){
+    rpc LockerInfosByErc20Addr(ParamAndOffset) returns (LockerStatesResponse){
         option (google.api.http) = {
-          get: "/info/lockerInfosByAddr"
+          get: "/info/lockerInfosByErc20Addr"
+        };
+    }
+
+    rpc LockerInfosByNep5Addr(ParamAndOffset) returns (LockerStatesResponse){
+        option (google.api.http) = {
+          get: "/info/lockerInfosByNep5Addr"
         };
     }
 

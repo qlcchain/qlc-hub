@@ -42,48 +42,43 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 			if err != nil {
 				return
 			}
-		case "userAddr":
-			z.UserAddr, err = dc.ReadString()
-			if err != nil {
-				return
-			}
 		case "lnHash":
-			z.LockedNep5Hash, err = dc.ReadString()
+			z.LockedNeoHash, err = dc.ReadString()
 			if err != nil {
 				return
 			}
 		case "lnHeight":
-			z.LockedNep5Height, err = dc.ReadUint32()
+			z.LockedNeoHeight, err = dc.ReadUint32()
 			if err != nil {
 				return
 			}
 		case "leHash":
-			z.LockedErc20Hash, err = dc.ReadString()
+			z.LockedEthHash, err = dc.ReadString()
 			if err != nil {
 				return
 			}
 		case "leHeight":
-			z.LockedErc20Height, err = dc.ReadUint32()
+			z.LockedEthHeight, err = dc.ReadUint32()
 			if err != nil {
 				return
 			}
 		case "unHash":
-			z.UnlockedNep5Hash, err = dc.ReadString()
+			z.UnlockedNeoHash, err = dc.ReadString()
 			if err != nil {
 				return
 			}
 		case "unHeight":
-			z.UnlockedNep5Height, err = dc.ReadUint32()
+			z.UnlockedNeoHeight, err = dc.ReadUint32()
 			if err != nil {
 				return
 			}
 		case "ueHash":
-			z.UnlockedErc20Hash, err = dc.ReadString()
+			z.UnlockedEthHash, err = dc.ReadString()
 			if err != nil {
 				return
 			}
 		case "ueHeight":
-			z.UnlockedErc20Height, err = dc.ReadUint32()
+			z.UnlockedEthHeight, err = dc.ReadUint32()
 			if err != nil {
 				return
 			}
@@ -94,6 +89,16 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 			}
 		case "ethTimerInterval":
 			z.EthTimerInterval, err = dc.ReadInt64()
+			if err != nil {
+				return
+			}
+		case "neoUserAddr":
+			z.NeoUserAddr, err = dc.ReadString()
+			if err != nil {
+				return
+			}
+		case "ethUserAddr":
+			z.EthUserAddr, err = dc.ReadString()
 			if err != nil {
 				return
 			}
@@ -139,9 +144,9 @@ func (z *LockerInfo) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 21
+	// map header, size 22
 	// write "state"
-	err = en.Append(0xde, 0x0, 0x15, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	err = en.Append(0xde, 0x0, 0x16, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	if err != nil {
 		return
 	}
@@ -176,21 +181,12 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	// write "userAddr"
-	err = en.Append(0xa8, 0x75, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
-	if err != nil {
-		return
-	}
-	err = en.WriteString(z.UserAddr)
-	if err != nil {
-		return
-	}
 	// write "lnHash"
 	err = en.Append(0xa6, 0x6c, 0x6e, 0x48, 0x61, 0x73, 0x68)
 	if err != nil {
 		return
 	}
-	err = en.WriteString(z.LockedNep5Hash)
+	err = en.WriteString(z.LockedNeoHash)
 	if err != nil {
 		return
 	}
@@ -199,7 +195,7 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteUint32(z.LockedNep5Height)
+	err = en.WriteUint32(z.LockedNeoHeight)
 	if err != nil {
 		return
 	}
@@ -208,7 +204,7 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteString(z.LockedErc20Hash)
+	err = en.WriteString(z.LockedEthHash)
 	if err != nil {
 		return
 	}
@@ -217,7 +213,7 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteUint32(z.LockedErc20Height)
+	err = en.WriteUint32(z.LockedEthHeight)
 	if err != nil {
 		return
 	}
@@ -226,7 +222,7 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteString(z.UnlockedNep5Hash)
+	err = en.WriteString(z.UnlockedNeoHash)
 	if err != nil {
 		return
 	}
@@ -235,7 +231,7 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteUint32(z.UnlockedNep5Height)
+	err = en.WriteUint32(z.UnlockedNeoHeight)
 	if err != nil {
 		return
 	}
@@ -244,7 +240,7 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteString(z.UnlockedErc20Hash)
+	err = en.WriteString(z.UnlockedEthHash)
 	if err != nil {
 		return
 	}
@@ -253,7 +249,7 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteUint32(z.UnlockedErc20Height)
+	err = en.WriteUint32(z.UnlockedEthHeight)
 	if err != nil {
 		return
 	}
@@ -272,6 +268,24 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 		return
 	}
 	err = en.WriteInt64(z.EthTimerInterval)
+	if err != nil {
+		return
+	}
+	// write "neoUserAddr"
+	err = en.Append(0xab, 0x6e, 0x65, 0x6f, 0x55, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
+	if err != nil {
+		return
+	}
+	err = en.WriteString(z.NeoUserAddr)
+	if err != nil {
+		return
+	}
+	// write "ethUserAddr"
+	err = en.Append(0xab, 0x65, 0x74, 0x68, 0x55, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
+	if err != nil {
+		return
+	}
+	err = en.WriteString(z.EthUserAddr)
 	if err != nil {
 		return
 	}
@@ -335,9 +349,9 @@ func (z *LockerInfo) EncodeMsg(en *msgp.Writer) (err error) {
 // MarshalMsg implements msgp.Marshaler
 func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 21
+	// map header, size 22
 	// string "state"
-	o = append(o, 0xde, 0x0, 0x15, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
+	o = append(o, 0xde, 0x0, 0x16, 0xa5, 0x73, 0x74, 0x61, 0x74, 0x65)
 	o, err = z.State.MarshalMsg(o)
 	if err != nil {
 		return
@@ -351,39 +365,42 @@ func (z *LockerInfo) MarshalMsg(b []byte) (o []byte, err error) {
 	// string "amount"
 	o = append(o, 0xa6, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74)
 	o = msgp.AppendInt64(o, z.Amount)
-	// string "userAddr"
-	o = append(o, 0xa8, 0x75, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
-	o = msgp.AppendString(o, z.UserAddr)
 	// string "lnHash"
 	o = append(o, 0xa6, 0x6c, 0x6e, 0x48, 0x61, 0x73, 0x68)
-	o = msgp.AppendString(o, z.LockedNep5Hash)
+	o = msgp.AppendString(o, z.LockedNeoHash)
 	// string "lnHeight"
 	o = append(o, 0xa8, 0x6c, 0x6e, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74)
-	o = msgp.AppendUint32(o, z.LockedNep5Height)
+	o = msgp.AppendUint32(o, z.LockedNeoHeight)
 	// string "leHash"
 	o = append(o, 0xa6, 0x6c, 0x65, 0x48, 0x61, 0x73, 0x68)
-	o = msgp.AppendString(o, z.LockedErc20Hash)
+	o = msgp.AppendString(o, z.LockedEthHash)
 	// string "leHeight"
 	o = append(o, 0xa8, 0x6c, 0x65, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74)
-	o = msgp.AppendUint32(o, z.LockedErc20Height)
+	o = msgp.AppendUint32(o, z.LockedEthHeight)
 	// string "unHash"
 	o = append(o, 0xa6, 0x75, 0x6e, 0x48, 0x61, 0x73, 0x68)
-	o = msgp.AppendString(o, z.UnlockedNep5Hash)
+	o = msgp.AppendString(o, z.UnlockedNeoHash)
 	// string "unHeight"
 	o = append(o, 0xa8, 0x75, 0x6e, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74)
-	o = msgp.AppendUint32(o, z.UnlockedNep5Height)
+	o = msgp.AppendUint32(o, z.UnlockedNeoHeight)
 	// string "ueHash"
 	o = append(o, 0xa6, 0x75, 0x65, 0x48, 0x61, 0x73, 0x68)
-	o = msgp.AppendString(o, z.UnlockedErc20Hash)
+	o = msgp.AppendString(o, z.UnlockedEthHash)
 	// string "ueHeight"
 	o = append(o, 0xa8, 0x75, 0x65, 0x48, 0x65, 0x69, 0x67, 0x68, 0x74)
-	o = msgp.AppendUint32(o, z.UnlockedErc20Height)
+	o = msgp.AppendUint32(o, z.UnlockedEthHeight)
 	// string "neoTimerInterval"
 	o = append(o, 0xb0, 0x6e, 0x65, 0x6f, 0x54, 0x69, 0x6d, 0x65, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c)
 	o = msgp.AppendInt64(o, z.NeoTimerInterval)
 	// string "ethTimerInterval"
 	o = append(o, 0xb0, 0x65, 0x74, 0x68, 0x54, 0x69, 0x6d, 0x65, 0x72, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x76, 0x61, 0x6c)
 	o = msgp.AppendInt64(o, z.EthTimerInterval)
+	// string "neoUserAddr"
+	o = append(o, 0xab, 0x6e, 0x65, 0x6f, 0x55, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
+	o = msgp.AppendString(o, z.NeoUserAddr)
+	// string "ethUserAddr"
+	o = append(o, 0xab, 0x65, 0x74, 0x68, 0x55, 0x73, 0x65, 0x72, 0x41, 0x64, 0x64, 0x72)
+	o = msgp.AppendString(o, z.EthUserAddr)
 	// string "startTime"
 	o = append(o, 0xa9, 0x73, 0x74, 0x61, 0x72, 0x74, 0x54, 0x69, 0x6d, 0x65)
 	o = msgp.AppendInt64(o, z.StartTime)
@@ -441,48 +458,43 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 			if err != nil {
 				return
 			}
-		case "userAddr":
-			z.UserAddr, bts, err = msgp.ReadStringBytes(bts)
-			if err != nil {
-				return
-			}
 		case "lnHash":
-			z.LockedNep5Hash, bts, err = msgp.ReadStringBytes(bts)
+			z.LockedNeoHash, bts, err = msgp.ReadStringBytes(bts)
 			if err != nil {
 				return
 			}
 		case "lnHeight":
-			z.LockedNep5Height, bts, err = msgp.ReadUint32Bytes(bts)
+			z.LockedNeoHeight, bts, err = msgp.ReadUint32Bytes(bts)
 			if err != nil {
 				return
 			}
 		case "leHash":
-			z.LockedErc20Hash, bts, err = msgp.ReadStringBytes(bts)
+			z.LockedEthHash, bts, err = msgp.ReadStringBytes(bts)
 			if err != nil {
 				return
 			}
 		case "leHeight":
-			z.LockedErc20Height, bts, err = msgp.ReadUint32Bytes(bts)
+			z.LockedEthHeight, bts, err = msgp.ReadUint32Bytes(bts)
 			if err != nil {
 				return
 			}
 		case "unHash":
-			z.UnlockedNep5Hash, bts, err = msgp.ReadStringBytes(bts)
+			z.UnlockedNeoHash, bts, err = msgp.ReadStringBytes(bts)
 			if err != nil {
 				return
 			}
 		case "unHeight":
-			z.UnlockedNep5Height, bts, err = msgp.ReadUint32Bytes(bts)
+			z.UnlockedNeoHeight, bts, err = msgp.ReadUint32Bytes(bts)
 			if err != nil {
 				return
 			}
 		case "ueHash":
-			z.UnlockedErc20Hash, bts, err = msgp.ReadStringBytes(bts)
+			z.UnlockedEthHash, bts, err = msgp.ReadStringBytes(bts)
 			if err != nil {
 				return
 			}
 		case "ueHeight":
-			z.UnlockedErc20Height, bts, err = msgp.ReadUint32Bytes(bts)
+			z.UnlockedEthHeight, bts, err = msgp.ReadUint32Bytes(bts)
 			if err != nil {
 				return
 			}
@@ -493,6 +505,16 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 			}
 		case "ethTimerInterval":
 			z.EthTimerInterval, bts, err = msgp.ReadInt64Bytes(bts)
+			if err != nil {
+				return
+			}
+		case "neoUserAddr":
+			z.NeoUserAddr, bts, err = msgp.ReadStringBytes(bts)
+			if err != nil {
+				return
+			}
+		case "ethUserAddr":
+			z.EthUserAddr, bts, err = msgp.ReadStringBytes(bts)
 			if err != nil {
 				return
 			}
@@ -539,6 +561,6 @@ func (z *LockerInfo) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *LockerInfo) Msgsize() (s int) {
-	s = 3 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 9 + msgp.StringPrefixSize + len(z.UserAddr) + 7 + msgp.StringPrefixSize + len(z.LockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedErc20Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNep5Hash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedErc20Hash) + 9 + msgp.Uint32Size + 17 + msgp.Int64Size + 17 + msgp.Int64Size + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 11 + msgp.BoolSize + 11 + msgp.BoolSize + 5 + msgp.BoolSize + 7 + msgp.StringPrefixSize + len(z.Remark)
+	s = 3 + 6 + z.State.Msgsize() + 6 + msgp.StringPrefixSize + len(z.RHash) + 8 + msgp.StringPrefixSize + len(z.ROrigin) + 7 + msgp.Int64Size + 7 + msgp.StringPrefixSize + len(z.LockedNeoHash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.LockedEthHash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedNeoHash) + 9 + msgp.Uint32Size + 7 + msgp.StringPrefixSize + len(z.UnlockedEthHash) + 9 + msgp.Uint32Size + 17 + msgp.Int64Size + 17 + msgp.Int64Size + 12 + msgp.StringPrefixSize + len(z.NeoUserAddr) + 12 + msgp.StringPrefixSize + len(z.EthUserAddr) + 10 + msgp.Int64Size + 15 + msgp.Int64Size + 11 + msgp.BoolSize + 11 + msgp.BoolSize + 5 + msgp.BoolSize + 7 + msgp.StringPrefixSize + len(z.Remark)
 	return
 }

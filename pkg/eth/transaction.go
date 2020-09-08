@@ -14,11 +14,12 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
-	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -109,6 +110,7 @@ func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, er
 	auth.Value = big.NewInt(0)      // in wei
 	auth.GasLimit = uint64(8000000) // in units
 	auth.GasPrice = gasPrice
+	t.logger.Infof("eth tx auth, gasLimit: %d, gasPrice: %d, nonce: %d ", auth.GasLimit, auth.GasPrice, auth.Nonce)
 	return auth, nil
 }
 

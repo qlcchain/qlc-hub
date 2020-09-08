@@ -3,12 +3,13 @@ package jwt
 import (
 	"context"
 
-	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
 type AuthInterceptor struct {
@@ -32,7 +33,7 @@ func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		i.logger.Info(info.FullMethod)
+		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(ctx, info.FullMethod); err != nil {
 			return nil, err
 		}

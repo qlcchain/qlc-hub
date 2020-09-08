@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
