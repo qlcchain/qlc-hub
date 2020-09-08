@@ -6,9 +6,10 @@ import (
 	"io"
 	"sync"
 
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/log"
-	"go.uber.org/zap"
 )
 
 var (

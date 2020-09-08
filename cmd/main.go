@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
