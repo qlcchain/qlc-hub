@@ -2,27 +2,28 @@ package types
 
 //go:generate msgp
 type LockerInfo struct {
-	State               LockerState `msg:"state" json:"state"`
-	RHash               string      `msg:"rHash" json:"rHash"`
-	ROrigin             string      `msg:"rOrigin" json:"rOrigin"`
-	Amount              int64       `msg:"amount" json:"amount"`
-	UserAddr            string      `msg:"userAddr" json:"userAddr"`
-	LockedNep5Hash      string      `msg:"lnHash" json:"lockedNep5Hash"`
-	LockedNep5Height    uint32      `msg:"lnHeight" json:"lockedNep5Height"`
-	LockedErc20Hash     string      `msg:"leHash" json:"lockedErc20Hash"`
-	LockedErc20Height   uint32      `msg:"leHeight" json:"lockedErc20Height"`
-	UnlockedNep5Hash    string      `msg:"unHash" json:"unlockedNep5Hash"`
-	UnlockedNep5Height  uint32      `msg:"unHeight" json:"unlockedNep5Height"`
-	UnlockedErc20Hash   string      `msg:"ueHash" json:"unlockedErc20Hash"`
-	UnlockedErc20Height uint32      `msg:"ueHeight" json:"unlockedErc20Height"`
-	NeoTimerInterval    int64       `msg:"neoTimerInterval" json:"neoTimerInterval"`
-	EthTimerInterval    int64       `msg:"ethTimerInterval" json:"ethTimerInterval"`
-	StartTime           int64       `msg:"startTime" json:"startTime"`
-	LastModifyTime      int64       `msg:"lastModifyTime" json:"lastModifyTime"`
-	NeoTimeout          bool        `msg:"neoTimeout" json:"neoTimeout"`
-	EthTimeout          bool        `msg:"ethTimeout" json:"ethTimeout"`
-	Fail                bool        `msg:"fail" json:"fail"`
-	Remark              string      `msg:"remark" json:"remark"`
+	State             LockerState `msg:"state" json:"state"`
+	RHash             string      `msg:"rHash" json:"rHash"`
+	ROrigin           string      `msg:"rOrigin" json:"rOrigin"`
+	Amount            int64       `msg:"amount" json:"amount"`
+	LockedNeoHash     string      `msg:"lnHash" json:"lockedNeoHash"`
+	LockedNeoHeight   uint32      `msg:"lnHeight" json:"lockedNeoHeight"`
+	LockedEthHash     string      `msg:"leHash" json:"lockedEthHash"`
+	LockedEthHeight   uint32      `msg:"leHeight" json:"lockedEthHeight"`
+	UnlockedNeoHash   string      `msg:"unHash" json:"unlockedNeoHash"`
+	UnlockedNeoHeight uint32      `msg:"unHeight" json:"unlockedNeoHeight"`
+	UnlockedEthHash   string      `msg:"ueHash" json:"unlockedEthHash"`
+	UnlockedEthHeight uint32      `msg:"ueHeight" json:"unlockedEthHeight"`
+	NeoTimerInterval  int64       `msg:"neoTimerInterval" json:"neoTimerInterval"`
+	EthTimerInterval  int64       `msg:"ethTimerInterval" json:"ethTimerInterval"`
+	NeoUserAddr       string      `msg:"neoUserAddr" json:"neoUserAddr"`
+	EthUserAddr       string      `msg:"ethUserAddr" json:"ethUserAddr"`
+	StartTime         int64       `msg:"startTime" json:"startTime"`
+	LastModifyTime    int64       `msg:"lastModifyTime" json:"lastModifyTime"`
+	NeoTimeout        bool        `msg:"neoTimeout" json:"neoTimeout"`
+	EthTimeout        bool        `msg:"ethTimeout" json:"ethTimeout"`
+	Fail              bool        `msg:"fail" json:"fail"`
+	Remark            string      `msg:"remark" json:"remark"`
 }
 
 func (b *LockerInfo) Serialize() ([]byte, error) {

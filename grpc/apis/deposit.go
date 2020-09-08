@@ -44,7 +44,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 
 	if lockerInfo, err := d.store.GetLockerInfo(request.GetRHash()); err == nil {
 		if lockerInfo.State == types.DepositInit {
-			lockerInfo.LockedNep5Hash = request.GetNep5TxHash()
+			lockerInfo.LockedNeoHash = request.GetNep5TxHash()
 		} else {
 			if lockerInfo.Fail {
 				return nil, fmt.Errorf("lock fail: %s", lockerInfo.Remark)
@@ -53,9 +53,9 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 	} else {
 		// init info
 		info := &types.LockerInfo{
-			State:          types.DepositInit,
-			RHash:          request.GetRHash(),
-			LockedNep5Hash: request.GetNep5TxHash(),
+			State:         types.DepositInit,
+			RHash:         request.GetRHash(),
+			LockedNeoHash: request.GetNep5TxHash(),
 		}
 		if err := d.store.AddLockerInfo(info); err != nil {
 			d.logger.Error(err)
@@ -104,9 +104,9 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		}
 
 		info.State = types.DepositNeoLockedDone
-		info.LockedNep5Height = height
+		info.LockedNeoHeight = height
 		info.Amount = swapInfo.Amount
-		info.UserAddr = swapInfo.UserNeoAddress
+		info.NeoUserAddr = swapInfo.UserNeoAddress
 		info.NeoTimerInterval = swapInfo.OvertimeBlocks
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
@@ -122,7 +122,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		}
 		d.logger.Infof("deposit/wrapper eth lock: %s [%s]", request.GetRHash(), tx)
 		info.State = types.DepositEthLockedPending
-		info.LockedErc20Hash = tx
+		info.LockedEthHash = tx
 		info.EthTimerInterval = d.cfg.EthereumCfg.DepositInterval
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Error(err)
@@ -182,7 +182,7 @@ func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.B
 
 		info, _ = d.store.GetLockerInfo(rHash)
 		info.State = types.DepositNeoFetchPending
-		info.UnlockedNep5Hash = tx
+		info.UnlockedNeoHash = tx
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Errorf("update locker info: %s [%s]", err, rHash)
 			return
@@ -195,7 +195,7 @@ func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.B
 			d.logger.Errorf("tx %s verify: %s [%s]", tx, err, rHash)
 			return
 		}
-		info.UnlockedNep5Height = height
+		info.UnlockedNeoHeight = height
 		info.State = types.DepositNeoFetchDone
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			d.logger.Errorf("update locker info: %s [%s]", err, rHash)

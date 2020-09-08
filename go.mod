@@ -15,7 +15,6 @@ require (
 	github.com/mr-tron/base58 v1.2.0
 	github.com/nspcc-dev/neo-go v0.77.0
 	github.com/philhofer/fwd v1.0.0 // indirect
-	github.com/prometheus/common v0.7.0
 	github.com/tinylib/msgp v1.1.2
 	go.uber.org/zap v1.16.0
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d

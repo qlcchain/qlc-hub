@@ -38,15 +38,11 @@ var (
 	ethWrapperOwnerAddress string // also eth wrapper signer address
 	//ethUserPrikey           = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 	ethUserAddress = "0x6A786bf6E1c68E981D04139137f81dDA2d0acBF1"
-
-	ethIntervalHeight = 20
-	neoIntervalHeight = 20
 )
 
 var (
 	neoTrasaction  *neo.Transaction
 	ethTransaction *eth.Transaction
-	lockAmount     = 130000000
 	singerClient   *signer.SignerClient
 	cfg            = &config.Config{}
 )
