@@ -32,7 +32,7 @@ func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-		i.logger.Info(info.FullMethod)
+		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(ctx, info.FullMethod); err != nil {
 			return nil, err
 		}

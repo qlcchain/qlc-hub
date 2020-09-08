@@ -45,10 +45,18 @@ var (
 	ethTransaction *eth.Transaction
 	singerClient   *signer.SignerClient
 	cfg            = &config.Config{}
+	hubCmd         = &HubCmd{}
 )
 
+type HubCmd struct {
+	SignerToken string `json:"signerToken"  long:"signerToken" description:"singer JWT token" default:"eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJRTENDaGFpbiBCb3QiLCJleHAiOjE2MzEwNjQ2MjgsImp0aSI6Ijc4MzdhNzM4LWJmYmYtNDdjNy1hZTQwLWZkMDZmY2VkZjViMSIsImlhdCI6MTU5OTUyODYyOCwiaXNzIjoiUUxDQ2hhaW4gQm90Iiwic3ViIjoic2lnbmVyIiwicm9sZXMiOlsidXNlciJdfQ.AfhfQZt-avkTC_VTtDYp8mILxEslpCncybCWi16VMKfDmPeb9zPqQylByZH9YtOvJeQSZLddQFnUfEr4yidr14lzAeoUqjdPetnN9nmNyglSqHhh3Wz_F7LmgLbaYwlvHEtSFDsKPocewHRkGzKvJCrUwxxtRcngqmcdlhp4IimNT1rZ" validate:"nonzero"`
+	HubToken    string `json:"hubToken"  long:"hubToken" description:"hub JWT token"  default:"eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJRTENDaGFpbiBCb3QiLCJqdGkiOiI2ZTAwNGJiMS05ZmFiLTRjNGEtYjhiYy0yMDY3YTIzNjIyNzEiLCJpYXQiOjE1OTk1MzI2OTIsImlzcyI6IlFMQ0NoYWluIEJvdCIsInN1YiI6InNpZ25lciIsInJvbGVzIjpbInVzZXIiXX0.AZod7o926gI8r7rts8DmYTNEcJAnHl06YaoMUdt1liwnCwMXSOHZMxMNmrJ4z6-qLs7VT494Q3J14nOULKxNspkBAQ8ADObBRf110tmJiuvSENjjZe1hULM-OrnJkotzA4l81KOsotGNM3VAFTMSddPP_6RB2naAaJZDPS6sMIQGrMfv" validate:"nonzero"`
+}
+
 func initParams(osArgs []string) {
-	flag.ParseArgs(cfg, osArgs)
+	flag.ParseArgs(cfg, []string{})
+	flag.ParseArgs(hubCmd, osArgs)
+	cfg.SignerToken = hubCmd.SignerToken
 
 	neoUrl = cfg.NEOCfg.EndPoint
 	neoContract = cfg.NEOCfg.Contract

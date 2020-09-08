@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"net"
 	"net/http"
 	"time"
@@ -38,7 +39,11 @@ type Server struct {
 }
 
 func NewServer(cfg *config.Config) *Server {
-	gRpcServer := grpc.NewServer()
+	authorizer := authorizer(cfg.JwtManager)
+	i := jwt.NewAuthInterceptor(authorizer)
+	gRpcServer := grpc.NewServer(grpc.UnaryInterceptor(i.Unary()), grpc.StreamInterceptor(i.Stream()))
+
+	//gRpcServer := grpc.NewServer()
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &Server{
@@ -52,6 +57,7 @@ func NewServer(cfg *config.Config) *Server {
 
 func (g *Server) Start() error {
 	if err := g.checkBaseInfo(); err != nil {
+		g.logger.Error(err)
 		return err
 	}
 	g.logger.Info("config info checked")
@@ -99,6 +105,7 @@ func (g *Server) checkBaseInfo() error {
 	}
 	eTransaction := eth.NewTransaction(eClient, signer, g.cfg.EthereumCfg.Contract)
 	g.eth = eTransaction
+	g.logger.Info("eth client connected successfully")
 
 	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract, signer)
 	if err != nil {
@@ -108,6 +115,7 @@ func (g *Server) checkBaseInfo() error {
 		return fmt.Errorf("neo node connect timeout: %s", err)
 	}
 	g.neo = nTransaction
+	g.logger.Info("neo client connected successfully")
 
 	store, err := store.NewStore(g.cfg.DataDir())
 	if err != nil {
@@ -198,4 +206,15 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 		return err
 	}
 	return nil
+}
+
+func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
+	authorizer := jwt.DefaultAuthorizer(manager, map[string][]string{
+		"/proto.DepositAPI/Lock":   jwt.Both,
+		"/proto.DepositAPI/Fetch":  jwt.Both,
+		"/proto.WithdrawAPI/Claim": jwt.Both,
+		"/proto.EventAPI/Event":    jwt.Both,
+		"/proto.InfoAPI/Ping":      jwt.Both,
+	})
+	return authorizer
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -50,6 +51,11 @@ func main() {
 	logger := log.NewLogger("main")
 	logger.Info(util.ToIndentString(cfg))
 
+	for i := 0; i < 10; i++ {
+		if token, err := cfg.JwtManager.Generate(jwt.User); err == nil {
+			logger.Infof("%d: %s", i, token)
+		}
+	}
 	server := grpc.NewServer(cfg)
 	if err := server.Start(); err != nil {
 		logger.Fatal(err)

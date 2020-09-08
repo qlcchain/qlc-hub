@@ -84,6 +84,7 @@ func get(url string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("request: %s", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("authorization", hubCmd.HubToken)
 
 	client := http.Client{}
 	response, err := client.Do(request)
@@ -116,6 +117,7 @@ func post(paras string, url string) (bool, error) {
 		log.Fatal("request ", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("authorization", hubCmd.HubToken)
 	client := http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
