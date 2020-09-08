@@ -3,26 +3,25 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Server struct {
@@ -95,6 +94,7 @@ func (g *Server) checkBaseInfo() error {
 		return err
 	}
 	g.signer = signer
+	g.logger.Info("signer client connected successfully")
 
 	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint)
 	if err != nil {
