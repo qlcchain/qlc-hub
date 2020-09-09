@@ -55,9 +55,11 @@ func hEth2Neo() {
 		"userNep5Addr": "%s"
 	}`, rOrigin, neoUserAddr)
 	r, err := post(paras, fmt.Sprintf("%s/withdraw/claim", hubUrl))
-	if !r || err != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("claim hash : ", r.(string))
+
 	if !hubWaitingForLockerState(rHash, types.WithDrawEthUnlockDone) {
 		log.Fatal(err)
 	}

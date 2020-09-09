@@ -3,12 +3,13 @@ package jwt
 import (
 	"context"
 
-	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
 type AuthInterceptor struct {
@@ -34,7 +35,7 @@ func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(ctx, info.FullMethod); err != nil {
-			i.logger.Error(err)
+			i.logger.Errorf("%s: %s", info.FullMethod, err)
 			return nil, err
 		}
 		return handler(ctx, req)
@@ -50,7 +51,7 @@ func (i *AuthInterceptor) Stream() grpc.StreamServerInterceptor {
 	) error {
 		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(stream.Context(), info.FullMethod); err != nil {
-			i.logger.Error(err)
+			i.logger.Errorf("%s: %s", info.FullMethod, err)
 			return err
 		}
 		return handler(srv, stream)
