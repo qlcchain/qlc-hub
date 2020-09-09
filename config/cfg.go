@@ -1,13 +1,13 @@
 package config
 
 import (
-	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"os"
 	"os/user"
 	"path/filepath"
 	"runtime"
 	"time"
 
+	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"gopkg.in/validator.v2"
 )
@@ -20,13 +20,14 @@ const (
 type Config struct {
 	Verbose        bool            `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
 	LogLevel       string          `json:"logLevel" short:"l" long:"level" description:"log level" default:"info"` //info,warn,debug.
-	SignerToken    string          `json:"signerToken"  long:"signerToken" description:"singer JWT token" default:"eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJRTENDaGFpbiBCb3QiLCJleHAiOjE2MzEwNjQ2MjgsImp0aSI6ImI2YWEwNWQ5LTk0YTEtNGUxOC05MGU2LTQ3ZGJkZWM5MjgxOSIsImlhdCI6MTU5OTUyODYyOCwiaXNzIjoiUUxDQ2hhaW4gQm90Iiwic3ViIjoic2lnbmVyIiwicm9sZXMiOlsidXNlciJdfQ.AVQAChz2g53YiIaKCip5GihIUUXNvnjLy8KN2B5DHVWOyJI2XLGYb2eVdKACT54KlM-o24NELUgbbeR9vk2a0MhbAaxqhuO4GReI8WF7IwhBvKZ-EgAzaCuCZLG9mAHeEWnTYYaZZPcjrXEZ5J93sy040S7EtjO4inHUBze0gMbEHC1f" validate:"nonzero"`
+	SignerToken    string          `json:"signerToken"  long:"signerToken" description:"singer JWT token" validate:"nonzero"`
 	SignerEndPoint string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" default:"http://127.0.0.1:19747" validate:"nonzero"`
 	NEOCfg         *NEOCfg         `json:"neo" validate:"nonnil"`
 	EthereumCfg    *EthereumCfg    `json:"ethereum" validate:"nonnil"`
 	RPCCfg         *RPCCfg         `json:"rpc" validate:"nonnil"`
 	DateDir        string          `json:"dateDir" validate:"nonnil"`
-	Key            string          `json:"key" short:"K" long:"key" description:"private key" default:"XoKWAwU2QhedEUr6vXuHLoiLXjkgWBoMK25edEE7YbuBxgjKhUKcFMW7n5dmky2XUQ5gQEGyCwnqYVUmS2kGebXW5pxThzRGWivZNbZaXQgXHNKFmLTV14K62AmkwHDZxQxN8bbDGdHCXq2fhgJWeU1sk3ZuAiv41gTRpnCnmgXzV8LEPTbhJk1VGzKCNyVge5eAxg1m5ziymezX7THhDq42sHFwGDFJPpvJosd5awFQrHoE8FYoKquRBqYJuwKd5Gj8ebsfhJmm3zUmqJ8kxfHyZNHEJowQ7Fxv9zdThxRAKdvMLiiYvJtQQnrWkDfwjmSZGpgWzYtFFQofq2RC7BgVRhHtYkNqb61QY1zzSjX21AHLSkNisu3fmmGiFao18LxZF2UVnVFfDpYXfwtpkjqJedT2ccR11HckyVD7nf51udvTypD64evZQpLaQdTPXGBpHM8v2drXLQLzbZDLpoSPgmegq6h5PuaQta56oT" validate:"nonzero"`
+	StateInterval  int             `json:"stateInterval" long:"stateInterval" description:"time interval to check locker state" default:"2" validate:"nonzero"`
+	Key            string          `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
 	KeyDuration    string          `json:"duration" long:"duration" default:"0s" validate:"nonzero"`
 	JwtManager     *jwt.JWTManager `json:"-"`
 }

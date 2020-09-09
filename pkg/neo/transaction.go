@@ -22,13 +22,12 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -357,6 +356,7 @@ func (n *Transaction) QuerySwapData(rHash string) (map[string]interface{}, error
 	if err != nil {
 		return nil, fmt.Errorf("invoke function: %s", err)
 	} else if r.State != "HALT" || len(r.Stack) == 0 {
+		n.logger.Debug(hubUtil.ToString(r.Stack))
 		return nil, errors.New("invalid VM state")
 	}
 	n.logger.Debug(hubUtil.ToString(r.Stack))
@@ -369,6 +369,11 @@ type SwapInfo struct {
 	State          int    `json:"state"`
 	OriginText     string `json:"originText"`
 	OvertimeBlocks int64  `json:"overtimeBlocks"`
+	TxIdIn         string `json:"txIdIn"`
+	TxIdOut        string `json:"txIdOut"`
+	LockedHeight   uint32 `json:"blockHeight"`
+	TxIdRefund     string `json:"txIdRefund"`
+	UnlockedHeight uint32 `json:"unlockedHeight"`
 }
 
 func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
@@ -387,43 +392,115 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 	return info, nil
 }
 
+func (n *Transaction) querySwapInfoByState(rHash string, state State) (*SwapInfo, error) {
+	data, err := n.QuerySwapData(rHash)
+	if err != nil {
+		return nil, err
+	}
+	info := new(SwapInfo)
+	tt, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(tt, info); err != nil {
+		return nil, err
+	}
+	if info.State-1 == int(state) {
+		return info, nil
+	} else {
+		return nil, fmt.Errorf("swap info [%s] by state [%d] not found", rHash, state)
+	}
+}
+
+func (n *Transaction) QuerySwapInfoAndConfirmedTx(rHash string, state State, interval int) (*SwapInfo, error) {
+	n.logger.Infof("querying swapInfo and confirmedTx: %s %d", rHash, state)
+	var sInfo *SwapInfo
+	var err error
+	sInfo, err = n.querySwapInfoByState(rHash, state)
+	if err != nil {
+		cTicker := time.NewTicker(6 * time.Second)
+		cTimer := time.NewTimer(300 * time.Second)
+		for {
+			select {
+			case <-cTicker.C:
+				sInfo, err = n.querySwapInfoByState(rHash, state)
+				if err == nil {
+					goto SwapFound
+				}
+			case <-cTimer.C:
+				return nil, fmt.Errorf("neo tx by hash timeout: %s, %d", rHash, state)
+			}
+		}
+	}
+
+SwapFound:
+
+	if state == UserLock || state == WrapperLock {
+		if _, err := n.TxVerifyAndConfirmed(sInfo.TxIdIn, interval); err != nil {
+			return nil, err
+		} else {
+			return sInfo, nil
+		}
+	} else if state == WrapperUnlock || state == UserUnlock {
+		if h, err := n.TxVerifyAndConfirmed(sInfo.TxIdOut, interval); err != nil {
+			return nil, err
+		} else {
+			sInfo.UnlockedHeight = h
+			return sInfo, nil
+		}
+	} else if state == RefundUser || state == RefundWrapper {
+		if h, err := n.TxVerifyAndConfirmed(sInfo.TxIdRefund, interval); err != nil {
+			return nil, err
+		} else {
+			sInfo.UnlockedHeight = h
+			return sInfo, nil
+		}
+	} else {
+		return nil, fmt.Errorf("invalid state %d, %s", state, rHash)
+	}
+}
+
 func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (uint32, error) {
+	hash, err := util.Uint256DecodeStringLE(txHash)
+	if err != nil {
+		return 0, fmt.Errorf("tx verify decode hash: %s", err)
+	}
+
 	var txHeight uint32
-	cTicker := time.NewTicker(3 * time.Second)
-	cTimer := time.NewTimer(300 * time.Second)
-	for {
-		select {
-		case <-cTicker.C:
-			hash, err := util.Uint256DecodeStringLE(txHash)
-			if err != nil {
-				return 0, fmt.Errorf("tx verify decode hash: %s", err)
+	if txHeight, err = n.client.GetTransactionHeight(hash); err != nil {
+		cTicker := time.NewTicker(6 * time.Second)
+		cTimer := time.NewTimer(300 * time.Second)
+		for {
+			select {
+			case <-cTicker.C:
+				txHeight, err = n.client.GetTransactionHeight(hash)
+				if err != nil {
+					n.logger.Debugf("get neo tx [%s] height err: %s", txHash, err)
+				} else {
+					goto HeightConfirmed
+				}
+			case <-cTimer.C:
+				return 0, fmt.Errorf("neo tx by hash timeout: %s", txHash)
 			}
-			txHeight, err = n.client.GetTransactionHeight(hash)
-			if err != nil {
-				n.logger.Debugf("get neo tx [%s] height err: %s", txHash, err)
-			} else {
-				goto HeightConfirmed
-			}
-		case <-cTimer.C:
-			return 0, fmt.Errorf("neo tx by hash timeout: %s", txHash)
 		}
 	}
 
 HeightConfirmed:
+
+	if _, _, err := n.lockerEventFromApplicationLog(txHash); err != nil { // check if failed
+		return 0, err
+	}
+
+	if b, _ := n.HasConfirmedBlocksHeight(txHeight, int64(interval)); b {
+		return txHeight, nil
+	}
 	nTicker := time.NewTicker(6 * time.Second)
 	nTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
 		case <-nTicker.C:
-			nHeight, err := n.Client().GetStateHeight()
-			if err != nil {
-				return 0, err
-			} else {
-				nh := nHeight.BlockHeight
-				n.logger.Debugf("tx [%s] current confirmed height (%d, %d)", txHash, txHeight, nh)
-				if nh-txHeight >= uint32(interval) {
-					return txHeight, nil
-				}
+			if b, _ := n.HasConfirmedBlocksHeight(txHeight, int64(interval)); b {
+				return txHeight, nil
 			}
 		case <-nTimer.C:
 			return 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
@@ -440,6 +517,7 @@ func (n *Transaction) HasConfirmedBlocksHeight(startHeight uint32, interval int6
 		return false, 0
 	}
 	nh := nHeight.BlockHeight
+	n.logger.Debugf("current confirmed height (%d -> %d)", startHeight, nh)
 	return nh-startHeight >= uint32(interval), nh
 }
 
@@ -447,7 +525,7 @@ func (n *Transaction) ValidateAddress(addr string) error {
 	return n.client.ValidateAddress(addr)
 }
 
-func (n *Transaction) LockerEventFromApplicationLog(hash string) (string, State, error) {
+func (n *Transaction) lockerEventFromApplicationLog(hash string) (string, State, error) {
 	if h, err := util.Uint256DecodeStringLE(hash); err == nil {
 		if l, err := n.client.GetApplicationLog(h); err == nil {
 			//data, _ := json.MarshalIndent(l, "", "\t")
@@ -475,7 +553,7 @@ func (n *Transaction) LockerEventFromApplicationLog(hash string) (string, State,
 			return "", 0, fmt.Errorf("get applicationLog: %s, %s", err, hash)
 		}
 	}
-	return "", 0, fmt.Errorf("can not find lock event %s", hash)
+	return "", 0, fmt.Errorf("can not find lock event, txHash: %s", hash)
 }
 
 func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int, state State) (uint32, error) {
@@ -485,7 +563,7 @@ func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int,
 		return 0, fmt.Errorf("neo tx confirmed: %s, %s, [%s]", err, txHash, rHash)
 	}
 
-	rHashEvent, stateEvent, err := n.LockerEventFromApplicationLog(txHash)
+	rHashEvent, stateEvent, err := n.lockerEventFromApplicationLog(txHash)
 	if err != nil {
 		return 0, fmt.Errorf("neo event: %s, %s, [%s]", err, txHash, rHash)
 	}
@@ -508,3 +586,11 @@ const (
 	UserUnlock
 	RefundWrapper
 )
+
+func (n *Transaction) GetTransactionHeight(txHash string) (uint32, error) {
+	hash, err := util.Uint256DecodeStringLE(txHash)
+	if err != nil {
+		return 0, fmt.Errorf("tx verify decode hash: %s", err)
+	}
+	return n.client.GetTransactionHeight(hash)
+}

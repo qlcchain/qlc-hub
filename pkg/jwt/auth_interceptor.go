@@ -34,7 +34,7 @@ func (i *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(ctx, info.FullMethod); err != nil {
-			i.logger.Error(err)
+			i.logger.Errorf("%s: %s", info.FullMethod, err)
 			return nil, err
 		}
 		return handler(ctx, req)
@@ -50,7 +50,7 @@ func (i *AuthInterceptor) Stream() grpc.StreamServerInterceptor {
 	) error {
 		i.logger.Debug(info.FullMethod)
 		if err := i.Authorizer(stream.Context(), info.FullMethod); err != nil {
-			i.logger.Error(err)
+			i.logger.Errorf("%s: %s", info.FullMethod, err)
 			return err
 		}
 		return handler(srv, stream)

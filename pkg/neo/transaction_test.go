@@ -5,12 +5,11 @@ import (
 	"testing"
 
 	"github.com/nspcc-dev/neo-go/pkg/util"
-
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 var (
-	url             = "http://seed2.ngd.network:20332"
+	url             = "http://seed3.ngd.network:20332"
 	contractAddress = "278df62f9ba1312f1e1f4b5d239f07beaa1b5b94"
 	contractLE, _   = util.Uint160DecodeStringLE(contractAddress)
 
@@ -31,7 +30,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rHash := "e15c6d4940bbe530f75ccbc06ada1a3674354bed56fe572f6eaf2dd65cf26958"
+	rHash := "8d04db781793f77ce65df25842da51ca7a77fe1ee923bd696382c66588835eae"
 
 	r, err := c.QuerySwapData(rHash)
 	if err != nil {
@@ -51,9 +50,30 @@ func TestTransaction_RHashFromApplicationLog(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	r3, d, err := c.LockerEventFromApplicationLog("17a561d21f12ca3ad7b98459ccba801fa8ae192c4acdcc5251937fc7dd665566")
+	r3, d, err := c.lockerEventFromApplicationLog("4cee074f7e2aee185c68d7e3c42035b86a9f3df103396ee8da45cf469bf8a984")
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(r3, d)
+}
+
+func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
+	c, err := NewTransaction(url, contractAddress, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	txHash := "b079aed393f6578a123f4eba5639c8ea3905927444e033d37d986335118395fe"
+	r, err := c.TxVerifyAndConfirmed(txHash, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(r)
+
+	failedHash := "3d2462e274778615d36b7efe493022ec6fd943ccb904a57ec714019e1872fcab"
+	r, err = c.TxVerifyAndConfirmed(failedHash, 1)
+	if err == nil {
+		t.Fatal(r)
+	}
+	fmt.Println(r)
 }

@@ -85,7 +85,7 @@ service DepositAPI {
         };
     }
 
-    rpc Fetch(FetchRequest) returns (Boolean){
+    rpc Fetch(FetchRequest) returns (String){
        option (google.api.http) = {
            post: "/deposit/fetch"
            body: "*"
@@ -94,7 +94,7 @@ service DepositAPI {
 }
 
 service WithdrawAPI {
-   rpc Claim(ClaimRequest) returns (Boolean){
+   rpc Claim(ClaimRequest) returns (String){
        option (google.api.http) = {
          post: "/withdraw/claim"
          body: "*"

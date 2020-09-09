@@ -2,6 +2,7 @@ package apis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/qlcchain/qlc-hub/config"
@@ -45,6 +46,9 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 	if lockerInfo, err := d.store.GetLockerInfo(request.GetRHash()); err == nil {
 		if lockerInfo.State == types.DepositInit {
 			lockerInfo.LockedNeoHash = request.GetNep5TxHash()
+			if err := d.store.UpdateLockerInfo(lockerInfo); err != nil {
+				return nil, err
+			}
 		} else {
 			if lockerInfo.Fail {
 				return nil, fmt.Errorf("lock fail: %s", lockerInfo.Remark)
@@ -58,7 +62,6 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			LockedNeoHash: request.GetNep5TxHash(),
 		}
 		if err := d.store.AddLockerInfo(info); err != nil {
-			d.logger.Error(err)
 			return nil, err
 		}
 		d.logger.Infof("add [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositInit))
@@ -84,13 +87,14 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			return
 		}
 
-		height, err := d.neo.CheckTxAndRHash(request.GetNep5TxHash(), request.GetRHash(), d.cfg.NEOCfg.ConfirmedHeight, neo.UserLock)
+		_, err = d.neo.CheckTxAndRHash(request.GetNep5TxHash(), request.GetRHash(), d.cfg.NEOCfg.ConfirmedHeight, neo.UserLock)
 		if err != nil {
 			d.logger.Error(err)
 			return
 		}
 
-		swapInfo, err := d.neo.QuerySwapInfo(request.GetRHash())
+		var swapInfo *neo.SwapInfo
+		swapInfo, err = d.neo.QuerySwapInfoAndConfirmedTx(request.GetRHash(), neo.UserLock, d.cfg.NEOCfg.ConfirmedHeight)
 		if err != nil {
 			d.logger.Errorf("query swap info: %s", err)
 			return
@@ -98,34 +102,33 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		d.logger.Infof("swap info: %s", util.ToString(swapInfo))
 
 		info.State = types.DepositNeoLockedDone
-		info.LockedNeoHeight = height
+		info.LockedNeoHeight = swapInfo.LockedHeight
+		info.LockedNeoHash = swapInfo.TxIdIn
 		info.Amount = swapInfo.Amount
 		info.NeoUserAddr = swapInfo.UserNeoAddress
 		info.NeoTimerInterval = swapInfo.OvertimeBlocks
 		if err := d.store.UpdateLockerInfo(info); err != nil {
-			d.logger.Error(err)
 			return
 		}
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
 
-		if b, h := d.neo.HasConfirmedBlocksHeight(height, getLockDeadLineHeight(swapInfo.OvertimeBlocks)); b {
-			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, height, h)
+		if b, h := d.neo.HasConfirmedBlocksHeight(swapInfo.LockedHeight, getLockDeadLineHeight(swapInfo.OvertimeBlocks)); b {
+			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, swapInfo.LockedHeight, h)
 			d.logger.Error(err)
 			return
 		}
 
 		// wrapper to eth lock
-		tx, err := d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.SignerAddress, swapInfo.Amount)
+		var tx string
+		tx, err = d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.SignerAddress, swapInfo.Amount)
 		if err != nil {
 			d.logger.Error(err)
 			return
 		}
 		d.logger.Infof("deposit/wrapper eth lock: %s [%s]", request.GetRHash(), tx)
 		info.State = types.DepositEthLockedPending
-		info.LockedEthHash = tx
 		info.EthTimerInterval = d.cfg.EthereumCfg.DepositInterval
 		if err := d.store.UpdateLockerInfo(info); err != nil {
-			d.logger.Error(err)
 			return
 		}
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthLockedPending))
@@ -142,70 +145,79 @@ func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
 	return nil
 }
 
-func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.Boolean, error) {
-	d.logger.Info("api - deposit fetch: ", request.String())
+func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.String, error) {
 	rHash := util.Sha256(request.GetROrigin())
-	if info, err := d.store.GetLockerInfo(rHash); err != nil {
-		//d.logger.Errorf("%s: %s", rHash, err)
+	d.logger.Infof("api - deposit fetch: %s, [%s]", request.String(), rHash)
+	if err := d.neo.ValidateAddress(request.GetUserNep5Addr()); err != nil {
+		return nil, fmt.Errorf("invalid address: %s", request.GetUserNep5Addr())
+	}
+
+	info, err := d.store.GetLockerInfo(rHash)
+	if err != nil {
 		return nil, err
-	} else if !info.NeoTimeout {
-		//d.logger.Errorf("current state is %s, [%s], not timeout", types.LockerStateToString(info.State), info.RHash)
+	}
+	if !info.NeoTimeout {
 		return nil, fmt.Errorf("not yet timeout, state: %s", types.LockerStateToString(info.State))
 	}
+	if info.State == types.DepositNeoFetchDone {
+		return toString(info.UnlockedNeoHash), nil
+	}
+
+	swapInfo, err := d.neo.QuerySwapInfo(rHash)
+	if err != nil {
+		d.logger.Errorf("query swap info: %s, [%s]", err, rHash)
+		return nil, err
+	}
+	if swapInfo.UserNeoAddress != request.GetUserNep5Addr() {
+		d.logger.Errorf("invalid user nep5 address, %s, %s [%s]", swapInfo.UserNeoAddress, request.GetUserNep5Addr(), rHash)
+		return nil, errors.New("nep5 addr not match")
+	}
+
+	tx, err := d.neo.RefundUser(request.ROrigin, d.cfg.NEOCfg.SignerAddress)
+	if err != nil {
+		d.logger.Errorf("refund user: %s [%s]", err, rHash)
+		return nil, err
+	}
+	d.logger.Infof("deposit user fetch(neo): %s [%s] ", tx, rHash)
+
+	info.State = types.DepositNeoFetchPending
+	if err := d.store.UpdateLockerInfo(info); err != nil {
+		return nil, err
+	}
+	d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchPending))
+
 	go func() {
-		var info *types.LockerInfo
-		var err error
-		defer func() {
-			d.store.SetLockerStateFail(info, err)
-		}()
+		lock(rHash, d.logger)
+		defer unlock(rHash, d.logger)
 
-		var swapInfo *neo.SwapInfo
-		swapInfo, err = d.neo.QuerySwapInfo(rHash)
+		info, _ := d.store.GetLockerInfo(rHash)
+		if info.State >= types.DepositNeoFetchDone {
+			d.logger.Infof("[%s] state already ahead [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
+			return
+		}
+
+		swapInfo, err := d.neo.QuerySwapInfoAndConfirmedTx(rHash, neo.RefundUser, d.cfg.NEOCfg.ConfirmedHeight)
 		if err != nil {
-			d.logger.Errorf("query swap info: %s, [%s]", err, rHash)
-			return
-		}
-		if swapInfo.UserNeoAddress != request.GetUserNep5Addr() {
-			err = fmt.Errorf("invalid user nep5 address, %s, %s", swapInfo.UserNeoAddress, request.GetUserNep5Addr())
-			d.logger.Error(err)
+			d.logger.Infof("query swap info: %s", err, rHash)
 			return
 		}
 
-		var tx string
-		tx, err = d.neo.RefundUser(request.ROrigin, d.cfg.NEOCfg.SignerAddress)
-		if err != nil {
-			d.logger.Errorf("refund user: %s [%s]", err, rHash)
-			return
-		}
-
-		d.logger.Infof("deposit user fetch(neo): %s [%s] ", tx, rHash)
-
-		info, _ = d.store.GetLockerInfo(rHash)
-		info.State = types.DepositNeoFetchPending
-		info.UnlockedNeoHash = tx
-		if err := d.store.UpdateLockerInfo(info); err != nil {
-			d.logger.Errorf("update locker info: %s [%s]", err, rHash)
-			return
-		}
-		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchPending))
-
-		var height uint32
-		height, err = d.neo.TxVerifyAndConfirmed(tx, d.cfg.NEOCfg.ConfirmedHeight)
-		if err != nil {
-			d.logger.Errorf("tx %s verify: %s [%s]", tx, err, rHash)
-			return
-		}
-		info.UnlockedNeoHeight = height
 		info.State = types.DepositNeoFetchDone
+		info.UnlockedNeoHash = swapInfo.TxIdRefund
+		info.UnlockedNeoHeight = swapInfo.UnlockedHeight
+
 		if err := d.store.UpdateLockerInfo(info); err != nil {
-			d.logger.Errorf("update locker info: %s [%s]", err, rHash)
 			return
 		}
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
 	}()
-	return toBoolean(true), nil
+	return toString(tx), nil
 }
 
 func toBoolean(b bool) *pb.Boolean {
 	return &pb.Boolean{Value: b}
+}
+
+func toString(b string) *pb.String {
+	return &pb.String{Value: b}
 }

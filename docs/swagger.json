@@ -114,7 +114,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoBoolean"
+              "$ref": "#/definitions/protoString"
             }
           },
           "default": {
@@ -387,7 +387,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoBoolean"
+              "$ref": "#/definitions/protoString"
             }
           },
           "default": {
@@ -612,6 +612,14 @@
           "type": "string"
         },
         "neoAddress": {
+          "type": "string"
+        }
+      }
+    },
+    "protoString": {
+      "type": "object",
+      "properties": {
+        "value": {
           "type": "string"
         }
       }

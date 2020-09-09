@@ -109,7 +109,7 @@ func get(url string) (map[string]interface{}, error) {
 	return ret, nil
 }
 
-func post(paras string, url string) (bool, error) {
+func post(paras string, url string) (interface{}, error) {
 	jsonStr := []byte(paras)
 	ioBody := bytes.NewBuffer(jsonStr)
 	request, err := http.NewRequest("POST", url, ioBody)
@@ -138,11 +138,11 @@ func post(paras string, url string) (bool, error) {
 		log.Fatal(err)
 	}
 	if r, ok := ret["value"]; ok != false {
-		return r.(bool), nil
+		return r, nil
 	} else {
 		if e, ok := ret["error"]; ok != false {
 			return false, fmt.Errorf("%s", e)
 		}
-		return false, fmt.Errorf("response has no result")
+		return nil, fmt.Errorf("response has no result")
 	}
 }

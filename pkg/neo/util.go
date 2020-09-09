@@ -77,7 +77,7 @@ func FunctionName(name string) request.Param {
 func StackToSwapInfo(stack []smartcontract.Parameter) (map[string]interface{}, error) {
 	value := stack[0].Value
 	if v, ok := value.([]byte); ok {
-		return nil, errors.New(string(v))
+		return nil, fmt.Errorf("valid value type: %s", string(v))
 	} else if data, ok := value.([]smartcontract.Parameter); ok {
 		if len(data) != 15 {
 			return nil, fmt.Errorf("invalid data, exp: 15, got: %d", len(data))
@@ -100,6 +100,8 @@ func StackToSwapInfo(stack []smartcontract.Parameter) (map[string]interface{}, e
 					return nil, errors.New("invalid Integer item")
 				}
 				result[k] = intTo(k, i)
+			default:
+				fmt.Println(v.Value.(int64))
 			}
 		}
 
@@ -122,6 +124,9 @@ func bytesTo(key string, v []byte) interface{} {
 			return address.Uint160ToString(a)
 		case "eth":
 			return common.BytesToAddress(v)
+		case "hash":
+			//a, _ := util.Uint160DecodeBytesLE(v)
+			return hex.EncodeToString(util.ArrayReverse(v))
 		}
 	}
 	return hex.EncodeToString(v)
@@ -146,6 +151,9 @@ var (
 		"unLockTimestamp":   "time",
 		"refundTimestamp":   "time",
 		"overtimeBlocks":    "int",
+		"txIdIn":            "hash",
+		"txIdOut":           "hash",
+		"txIdRefund":        "hash",
 	}
 	fields = []string{
 		"originText",

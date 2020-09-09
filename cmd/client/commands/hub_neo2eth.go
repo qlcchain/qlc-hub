@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -67,7 +66,7 @@ func hNeo2Eth() {
 		"addr": "%s"
 	}`, tx, rHash, ethWrapperOwnerAddress)
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
-	if err != nil || !r {
+	if err != nil || !r.(bool) {
 		log.Fatal(err, r)
 	}
 
@@ -108,7 +107,7 @@ func hNeo2EthFetch() {
 		"addr": "%s"
 	}`, tx, rHash, ethWrapperOwnerAddress)
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
-	if err != nil || !r {
+	if err != nil || !r.(bool) {
 		log.Fatal(err, r)
 	}
 
@@ -122,9 +121,10 @@ func hNeo2EthFetch() {
 		"userNep5Addr": "%s"
 	}`, rOrigin, neoUserAddr)
 	r2, err := post(paras2, fmt.Sprintf("%s/deposit/fetch", hubUrl))
-	if err != nil || !r2 {
-		log.Fatal(err, r2)
+	if err != nil {
+		log.Fatal(err)
 	}
+	log.Println("== deposit/fetch== ", r2.(string))
 
 	if !hubWaitingForLockerState(rHash, types.DepositNeoFetchDone) {
 		log.Fatal("timeout")

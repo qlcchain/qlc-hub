@@ -22,7 +22,7 @@ const (
 
 type SignerConfig struct {
 	Verbose           bool                                      `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
-	Key               string                                    `json:"key" short:"K" long:"key" description:"private key" default:"XoKWAwU2QhedEUr6vXuHLoiLXjkgWBoMK25edEE7YbuBxgjKhUKcFMkh47ugcEAKTLrZDUct8uuMM25GenPq2kcyXySuarjKNbHnt4MqFybw3TqxZfrLbpkXgSrVDhvEf7LV8inyCDjHMuboF3mzR4cfLh5eg4Z31KFqKef78Qs9Tvo7w4zhjWXBVVBY1JvPVDMCEkcJvxiUzVJLj3fA7QETbS1hgx6ZE19QQjPfqh75McjMbMCXrdu8cMiwEodkx9ytvQDdHk2PVEe3W1epxLyWUojvYbiCLeJe9jeJo4v1D7oj8eGKLfJa1crEw1n3WDufKPzuRf5dUdNvqx9eCoJeHN9ce9ARYnjsameo4gqaTd7Wxa38aH6LiYd9YiSLLmH4A5yjL3LNanpyHLwGUCVLEhd75qpsidMrdASt8u4FFGChHF9vPPYQj9hfucNeovxYoskM1eMCLUGDZHJTuXkLHRyxP2DDp8KmVzYLR7  --neoAccounts=95455622b40232549fb24d22e075ddccccf54eb2adf4b4f02d0691938d417d5e --neoAccounts=16e118b8455dc535bc7caba478b1ef673b44539c0485e715fd9e739b9e59d4e7" validate:"nonzero"`
+	Key               string                                    `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
 	KeyDuration       string                                    `json:"duration" long:"duration" default:"8760h0m0s" validate:"nonzero"`
 	LogLevel          string                                    `json:"logLevel" short:"l" long:"level" description:"log level" default:"warn"` //info,warn,debug.
 	NeoAccounts       []string                                  `json:"neoAccounts" long:"neoAccounts" description:"NEO private keys" validate:"min=1"`
