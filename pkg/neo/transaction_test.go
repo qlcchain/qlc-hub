@@ -45,6 +45,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 }
 
 func TestTransaction_RHashFromApplicationLog(t *testing.T) {
+	t.Skip()
 	c, err := NewTransaction(url, contractAddress, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -58,6 +59,7 @@ func TestTransaction_RHashFromApplicationLog(t *testing.T) {
 }
 
 func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
+	t.Skip()
 	c, err := NewTransaction(url, contractAddress, nil)
 	if err != nil {
 		t.Fatal(err)

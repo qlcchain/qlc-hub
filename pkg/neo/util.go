@@ -100,8 +100,6 @@ func StackToSwapInfo(stack []smartcontract.Parameter) (map[string]interface{}, e
 					return nil, errors.New("invalid Integer item")
 				}
 				result[k] = intTo(k, i)
-			default:
-				fmt.Println(v.Value.(int64))
 			}
 		}
 
@@ -125,7 +123,6 @@ func bytesTo(key string, v []byte) interface{} {
 		case "eth":
 			return common.BytesToAddress(v)
 		case "hash":
-			//a, _ := util.Uint160DecodeBytesLE(v)
 			return hex.EncodeToString(util.ArrayReverse(v))
 		}
 	}
