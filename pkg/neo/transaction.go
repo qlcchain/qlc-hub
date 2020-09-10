@@ -22,13 +22,12 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -492,7 +491,7 @@ HeightConfirmed:
 		return txHeight, nil
 	}
 	nTicker := time.NewTicker(6 * time.Second)
-	nTimer := time.NewTimer(time.Duration((interval+1)*30) * time.Second)
+	nTimer := time.NewTimer(time.Duration((interval+1)*61) * time.Second)
 	for {
 		select {
 		case <-nTicker.C:
