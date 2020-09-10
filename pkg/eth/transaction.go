@@ -14,12 +14,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -217,7 +216,7 @@ func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interv
 HeightConfirmed:
 
 	vTicker := time.NewTicker(6 * time.Second)
-	vTimer := time.NewTimer(time.Duration((interval+1)*30) * time.Second)
+	vTimer := time.NewTimer(time.Duration((interval+1)*61) * time.Second)
 	for {
 		select {
 		case <-vTicker.C:
