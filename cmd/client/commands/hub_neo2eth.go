@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -89,7 +88,7 @@ func hNeo2Eth() {
 }
 
 func hNeo2EthFetch() {
-	amount := 290000000
+	amount := 240000000
 
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, " ==> ", rHash)

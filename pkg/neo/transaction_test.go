@@ -30,7 +30,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rHash := "8d04db781793f77ce65df25842da51ca7a77fe1ee923bd696382c66588835eae"
+	rHash := "9091cae2c07b6ed45c257341e098d55b3f2924fb83d485804cc927223f214445"
 
 	r, err := c.QuerySwapData(rHash)
 	if err != nil {
@@ -65,7 +65,7 @@ func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	txHash := "b079aed393f6578a123f4eba5639c8ea3905927444e033d37d986335118395fe"
+	txHash := "789dd4ba43790baf62182b2c3af21d722414a24bcd48a8a2210d06795a4d1a86"
 	r, err := c.TxVerifyAndConfirmed(txHash, 1)
 	if err != nil {
 		t.Fatal(err)

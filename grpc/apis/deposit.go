@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -15,6 +13,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type DepositAPI struct {
@@ -83,8 +82,8 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.logger.Error(err)
 			return
 		}
-		if info.State >= types.DepositEthLockedPending {
-			d.logger.Infof("[%s] state already ahead [%s]", request.GetRHash(), types.LockerStateToString(types.DepositEthLockedPending))
+		if info.State >= types.DepositEthLockedPending { // user can call repeatedly before DepositEthLockedPending
+			d.logger.Infof("locker state already ahead of %s [%s] ", types.LockerStateToString(types.DepositEthLockedPending), request.GetRHash())
 			return
 		}
 
@@ -97,7 +96,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		var swapInfo *neo.SwapInfo
 		swapInfo, err = d.neo.QuerySwapInfoAndConfirmedTx(request.GetRHash(), neo.UserLock, d.cfg.NEOCfg.ConfirmedHeight)
 		if err != nil {
-			d.logger.Errorf("query swap info: %s", err)
+			d.logger.Errorf("query swap info: %s [%s]", err, request.GetRHash())
 			return
 		}
 		d.logger.Infof("swap info: %s", util.ToString(swapInfo))
@@ -113,8 +112,15 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 		}
 		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoLockedDone))
 
+		//set state to DepositNeoLockedDone first, than if locker info is incorrect, user can call fetch
 		if b, h := d.neo.HasConfirmedBlocksHeight(swapInfo.LockedHeight, getLockDeadLineHeight(swapInfo.OvertimeBlocks)); b {
 			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, swapInfo.LockedHeight, h)
+			d.logger.Error(err)
+			return
+		}
+
+		if swapInfo.Amount < d.cfg.MinDepositAmount {
+			err = fmt.Errorf("deposit locked amount %d should more than %d [%s]", swapInfo.Amount, d.cfg.MinDepositAmount, request.GetRHash())
 			d.logger.Error(err)
 			return
 		}
@@ -126,7 +132,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.logger.Error(err)
 			return
 		}
-		d.logger.Infof("deposit/wrapper eth lock: %s [%s]", request.GetRHash(), tx)
+		d.logger.Infof("deposit/wrapper eth lock tx: %s [%s]", request.GetRHash(), tx)
 		info.State = types.DepositEthLockedPending
 		info.EthTimerInterval = d.cfg.EthereumCfg.DepositInterval
 		if err := d.store.UpdateLockerInfo(info); err != nil {
@@ -139,10 +145,10 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 
 func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
 	address := d.cfg.EthereumCfg.SignerAddress
-
 	if address != request.GetAddr() {
 		return fmt.Errorf("invalid wrapper eth address, want [%s], but get [%s]", address, request.GetAddr())
 	}
+
 	return nil
 }
 
@@ -191,26 +197,10 @@ func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.S
 		lock(rHash, d.logger)
 		defer unlock(rHash, d.logger)
 
-		info, _ := d.store.GetLockerInfo(rHash)
-		if info.State >= types.DepositNeoFetchDone {
-			d.logger.Infof("[%s] state already ahead [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
+		if err := setDepositNeoFetchDone(info.RHash, d.neo, d.store, d.cfg.NEOCfg.ConfirmedHeight, d.logger); err != nil {
+			d.logger.Error(err)
 			return
 		}
-
-		swapInfo, err := d.neo.QuerySwapInfoAndConfirmedTx(rHash, neo.RefundUser, d.cfg.NEOCfg.ConfirmedHeight)
-		if err != nil {
-			d.logger.Infof("query swap info: %s", err, rHash)
-			return
-		}
-
-		info.State = types.DepositNeoFetchDone
-		info.UnlockedNeoHash = swapInfo.TxIdRefund
-		info.UnlockedNeoHeight = swapInfo.UnlockedHeight
-
-		if err := d.store.UpdateLockerInfo(info); err != nil {
-			return
-		}
-		d.logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositNeoFetchDone))
 	}()
 	return toString(tx), nil
 }

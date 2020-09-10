@@ -10,19 +10,19 @@ const (
 	DepositEthLockedPending
 	DepositEthLockedDone
 	DepositEthUnLockedDone
-	DepositNeoUnLockedPending
+	DepositNeoUnLockedPending //5
 	DepositNeoUnLockedDone
 	DepositEthFetchPending
 	DepositEthFetchDone
 	DepositNeoFetchPending
-	DepositNeoFetchDone
+	DepositNeoFetchDone //10
 
 	// withdraw
-	WithDrawEthLockedDone = iota
+	WithDrawEthLockedDone
 	WithDrawNeoLockedPending
 	WithDrawNeoLockedDone
 	WithDrawNeoUnLockedPending
-	WithDrawNeoUnLockedDone
+	WithDrawNeoUnLockedDone //15
 	WithDrawEthUnlockPending
 	WithDrawEthUnlockDone
 	WithDrawNeoFetchPending

@@ -9,7 +9,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	flag "github.com/jessevdk/go-flags"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
@@ -96,8 +95,11 @@ func initParams(osArgs []string) {
 	}
 	//defer ethClient.Close()
 
+	log.Println("hub endpoint: ", hubUrl)
 	log.Println("neo contract: ", neoContract)
+	log.Println("neo endpoint: ", neoUrl)
 	log.Println("eth contract: ", ethContract)
+	log.Println("eth endpoint: ", ethUrl)
 }
 
 func Execute(osArgs []string) {
