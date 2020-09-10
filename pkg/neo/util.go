@@ -124,6 +124,8 @@ func bytesTo(key string, v []byte) interface{} {
 			return common.BytesToAddress(v)
 		case "hash":
 			return hex.EncodeToString(util.ArrayReverse(v))
+		case "text":
+			return string(v)
 		}
 	}
 	return hex.EncodeToString(v)
@@ -140,6 +142,7 @@ func intTo(key string, i int64) interface{} {
 
 var (
 	types = map[string]string{
+		"originText":        "text",
 		"userNeoAddress":    "neo",
 		"wrapperNeoAddress": "neo",
 		"userEthAddress":    "eth",

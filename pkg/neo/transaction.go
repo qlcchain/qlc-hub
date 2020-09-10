@@ -393,40 +393,35 @@ func (n *Transaction) QuerySwapInfo(rHash string) (*SwapInfo, error) {
 	return info, nil
 }
 
-func (n *Transaction) querySwapInfoByState(rHash string, state State) (*SwapInfo, error) {
-	data, err := n.QuerySwapData(rHash)
-	if err != nil {
-		return nil, err
-	}
-	info := new(SwapInfo)
-	tt, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(tt, info); err != nil {
-		return nil, err
-	}
-	if info.State-1 == int(state) {
-		return info, nil
-	} else {
-		return nil, fmt.Errorf("swap info [%s] by state [%d] not found", rHash, state)
-	}
-}
-
 func (n *Transaction) QuerySwapInfoAndConfirmedTx(rHash string, state State, interval int) (*SwapInfo, error) {
-	n.logger.Infof("querying swapInfo and confirmedTx: %s %d", rHash, state)
+	n.logger.Infof("querying swapInfo and confirmedTx by state %d [%s]", state, rHash)
 	var sInfo *SwapInfo
 	var err error
-	sInfo, err = n.querySwapInfoByState(rHash, state)
-	if err != nil {
+	sInfo, err = n.QuerySwapInfo(rHash)
+
+	found := false
+	if sInfo != nil {
+		if sInfo.State-1 > int(state) { //swap info state from chain is begin from 1
+			return nil, fmt.Errorf("get swap info is %d, not %d [%s]", sInfo.State-1, state, rHash)
+		} else if sInfo.State-1 == int(state) {
+			found = true
+		}
+	}
+
+	if !found {
 		cTicker := time.NewTicker(6 * time.Second)
-		cTimer := time.NewTimer(300 * time.Second)
+		cTimer := time.NewTimer(300 * time.Second) //tx on chain may need time
 		for {
 			select {
 			case <-cTicker.C:
-				sInfo, err = n.querySwapInfoByState(rHash, state)
+				sInfo, err = n.QuerySwapInfo(rHash)
 				if err == nil {
-					goto SwapFound
+					if sInfo.State-1 > int(state) {
+						return nil, fmt.Errorf("get swap info is %d, not %d [%s]", sInfo.State-1, state, rHash)
+					}
+					if sInfo.State-1 == int(state) {
+						goto SwapFound
+					}
 				}
 			case <-cTimer.C:
 				return nil, fmt.Errorf("neo tx by hash timeout: %s, %d", rHash, state)
@@ -436,6 +431,7 @@ func (n *Transaction) QuerySwapInfoAndConfirmedTx(rHash string, state State, int
 
 SwapFound:
 
+	n.logger.Debugf("swap info: %s", hubUtil.ToString(sInfo))
 	if state == UserLock || state == WrapperLock {
 		if _, err := n.TxVerifyAndConfirmed(sInfo.TxIdIn, interval); err != nil {
 			return nil, err
@@ -464,13 +460,13 @@ SwapFound:
 func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (uint32, error) {
 	hash, err := util.Uint256DecodeStringLE(txHash)
 	if err != nil {
-		return 0, fmt.Errorf("tx verify decode hash: %s", err)
+		return 0, fmt.Errorf("tx verify decode hash: %s, %s", err, txHash)
 	}
 
 	var txHeight uint32
 	if txHeight, err = n.client.GetTransactionHeight(hash); err != nil {
 		cTicker := time.NewTicker(6 * time.Second)
-		cTimer := time.NewTimer(300 * time.Second)
+		cTimer := time.NewTimer(300 * time.Second) //tx on chain may need time
 		for {
 			select {
 			case <-cTicker.C:
@@ -481,7 +477,7 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (uint32,
 					goto HeightConfirmed
 				}
 			case <-cTimer.C:
-				return 0, fmt.Errorf("neo tx by hash timeout: %s", txHash)
+				return 0, fmt.Errorf("tx(neo) by hash timeout: %s", txHash)
 			}
 		}
 	}
@@ -496,7 +492,7 @@ HeightConfirmed:
 		return txHeight, nil
 	}
 	nTicker := time.NewTicker(6 * time.Second)
-	nTimer := time.NewTimer(300 * time.Second)
+	nTimer := time.NewTimer(time.Duration((interval+1)*30) * time.Second)
 	for {
 		select {
 		case <-nTicker.C:
@@ -519,7 +515,7 @@ func (n *Transaction) HasConfirmedBlocksHeight(startHeight uint32, interval int6
 	}
 	nh := nHeight.BlockHeight
 	n.logger.Debugf("current confirmed height (%d -> %d)", startHeight, nh)
-	return nh-startHeight >= uint32(interval), nh
+	return nh-startHeight > uint32(interval), nh
 }
 
 func (n *Transaction) ValidateAddress(addr string) error {

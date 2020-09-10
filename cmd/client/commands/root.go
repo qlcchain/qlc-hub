@@ -96,8 +96,11 @@ func initParams(osArgs []string) {
 	}
 	//defer ethClient.Close()
 
+	log.Println("hub endpoint: ", hubUrl)
 	log.Println("neo contract: ", neoContract)
+	log.Println("neo endpoint: ", neoUrl)
 	log.Println("eth contract: ", ethContract)
+	log.Println("eth endpoint: ", ethUrl)
 }
 
 func Execute(osArgs []string) {

@@ -89,7 +89,7 @@ func hNeo2Eth() {
 }
 
 func hNeo2EthFetch() {
-	amount := 290000000
+	amount := 240000000
 
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, " ==> ", rHash)

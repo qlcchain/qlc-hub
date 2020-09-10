@@ -110,7 +110,7 @@ func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, er
 	auth.Value = big.NewInt(0)      // in wei
 	auth.GasLimit = uint64(8000000) // in units
 	auth.GasPrice = gasPrice
-	t.logger.Infof("eth tx auth, gasLimit: %d, gasPrice: %d, nonce: %d ", auth.GasLimit, auth.GasPrice, auth.Nonce)
+	t.logger.Infof("eth tx auth, gasLimit: %d, gasPrice: %d, nonce: %d ", auth.GasLimit, gasPrice, nonce)
 	return auth, nil
 }
 
@@ -198,15 +198,15 @@ func (h *HashTimer) String() string {
 
 func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) error {
 	cTicker := time.NewTicker(3 * time.Second)
-	cTimer := time.NewTimer(300 * time.Second)
+	cTimer := time.NewTimer(100 * time.Second)
 	for {
 		select {
 		case <-cTicker.C:
-			_, p, err := t.client.TransactionByHash(context.Background(), common.HexToHash(txHash))
+			tx, p, err := t.client.TransactionByHash(context.Background(), common.HexToHash(txHash))
 			if err != nil {
-				return fmt.Errorf("eth tx by hash: %s", err)
+				t.logger.Debugf("eth tx by hash: %s , txHash: %s", err, txHash)
 			}
-			if !p {
+			if tx != nil && !p { // if tx not found , p is false
 				goto HeightConfirmed
 			}
 		case <-cTimer.C:
@@ -217,7 +217,7 @@ func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interv
 HeightConfirmed:
 
 	vTicker := time.NewTicker(6 * time.Second)
-	vTimer := time.NewTimer(300 * time.Second)
+	vTimer := time.NewTimer(time.Duration((interval+1)*30) * time.Second)
 	for {
 		select {
 		case <-vTicker.C:
@@ -226,7 +226,7 @@ HeightConfirmed:
 				return nil
 			}
 		case <-vTimer.C:
-			return fmt.Errorf("eth tx by hash timeout: %s", txHash)
+			return fmt.Errorf("confrimed eth tx by hash timeout: %s", txHash)
 		}
 	}
 }
@@ -247,7 +247,7 @@ func (t *Transaction) HasConfirmedBlocksHeight(startHeight int64, interval int64
 	if err != nil {
 		return false, 0
 	}
-	return bestHeight-startHeight >= interval, bestHeight
+	return bestHeight-startHeight > interval, bestHeight
 }
 
 func (t *Transaction) Client() *ethclient.Client {

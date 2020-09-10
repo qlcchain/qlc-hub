@@ -92,7 +92,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protolockerInfosCountResponse"
+              "$ref": "#/definitions/protolockerInfosStatResponse"
             }
           },
           "default": {
@@ -636,14 +636,26 @@
         }
       }
     },
-    "protolockerInfosCountResponse": {
+    "protolockerInfosStat": {
       "type": "object",
       "properties": {
-        "counts": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protolockerInfosStatResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
           "type": "object",
           "additionalProperties": {
-            "type": "integer",
-            "format": "int32"
+            "$ref": "#/definitions/protolockerInfosStat"
           }
         }
       }

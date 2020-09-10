@@ -70,41 +70,22 @@ func (w *WithdrawAPI) Claim(ctx context.Context, request *pb.ClaimRequest) (*pb.
 
 		info, _ := w.store.GetLockerInfo(rHash)
 		if info.State >= types.WithDrawNeoUnLockedDone {
-			w.logger.Infof("[%s] state [%s] already ahead [%s]", info.RHash, types.LockerStateToString(info.State), types.LockerStateToString(types.WithDrawNeoUnLockedDone))
-			return
-		}
-
-		swapInfo, err := w.neo.QuerySwapInfoAndConfirmedTx(rHash, neo.UserUnlock, w.cfg.NEOCfg.ConfirmedHeight)
-		if err != nil {
-			w.logger.Infof("query swap info: %s", err, rHash)
+			w.logger.Infof("locker state already ahead of %s, [%s] ", types.LockerStateToString(types.WithDrawNeoUnLockedDone), info.RHash)
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		info.State = types.WithDrawNeoUnLockedDone
-		info.UnlockedNeoHash = swapInfo.TxIdOut
-		info.ROrigin = swapInfo.OriginText
-		info.NeoUserAddr = swapInfo.UserNeoAddress
-		info.UnlockedNeoHeight = swapInfo.UnlockedHeight
 
-		if err := w.store.UpdateLockerInfo(info); err != nil {
-			return
-		}
-		w.logger.Infof("set [%s] state to [%s]", rHash, types.LockerStateToString(types.WithDrawNeoUnLockedDone))
-
-		ethUnlockTx, err := w.eth.WrapperUnlock(rHash, request.GetROrigin(), w.cfg.EthereumCfg.SignerAddress)
-		if err != nil {
-			w.logger.Errorf("eth wrapper unlock: %s [%s]", err, rHash)
+		if err := setWithDrawNeoUnLockedDone(rHash, w.neo, w.store, w.cfg.NEOCfg.ConfirmedHeight, w.logger); err != nil {
+			w.logger.Errorf("set neo unlocked done: %s [%s]", err, rHash)
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		w.logger.Infof("withdraw/wrapper eth unlock: %s [%s] ", ethUnlockTx, rHash)
 
-		info.State = types.WithDrawEthUnlockPending
-		if err := w.store.UpdateLockerInfo(info); err != nil {
+		if err := setWithDrawEthUnlockPending(rHash, w.eth, w.store, w.cfg.EthereumCfg.SignerAddress, w.logger); err != nil {
+			w.logger.Errorf("set WithDrawEthUnlockPending: %s [%s]", err, info.RHash)
 			w.store.SetLockerStateFail(info, err)
 			return
 		}
-		w.logger.Infof("set [%s] state to [%s]", rHash, types.LockerStateToString(types.WithDrawEthUnlockPending))
 	}()
 
 	return toString(neoUnlockTx), nil

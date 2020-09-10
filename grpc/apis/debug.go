@@ -49,19 +49,24 @@ func (d *DebugAPI) HashTimer(ctx context.Context, s *pb.String) (*pb.HashTimerRe
 	}, nil
 }
 
-func (d *DebugAPI) LockerInfosCount(ctx context.Context, e *empty.Empty) (*pb.LockerInfosCountResponse, error) {
-	counts := make(map[string]int32)
-	var total int32
+func (d *DebugAPI) LockerInfosCount(ctx context.Context, e *empty.Empty) (*pb.LockerInfosStatResponse, error) {
+	stat := make(map[string]*pb.LockerInfosStat)
+	stat["Total"] = new(pb.LockerInfosStat)
 	if err := d.store.GetLockerInfos(func(info *types.LockerInfo) error {
-		counts[types.LockerStateToString(info.State)]++
-		total++
+		stateKey := types.LockerStateToString(info.State)
+		if _, ok := stat[stateKey]; !ok {
+			stat[stateKey] = new(pb.LockerInfosStat)
+		}
+		stat[stateKey].Count = stat[stateKey].Count + 1
+		stat[stateKey].Amount = stat[stateKey].Amount + info.Amount
+		stat["Total"].Count = stat["Total"].Count + 1
+		stat["Total"].Amount = stat["Total"].Amount + info.Amount
 		return nil
 	}); err != nil {
 		return nil, err
 	}
-	counts["Total"] = total
-	return &pb.LockerInfosCountResponse{
-		Counts: counts,
+	return &pb.LockerInfosStatResponse{
+		Result: stat,
 	}, nil
 }
 
@@ -83,6 +88,7 @@ func (d *DebugAPI) LockerInfosByState(ctx context.Context, params *pb.ParamAndOf
 		return as[i].LastModifyTime > as[j].LastModifyTime
 	})
 	states := getStateByOffset(as, params.GetCount(), params.GetOffset())
+
 	return &pb.LockerStatesResponse{
 		Lockers: states,
 	}, nil
