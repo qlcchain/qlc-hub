@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/nspcc-dev/neo-go/pkg/util"
+
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
