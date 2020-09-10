@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -14,6 +12,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type WithdrawAPI struct {
@@ -75,7 +74,7 @@ func (w *WithdrawAPI) Claim(ctx context.Context, request *pb.ClaimRequest) (*pb.
 			return
 		}
 
-		if err := setWithDrawNeoUnLockedDone(rHash, w.neo, w.store, w.cfg.NEOCfg.ConfirmedHeight, w.logger); err != nil {
+		if err := setWithDrawNeoUnLockedDone(rHash, w.neo, w.store, w.cfg.NEOCfg.ConfirmedHeight, true, w.logger); err != nil {
 			w.logger.Errorf("set neo unlocked done: %s [%s]", err, rHash)
 			w.store.SetLockerStateFail(info, err)
 			return

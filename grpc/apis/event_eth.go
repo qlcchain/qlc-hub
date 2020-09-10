@@ -9,13 +9,12 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 func (e *EventAPI) ethEventLister() {
@@ -127,7 +126,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 			return
 		}
 
-		if err := setDepositNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+		if err := setDepositNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, true, e.logger); err != nil {
 			e.logger.Errorf("set DepositNeoUnLockedDone: %s [%s]", err, info.RHash)
 			return
 		}
@@ -191,7 +190,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		}
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawNeoLockedPending))
 
-		if err := setWithDrawNeoLockedDone(rHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+		if err := setWithDrawNeoLockedDone(rHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, true, e.logger); err != nil {
 			e.logger.Errorf("event/set WithDrawNeoLockedDone: %s [%s]", err, rHash)
 			return
 		}
@@ -293,21 +292,21 @@ func (e *EventAPI) loopLockerState() {
 					unlock(info.RHash, e.logger)
 				case types.DepositNeoUnLockedPending: // should confirmed tx
 					lock(info.RHash, e.logger)
-					e.logger.Infof("loop/continue locker state [%s]", types.LockerStateToString(info.State))
-					if err := setDepositNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+					e.logger.Infof("loop/continue locker state %s [%s]", types.LockerStateToString(info.State), info.RHash)
+					if err := setDepositNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, false, e.logger); err != nil {
 						e.logger.Errorf("loop/set DepositNeoUnLockedDone: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
 				case types.DepositNeoFetchPending: // should confirm tx
 					lock(info.RHash, e.logger)
-					if err := setDepositNeoFetchDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+					if err := setDepositNeoFetchDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, false, e.logger); err != nil {
 						e.logger.Errorf("loop/set depositNeoFetchDone: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
 				case types.WithDrawNeoLockedPending: // should confirm tx
 					lock(info.RHash, e.logger)
-					e.logger.Infof("loop/continue locker state [%s]", types.LockerStateToString(info.State))
-					if err := setWithDrawNeoLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+					e.logger.Infof("loop/continue locker state %s [%s]", types.LockerStateToString(info.State), info.RHash)
+					if err := setWithDrawNeoLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, false, e.logger); err != nil {
 						e.logger.Errorf("loop/set WithDrawNeoLockedDone: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
@@ -315,7 +314,7 @@ func (e *EventAPI) loopLockerState() {
 					e.continueWithdrawNeoLockedDone(info.RHash)
 				case types.WithDrawNeoUnLockedPending: // should confirm tx
 					lock(info.RHash, e.logger)
-					if err := setWithDrawNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+					if err := setWithDrawNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, false, e.logger); err != nil {
 						e.logger.Errorf("loop/set WithDrawNeoUnLockedDone: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
@@ -329,8 +328,8 @@ func (e *EventAPI) loopLockerState() {
 					e.continueWithDrawEthUnlockPending(info.RHash)
 				case types.WithDrawNeoFetchPending: // should confirmed tx
 					lock(info.RHash, e.logger)
-					e.logger.Infof("loop/continue locker state [%s]", types.LockerStateToString(info.State))
-					if err := setWithDrawNeoFetchDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+					e.logger.Infof("loop/continue locker state %s [%s]", types.LockerStateToString(info.State), info.RHash)
+					if err := setWithDrawNeoFetchDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, false, e.logger); err != nil {
 						e.logger.Errorf("loop/set WithDrawNeoFetchDone: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
@@ -430,7 +429,7 @@ func (e *EventAPI) continueDepositEthLockedDone(rHash string) {
 				return
 			}
 
-			if err := setDepositNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+			if err := setDepositNeoUnLockedDone(info.RHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, true, e.logger); err != nil {
 				e.logger.Errorf("loop/set DepositNeoUnLockedDone: %s [%s]", err, info.RHash)
 				return
 			}
@@ -462,7 +461,7 @@ func (e *EventAPI) continueWithdrawNeoLockedDone(rHash string) {
 		}
 
 		e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawNeoFetchPending))
-		if err := setWithDrawNeoFetchDone(rHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, e.logger); err != nil {
+		if err := setWithDrawNeoFetchDone(rHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, true, e.logger); err != nil {
 			e.logger.Error(err)
 			return
 		}
@@ -497,7 +496,7 @@ func getLockDeadLineHeight(height int64) int64 {
 	return (height / 2) - 5
 }
 
-func setDepositNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, logger *zap.SugaredLogger) error {
+func setDepositNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, sync bool, logger *zap.SugaredLogger) error {
 	info, err := s.GetLockerInfo(rHash)
 	if err != nil {
 		return err
@@ -505,6 +504,12 @@ func setDepositNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s 
 	targetState := types.DepositNeoUnLockedDone
 	if info.State >= targetState {
 		return nil
+	}
+
+	if !sync {
+		if _, err := neoTransaction.QuerySwapInfo(rHash); err != nil {
+			return nil
+		}
 	}
 
 	swapInfo, err := neoTransaction.QuerySwapInfoAndConfirmedTx(rHash, neo.WrapperUnlock, confirmedHeight)
@@ -520,7 +525,7 @@ func setDepositNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s 
 	return s.UpdateLockerInfo(info)
 }
 
-func setDepositNeoFetchDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, logger *zap.SugaredLogger) error {
+func setDepositNeoFetchDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, sync bool, logger *zap.SugaredLogger) error {
 	info, err := s.GetLockerInfo(rHash)
 	if err != nil {
 		return err
@@ -528,6 +533,12 @@ func setDepositNeoFetchDone(rHash string, neoTransaction *neo.Transaction, s *st
 	targetState := types.DepositNeoFetchDone
 	if info.State >= targetState {
 		return nil
+	}
+
+	if !sync {
+		if _, err := neoTransaction.QuerySwapInfo(rHash); err != nil {
+			return nil
+		}
 	}
 
 	swapInfo, err := neoTransaction.QuerySwapInfoAndConfirmedTx(rHash, neo.RefundUser, confirmedHeight)
@@ -563,7 +574,7 @@ func setDepositNeoUnLockedPending(rHash string, neoTransaction *neo.Transaction,
 	return s.UpdateLockerInfo(info)
 }
 
-func setWithDrawNeoFetchDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, logger *zap.SugaredLogger) error {
+func setWithDrawNeoFetchDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, sync bool, logger *zap.SugaredLogger) error {
 	info, err := s.GetLockerInfo(rHash)
 	if err != nil {
 		return err
@@ -571,6 +582,12 @@ func setWithDrawNeoFetchDone(rHash string, neoTransaction *neo.Transaction, s *s
 	targetState := types.WithDrawNeoFetchDone
 	if info.State >= targetState {
 		return nil
+	}
+
+	if !sync {
+		if _, err := neoTransaction.QuerySwapInfo(rHash); err != nil {
+			return nil
+		}
 	}
 
 	swapInfo, err := neoTransaction.QuerySwapInfoAndConfirmedTx(rHash, neo.RefundWrapper, confirmedHeight)
@@ -585,7 +602,7 @@ func setWithDrawNeoFetchDone(rHash string, neoTransaction *neo.Transaction, s *s
 	return s.UpdateLockerInfo(info)
 }
 
-func setWithDrawNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, logger *zap.SugaredLogger) error {
+func setWithDrawNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, sync bool, logger *zap.SugaredLogger) error {
 	info, err := s.GetLockerInfo(rHash)
 	if err != nil {
 		return err
@@ -594,6 +611,12 @@ func setWithDrawNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s
 	targetState := types.WithDrawNeoUnLockedDone
 	if info.State >= targetState {
 		return nil
+	}
+
+	if !sync {
+		if _, err := neoTransaction.QuerySwapInfo(rHash); err != nil {
+			return nil
+		}
 	}
 
 	swapInfo, err := neoTransaction.QuerySwapInfoAndConfirmedTx(rHash, neo.UserUnlock, confirmedHeight)
@@ -611,7 +634,7 @@ func setWithDrawNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s
 	return s.UpdateLockerInfo(info)
 }
 
-func setWithDrawNeoLockedDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, logger *zap.SugaredLogger) error {
+func setWithDrawNeoLockedDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, sync bool, logger *zap.SugaredLogger) error {
 	info, err := s.GetLockerInfo(rHash)
 	if err != nil {
 		return err
@@ -619,6 +642,12 @@ func setWithDrawNeoLockedDone(rHash string, neoTransaction *neo.Transaction, s *
 	targetState := types.WithDrawNeoLockedDone
 	if info.State >= targetState {
 		return nil
+	}
+
+	if !sync {
+		if _, err := neoTransaction.QuerySwapInfo(rHash); err != nil {
+			return nil
+		}
 	}
 
 	swapInfo, err := neoTransaction.QuerySwapInfoAndConfirmedTx(rHash, neo.WrapperLock, confirmedHeight)
