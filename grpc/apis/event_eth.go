@@ -103,6 +103,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		}
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.DepositEthLockedDone))
 
+		updateGas(txHash, e.eth, e.logger)
 	case eth.IssueUnlock:
 		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State != types.DepositEthLockedDone {
@@ -146,6 +147,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		}
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.DepositEthFetchDone))
 
+		updateGas(txHash, e.eth, e.logger)
 	case eth.DestroyLock:
 		if _, err := e.store.GetLockerInfo(rHash); err == nil {
 			e.logger.Infof("[%d] locker info already exist [%s]", state, rHash)
@@ -175,6 +177,11 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		if hashTimer.Amount.Int64() < e.cfg.MinWithdrawAmount {
 			err = fmt.Errorf("withdraw locked amount %d should more than %d [%s]", hashTimer.Amount.Int64(), e.cfg.MinWithdrawAmount, rHash)
 			e.logger.Error(err)
+			return
+		}
+
+		if err := checkGas(e.cfg, e.eth); err != nil {
+			e.logger.Errorf("check gas: %s [%s]", err, rHash)
 			return
 		}
 
@@ -210,6 +217,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		}
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthUnlockDone))
 
+		updateGas(txHash, e.eth, e.logger)
 	case eth.DestroyFetch: // user fetch
 		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State != types.WithDrawNeoFetchDone {
@@ -320,7 +328,7 @@ func (e *EventAPI) loopLockerState() {
 					unlock(info.RHash, e.logger)
 				case types.WithDrawNeoUnLockedDone: // wrapper should unlock on eth
 					lock(info.RHash, e.logger)
-					if err := setWithDrawEthUnlockPending(info.RHash, e.eth, e.store, e.cfg.EthereumCfg.SignerAddress, e.logger); err != nil {
+					if err := setWithDrawEthUnlockPending(info.RHash, e.eth, e.store, e.cfg.EthereumCfg.OwnerAddress, e.logger); err != nil {
 						e.logger.Errorf("loop/set WithDrawEthUnlockPending: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
@@ -384,7 +392,7 @@ func (e *EventAPI) continueDepositEthLockedDone(rHash string) {
 	if b, h := e.eth.HasConfirmedBlocksHeight(int64(info.LockedEthHeight), info.EthTimerInterval); b {
 		e.logger.Infof("loop/deposit wrapper eth timeout, rHash[%s], lockerState[%s], lockerHeight[%d -> %d]", info.RHash,
 			types.LockerStateToString(info.State), info.LockedEthHeight, h)
-		tx, err := e.eth.WrapperFetch(info.RHash, e.cfg.EthereumCfg.SignerAddress)
+		tx, err := e.eth.WrapperFetch(info.RHash, e.cfg.EthereumCfg.OwnerAddress)
 		if err != nil {
 			e.logger.Errorf("loop/wrapperFetch: %s", err)
 			return

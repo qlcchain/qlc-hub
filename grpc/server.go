@@ -96,14 +96,14 @@ func (g *Server) checkBaseInfo() error {
 	g.signer = signer
 	g.logger.Info("signer client connected successfully")
 
-	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint)
+	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint[0])
 	if err != nil {
 		return fmt.Errorf("eth dail: %s", err)
 	}
 	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
 		return fmt.Errorf("eth node connect timeout: %s", err)
 	}
-	eTransaction := eth.NewTransaction(eClient, signer, g.cfg.EthereumCfg.Contract)
+	eTransaction := eth.NewTransaction(eClient, signer, g.ctx, g.cfg.EthereumCfg.GasEndPoint, g.cfg.EthereumCfg.Contract)
 	g.eth = eTransaction
 	g.logger.Info("eth client connected successfully")
 

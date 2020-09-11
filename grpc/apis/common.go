@@ -8,10 +8,10 @@ import (
 	"go.uber.org/zap"
 )
 
-var maxRHashSzie = 10240
+var maxRHashSize = 10240
 var timeout = 24 * time.Hour
 
-var glock = gcache.New(maxRHashSzie).Expiration(timeout).LRU().Build()
+var glock = gcache.New(maxRHashSize).Expiration(timeout).LRU().Build()
 
 func lock(rHash string, logger *zap.SugaredLogger) {
 	if v, err := glock.Get(rHash); err != nil {

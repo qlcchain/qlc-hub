@@ -27,13 +27,21 @@ const (
 	userEthPrikey = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 )
 
-func TestGetHashTimer(t *testing.T) {
+func getTransaction(t *testing.T) (*Transaction, func()) {
 	client, err := ethclient.Dial(endPointws)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer client.Close()
-	ethTransaction := NewTransaction(client, nil, contract)
+	ethTransaction := NewTransaction(client, nil, context.Background(), "", contract)
+	return ethTransaction, func() {
+		client.Close()
+	}
+}
+
+func TestGetHashTimer(t *testing.T) {
+	ethTransaction, fn := getTransaction(t)
+	defer fn()
+
 	r, err := ethTransaction.GetHashTimer("3315e92b49957eeeb75cdb1e57560b00ca0b2ec1240d2af194cef580ca188a02")
 	if err != nil {
 		t.Fatal(err)
@@ -152,12 +160,9 @@ func TestQLCChainTransactorSession_IssueLock(t *testing.T) {
 }
 
 func TestGetBestBlockHeight(t *testing.T) {
-	client, err := ethclient.Dial(endPointws)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer client.Close()
-	ethTransaction := NewTransaction(client, nil, "")
+	ethTransaction, fn := getTransaction(t)
+	defer fn()
+
 	r, err := ethTransaction.GetBestBlockHeight()
 	if err != nil {
 		t.Fatal(err)

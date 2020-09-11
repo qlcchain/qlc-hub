@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -69,9 +70,9 @@ func initParams(osArgs []string) {
 	neoWrapperSignerAddress = cfg.NEOCfg.SignerAddress
 	neoWrapperAssetAddr = cfg.NEOCfg.AssetsAddress
 
-	ethUrl = cfg.EthereumCfg.EndPoint
+	ethUrl = cfg.EthereumCfg.EndPoint[0]
 	ethContract = cfg.EthereumCfg.Contract
-	ethWrapperOwnerAddress = cfg.EthereumCfg.SignerAddress
+	ethWrapperOwnerAddress = cfg.EthereumCfg.OwnerAddress
 
 	var err error
 	if singerClient, err = signer.NewSigner(cfg); err != nil {
@@ -92,7 +93,7 @@ func initParams(osArgs []string) {
 	if eClient, err := ethclient.Dial(ethUrl); err != nil {
 		log.Fatal(err)
 	} else {
-		ethTransaction = eth.NewTransaction(eClient, singerClient, ethContract)
+		ethTransaction = eth.NewTransaction(eClient, singerClient, context.Background(), cfg.EthereumCfg.GasEndPoint, ethContract)
 	}
 	//defer ethClient.Close()
 

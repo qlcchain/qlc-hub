@@ -8,9 +8,8 @@
 package main
 
 import (
-	"os"
-
 	"github.com/qlcchain/qlc-hub/cmd/client/commands"
+	"os"
 )
 
 func main() {

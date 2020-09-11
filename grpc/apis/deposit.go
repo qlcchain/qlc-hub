@@ -38,7 +38,7 @@ func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction
 
 func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (*pb.Boolean, error) {
 	d.logger.Info("api - deposit lock: ", request.String())
-	if err := d.checkLockParams(request); err != nil {
+	if err := d.baseCheck(request); err != nil {
 		d.logger.Error(err)
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 
 		// wrapper to eth lock
 		var tx string
-		tx, err = d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.SignerAddress, swapInfo.Amount)
+		tx, err = d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.OwnerAddress, swapInfo.Amount)
 		if err != nil {
 			d.logger.Error(err)
 			return
@@ -143,13 +143,13 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 	return toBoolean(true), nil
 }
 
-func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
-	address := d.cfg.EthereumCfg.SignerAddress
+func (d *DepositAPI) baseCheck(request *pb.DepositLockRequest) error {
+	address := d.cfg.EthereumCfg.OwnerAddress
 	if address != request.GetAddr() {
 		return fmt.Errorf("invalid wrapper eth address, want [%s], but get [%s]", address, request.GetAddr())
 	}
 
-	return nil
+	return checkGas(d.cfg, d.eth)
 }
 
 func (d *DepositAPI) Fetch(ctx context.Context, request *pb.FetchRequest) (*pb.String, error) {

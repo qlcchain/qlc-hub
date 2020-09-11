@@ -613,6 +613,18 @@
         },
         "neoAddress": {
           "type": "string"
+        },
+        "ethBalance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ethAvailable": {
+          "type": "string",
+          "format": "int64"
+        },
+        "neoBalance": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

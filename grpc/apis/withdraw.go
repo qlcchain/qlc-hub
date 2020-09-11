@@ -80,7 +80,7 @@ func (w *WithdrawAPI) Claim(ctx context.Context, request *pb.ClaimRequest) (*pb.
 			return
 		}
 
-		if err := setWithDrawEthUnlockPending(rHash, w.eth, w.store, w.cfg.EthereumCfg.SignerAddress, w.logger); err != nil {
+		if err := setWithDrawEthUnlockPending(rHash, w.eth, w.store, w.cfg.EthereumCfg.OwnerAddress, w.logger); err != nil {
 			w.logger.Errorf("set WithDrawEthUnlockPending: %s [%s]", err, info.RHash)
 			w.store.SetLockerStateFail(info, err)
 			return

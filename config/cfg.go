@@ -45,12 +45,15 @@ type NEOCfg struct {
 }
 
 type EthereumCfg struct {
-	EndPoint         string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" default:"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57" validate:"nonzero"`
-	Contract         string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address" default:"0x9a36F711133188EDb3952b3A6ee29c6a3d2e3836" validate:"nonzero"`
-	SignerAddress    string `json:"signerAddress" long:"ethSignerAddress" description:"Ethereum address to sign tx" default:"0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1" validate:"nonzero"`
-	ConfirmedHeight  int    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
-	DepositInterval  int64  `json:"ethDepositHeight" long:"ethDepositHeight" description:"Lock timeout Height of deposit" default:"20" validate:"nonzero"`
-	WithdrawInterval int64  `json:"ethWithdrawHeight" long:"ethWithdrawHeight" description:"Lock timeout Height of withdraw" default:"40" validate:"nonzero"`
+	EndPoint         []string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" default:"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57" validate:"min=1"`
+	Contract         string   `json:"contract" long:"ethereumContract" description:"ethereum staking contract address" default:"0x9a36F711133188EDb3952b3A6ee29c6a3d2e3836" validate:"nonzero"`
+	OwnerAddress     string   `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address" default:"0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1" validate:"nonzero"`
+	ConfirmedHeight  int      `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
+	DepositInterval  int64    `json:"ethDepositHeight" long:"ethDepositHeight" description:"Lock timeout Height of deposit" default:"20" validate:"nonzero"`
+	WithdrawInterval int64    `json:"ethWithdrawHeight" long:"ethWithdrawHeight" description:"Lock timeout Height of withdraw" default:"40" validate:"nonzero"`
+	MaxRequestPerDay int64    `json:"maxRequestDay" long:"maxRequestDay" description:"maximum request number per day" default:"99990" validate:"nonzero"`
+	MaxGasPerDay     int64    `json:"maxGasDay" long:"maxGasDay" description:"maximum gas balance per day" default:"10" validate:"nonzero"`
+	GasEndPoint      string   `json:"gasEndPoint" long:"gasEndPoint" description:"endpoint to get gas price" default:"https://ethgasstation.info/api/ethgasAPI.json?api-key=dcc85335d8be462feedfc78fa4f69536a953b37b7942aca02b044c1e0816" validate:"nonzero"`
 }
 
 type RPCCfg struct {

@@ -10,6 +10,9 @@ message PingResponse {
    string ethAddress   = 2;
    string neoContract  = 3;
    string neoAddress   = 4;
+   int64  ethBalance   = 5;
+   int64  ethAvailable = 6;
+   int64  neoBalance   = 7;
 }
 
 message DepositLockRequest{

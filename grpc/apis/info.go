@@ -38,7 +38,7 @@ func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, e
 		NeoContract: i.cfg.NEOCfg.Contract,
 		NeoAddress:  i.cfg.NEOCfg.SignerAddress,
 		EthContract: i.cfg.EthereumCfg.Contract,
-		EthAddress:  i.cfg.EthereumCfg.SignerAddress,
+		EthAddress:  i.cfg.EthereumCfg.OwnerAddress,
 	}, nil
 }
 
