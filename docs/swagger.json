@@ -780,6 +780,14 @@
         "withdrawLimit": {
           "type": "boolean",
           "format": "boolean"
+        },
+        "minDepositAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "minWithdrawAmount": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

@@ -14,6 +14,8 @@ message PingResponse {
    float  ethBalance    = 5;
    float  neoBalance    = 7;
    bool   withdrawLimit = 8;
+   int64  minDepositAmount  = 9;
+   int64  minWithdrawAmount = 10;
 }
 
 message DepositLockRequest{

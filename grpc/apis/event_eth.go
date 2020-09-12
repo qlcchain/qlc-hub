@@ -70,7 +70,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 	}()
 
 	if info, err = e.store.GetLockerInfo(rHash); err != nil {
-		e.logger.Errorf("event/getLockerInfo[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
+		e.logger.Errorf("event/get lockerInfo[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
 		return
 	}
 
@@ -165,7 +165,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.logger.Infof("[%d] update [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthLockedDone))
 
 		if err := e.withdrawCheck(int64(info.LockedEthHeight), info.EthTimerInterval, hashTimer.Amount.Int64(), hashTimer.UserAddr); err != nil {
-			e.logger.Error("withdraw check: %s [%s]", err, rHash)
+			e.logger.Errorf("loop/withdraw check: %s [%s]", err, rHash)
 			return
 		}
 
@@ -223,7 +223,7 @@ func (e *EventAPI) withdrawCheck(startHeight, interval int64, amount int64, user
 	}
 
 	if isWithdrawLimitExceeded(userAddr) {
-		return fmt.Errorf("withdraw account %s exceed limit", userAddr)
+		return fmt.Errorf("withdraw account %s exceed limit  ")
 	}
 	return nil
 }
