@@ -78,6 +78,14 @@ func getLockerState(rHash string) (map[string]interface{}, error) {
 	return ret, nil
 }
 
+func getPing(addr string) (map[string]interface{}, error) {
+	ret, err := get(fmt.Sprintf("%s/info/ping?value=%s", hubUrl, addr))
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
 func get(url string) (map[string]interface{}, error) {
 	request, err := http.NewRequest("GET", fmt.Sprintf("%s", url), nil)
 	if err != nil {

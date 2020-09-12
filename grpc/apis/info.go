@@ -4,41 +4,65 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
-
-	"github.com/golang/protobuf/ptypes/empty"
-	"go.uber.org/zap"
 
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type InfoAPI struct {
+	eth    *eth.Transaction
+	neo    *neo.Transaction
 	cfg    *config.Config
 	ctx    context.Context
 	store  *store.Store
 	logger *zap.SugaredLogger
 }
 
-func NewInfoAPI(ctx context.Context, cfg *config.Config, s *store.Store) *InfoAPI {
+func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *eth.Transaction, s *store.Store) *InfoAPI {
 	return &InfoAPI{
 		ctx:    ctx,
 		cfg:    cfg,
+		neo:    neo,
+		eth:    eth,
 		store:  s,
 		logger: log.NewLogger("api/info"),
 	}
 }
 
-func (i *InfoAPI) Ping(ctx context.Context, e *empty.Empty) (*pb.PingResponse, error) {
+func (i *InfoAPI) Ping(ctx context.Context, s *pb.String) (*pb.PingResponse, error) {
+	ethBalance, err := i.eth.Balance(i.cfg.EthereumCfg.OwnerAddress)
+	if err != nil {
+		return nil, err
+	}
+	eb, err := strconv.ParseFloat(fmt.Sprintf("%.8f", float64(ethBalance)/1e18), 64)
+	if err != nil {
+		return nil, err
+	}
+	neoBalance, err := i.neo.Balance(i.cfg.NEOCfg.AssetsAddress, i.cfg.NEOCfg.AssetId)
+	if err != nil {
+		return nil, err
+	}
+	nb, err := strconv.ParseFloat(fmt.Sprintf("%.8f", float64(neoBalance)/1e8), 64)
+	if err != nil {
+		return nil, err
+	}
 	return &pb.PingResponse{
-		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoAddress:  i.cfg.NEOCfg.SignerAddress,
-		EthContract: i.cfg.EthereumCfg.Contract,
-		EthAddress:  i.cfg.EthereumCfg.SignerAddress,
+		EthContract:   i.cfg.EthereumCfg.Contract,
+		EthAddress:    i.cfg.EthereumCfg.OwnerAddress,
+		NeoContract:   i.cfg.NEOCfg.Contract,
+		NeoAddress:    i.cfg.NEOCfg.SignerAddress,
+		EthBalance:    float32(eb),
+		NeoBalance:    float32(nb),
+		WithdrawLimit: isWithdrawLimitExceeded(s.GetValue()),
 	}, nil
 }
 
@@ -161,5 +185,8 @@ func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
 		EthTimeout:        s.EthTimeout,
 		Fail:              s.Fail,
 		Remark:            s.Remark,
+		Interruption:      s.Interruption,
+		Deleted:           s.Deleted,
+		DeletedTime:       time.Unix(s.DeletedTime, 0).Format(time.RFC3339),
 	}
 }

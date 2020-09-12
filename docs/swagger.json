@@ -11,6 +11,36 @@
     "application/json"
   ],
   "paths": {
+    "/debug/deleteLockerInfo": {
+      "get": {
+        "operationId": "DebugAPI_DeleteLockerInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
     "/debug/hashTimer": {
       "get": {
         "operationId": "DebugAPI_HashTimer",
@@ -34,6 +64,50 @@
             "in": "query",
             "required": false,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
+    "/debug/interruptLocker": {
+      "get": {
+        "operationId": "DebugAPI_InterruptLocker",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "rHash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "interrupt",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
           }
         ],
         "tags": [
@@ -102,6 +176,36 @@
             }
           }
         },
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
+    "/debug/signData": {
+      "get": {
+        "operationId": "DebugAPI_SignData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoSignResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "DebugAPI"
         ]
@@ -375,6 +479,14 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "InfoAPI"
         ]
@@ -585,6 +697,17 @@
         },
         "remark": {
           "type": "string"
+        },
+        "interruption": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "deleted": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "deletedTime": {
+          "type": "string"
         }
       }
     },
@@ -613,6 +736,31 @@
         },
         "neoAddress": {
           "type": "string"
+        },
+        "ethBalance": {
+          "type": "number",
+          "format": "float"
+        },
+        "neoBalance": {
+          "type": "number",
+          "format": "float"
+        },
+        "withdrawLimit": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "protoSignResponse": {
+      "type": "object",
+      "properties": {
+        "sign": {
+          "type": "string",
+          "format": "byte"
+        },
+        "verifyData": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

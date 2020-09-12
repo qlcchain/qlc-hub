@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"math/rand"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -589,4 +590,34 @@ func (n *Transaction) GetTransactionHeight(txHash string) (uint32, error) {
 		return 0, fmt.Errorf("tx verify decode hash: %s", err)
 	}
 	return n.client.GetTransactionHeight(hash)
+}
+
+func (n *Transaction) Balance(addr string, asset string) (int64, error) {
+	address, err := address.StringToUint160(addr)
+	if err != nil {
+		return 0, err
+	}
+	r, err := n.client.GetNEP5Balances(address)
+	if err != nil {
+		return 0, nil
+	}
+
+	for _, assetBalance := range r.Balances {
+		if assetBalance.Asset.StringLE() == asset {
+			amount, err := strconv.ParseInt(assetBalance.Amount, 10, 64)
+			if err != nil {
+				return 0, nil
+			}
+			return amount, nil
+		}
+	}
+	return 0, nil
+}
+
+func (n *Transaction) SignData(address string, str string) (*proto.SignResponse, error) {
+	data, err := hex.DecodeString(str)
+	if err != nil {
+		return nil, err
+	}
+	return n.signer.Sign(proto.SignType_NEO, address, data)
 }

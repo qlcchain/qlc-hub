@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -69,7 +68,7 @@ func nNeo2Eth() {
 		log.Fatal(err)
 	}
 
-	tx, err = n.WrapperUnlock(rOrigin, neoWrapperSignerAddress, userEthAddress)
+	tx, err = n.WrapperUnlock(rOrigin, neoWrapperSignerAddress, ethUserAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
