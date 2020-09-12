@@ -57,13 +57,15 @@ func (i *InfoAPI) Ping(ctx context.Context, s *pb.String) (*pb.PingResponse, err
 		return nil, err
 	}
 	return &pb.PingResponse{
-		EthContract:   i.cfg.EthereumCfg.Contract,
-		EthAddress:    i.cfg.EthereumCfg.OwnerAddress,
-		NeoContract:   i.cfg.NEOCfg.Contract,
-		NeoAddress:    i.cfg.NEOCfg.SignerAddress,
-		EthBalance:    float32(eb),
-		NeoBalance:    float32(nb),
-		WithdrawLimit: isWithdrawLimitExceeded(s.GetValue()),
+		EthContract:       i.cfg.EthereumCfg.Contract,
+		EthAddress:        i.cfg.EthereumCfg.OwnerAddress,
+		NeoContract:       i.cfg.NEOCfg.Contract,
+		NeoAddress:        i.cfg.NEOCfg.SignerAddress,
+		EthBalance:        float32(eb),
+		NeoBalance:        float32(nb),
+		WithdrawLimit:     isWithdrawLimitExceeded(s.GetValue()),
+		MinDepositAmount:  i.cfg.MinDepositAmount,
+		MinWithdrawAmount: i.cfg.MinDepositAmount,
 	}, nil
 }
 

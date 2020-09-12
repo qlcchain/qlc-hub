@@ -212,6 +212,7 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 	authorizer := jwt.DefaultAuthorizer(manager, map[string][]string{
 		"/proto.DepositAPI/Lock":           jwt.Both,
 		"/proto.DepositAPI/Fetch":          jwt.Both,
+		"/proto.WithdrawAPI/Lock":          jwt.Both,
 		"/proto.WithdrawAPI/Claim":         jwt.Both,
 		"/proto.EventAPI/Event":            jwt.Both,
 		"/proto.InfoAPI/Ping":              jwt.Both,

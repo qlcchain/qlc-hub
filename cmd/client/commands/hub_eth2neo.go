@@ -46,6 +46,18 @@ func hEth2Neo() {
 	}
 	fmt.Println("ping info ", hubUtil.ToString(pingInfo))
 
+	//lock
+	paras := fmt.Sprintf(`{
+		"value": "%s"
+	}`, rHash)
+	r, err := post(paras, fmt.Sprintf("%s/withdraw/lock", hubUrl))
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !r.(bool) {
+		log.Fatal("xxx")
+	}
+
 	//  user lock(eth)
 	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, int64(withdrawAmount))
 	if err != nil {
@@ -58,11 +70,11 @@ func hEth2Neo() {
 	}
 
 	// eth - wrapper unlock
-	paras := fmt.Sprintf(`{
+	paras2 := fmt.Sprintf(`{
 		"rOrigin": "%s",
 		"userNep5Addr": "%s"
 	}`, rOrigin, neoUserAddr)
-	r, err := post(paras, fmt.Sprintf("%s/withdraw/claim", hubUrl))
+	r, err = post(paras2, fmt.Sprintf("%s/withdraw/claim", hubUrl))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,6 +89,17 @@ func hEth2Neo() {
 func hEth2NeoFetch() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, " ==> ", rHash)
+
+	paras := fmt.Sprintf(`{
+		"value": "%s"
+	}`, rHash)
+	r, err := post(paras, fmt.Sprintf("%s/withdraw/lock", hubUrl))
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !r.(bool) {
+		log.Fatal("xxx")
+	}
 
 	//  user lock(eth)
 	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, int64(withdrawAmount))

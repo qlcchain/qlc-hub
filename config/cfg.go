@@ -37,7 +37,7 @@ type Config struct {
 
 type NEOCfg struct {
 	EndPoint         string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" default:"http://seed2.ngd.network:20332" validate:"nonzero"`
-	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"278df62f9ba1312f1e1f4b5d239f07beaa1b5b94" validate:"nonzero"`
+	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"cedfd8f78bf46d28ac07b8e40b911199bd51951f" validate:"nonzero"`
 	AssetId          string `json:"assetId" long:"assetId" description:"qlc token asset id" default:"b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263" validate:"nonzero"`
 	SignerAddress    string `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" default:"ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ" validate:"nonzero"`
 	AssetsAddress    string `json:"assetsAddress" long:"neoAssetsAddress" description:"NEO address to keep assets" default:"Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W" validate:"nonzero"`
@@ -53,7 +53,6 @@ type EthereumCfg struct {
 	ConfirmedHeight  int    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
 	DepositInterval  int64  `json:"ethDepositHeight" long:"ethDepositHeight" description:"Lock timeout Height of deposit" default:"20" validate:"nonzero"`
 	WithdrawInterval int64  `json:"ethWithdrawHeight" long:"ethWithdrawHeight" description:"Lock timeout Height of withdraw" default:"40" validate:"nonzero"`
-	MaxRequestPerDay int64  `json:"maxRequestDay" long:"maxRequestDay" description:"maximum request number per day" default:"99990" validate:"nonzero"`
 	MaxGasPerDay     int64  `json:"maxGasDay" long:"maxGasDay" description:"maximum gas balance per day" default:"10" validate:"nonzero"`
 	GasEndPoint      string `json:"gasEndPoint" long:"gasEndPoint" description:"endpoint to get gas price" default:"https://ethgasstation.info/api/ethgasAPI.json?api-key=dcc85335d8be462feedfc78fa4f69536a953b37b7942aca02b044c1e0816" validate:"nonzero"`
 }
