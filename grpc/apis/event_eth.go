@@ -223,7 +223,7 @@ func (e *EventAPI) withdrawCheck(startHeight, interval int64, amount int64, user
 	}
 
 	if isWithdrawLimitExceeded(userAddr) {
-		return fmt.Errorf("withdraw account %s exceed limit  ")
+		return fmt.Errorf("withdraw account %s exceed limit  ", userAddr)
 	}
 	return nil
 }
