@@ -4,18 +4,20 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
-	"go.uber.org/zap"
 )
 
 func (e *EventAPI) ethEventLister() {
@@ -714,7 +716,7 @@ func resetWithdrawTimeLimit(ctx context.Context, interval int) {
 }
 
 func isWithdrawLimitExceeded(addr string) bool {
-	if r, ok := withdrawTimeLimit.Load(addr); ok {
+	if r, ok := withdrawTimeLimit.Load(RemovePrefix(addr)); ok {
 		return r.(bool)
 	} else {
 		return false
@@ -722,5 +724,12 @@ func isWithdrawLimitExceeded(addr string) bool {
 }
 
 func setWithdrawLimitExceeded(addr string) {
-	withdrawTimeLimit.Store(addr, true)
+	withdrawTimeLimit.Store(RemovePrefix(addr), true)
+}
+
+func RemovePrefix(str string) string {
+	if len(str) == 42 && strings.HasPrefix(str, "0x") {
+		return str[2:]
+	}
+	return str
 }

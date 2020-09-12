@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
-	"go.uber.org/zap"
 )
 
 type EventAPI struct {
