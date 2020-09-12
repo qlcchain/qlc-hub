@@ -24,6 +24,9 @@ type LockerInfo struct {
 	EthTimeout        bool        `msg:"ethTimeout" json:"ethTimeout"`
 	Fail              bool        `msg:"fail" json:"fail"`
 	Remark            string      `msg:"remark" json:"remark"`
+	Interruption      bool        `msg:"interruption" json:"interruption"`
+	Deleted           bool        `msg:"deleted" json:"deleted"`
+	DeletedTime       int64       `msg:"deletedTime" json:"deletedTime"`
 }
 
 func (b *LockerInfo) Serialize() ([]byte, error) {

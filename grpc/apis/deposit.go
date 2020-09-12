@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -13,7 +15,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
-	"go.uber.org/zap"
 )
 
 type DepositAPI struct {
@@ -38,7 +39,7 @@ func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction
 
 func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (*pb.Boolean, error) {
 	d.logger.Info("api - deposit lock: ", request.String())
-	if err := d.checkLockParams(request); err != nil {
+	if err := d.baseCheck(request); err != nil {
 		d.logger.Error(err)
 		return nil, err
 	}
@@ -127,7 +128,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 
 		// wrapper to eth lock
 		var tx string
-		tx, err = d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.SignerAddress, swapInfo.Amount)
+		tx, err = d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.OwnerAddress, swapInfo.Amount)
 		if err != nil {
 			d.logger.Error(err)
 			return
@@ -143,8 +144,8 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 	return toBoolean(true), nil
 }
 
-func (d *DepositAPI) checkLockParams(request *pb.DepositLockRequest) error {
-	address := d.cfg.EthereumCfg.SignerAddress
+func (d *DepositAPI) baseCheck(request *pb.DepositLockRequest) error {
+	address := d.cfg.EthereumCfg.OwnerAddress
 	if address != request.GetAddr() {
 		return fmt.Errorf("invalid wrapper eth address, want [%s], but get [%s]", address, request.GetAddr())
 	}

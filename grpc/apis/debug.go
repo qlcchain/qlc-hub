@@ -12,6 +12,7 @@ import (
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
@@ -19,16 +20,18 @@ import (
 type DebugAPI struct {
 	cfg    *config.Config
 	eth    *eth.Transaction
+	neo    *neo.Transaction
 	ctx    context.Context
 	store  *store.Store
 	logger *zap.SugaredLogger
 }
 
-func NewDebugAPI(ctx context.Context, cfg *config.Config, eth *eth.Transaction, s *store.Store) *DebugAPI {
+func NewDebugAPI(ctx context.Context, cfg *config.Config, eth *eth.Transaction, neo *neo.Transaction, s *store.Store) *DebugAPI {
 	return &DebugAPI{
 		ctx:    ctx,
 		cfg:    cfg,
 		eth:    eth,
+		neo:    neo,
 		store:  s,
 		logger: log.NewLogger("api/debug"),
 	}
@@ -92,4 +95,25 @@ func (d *DebugAPI) LockerInfosByState(ctx context.Context, params *pb.ParamAndOf
 	return &pb.LockerStatesResponse{
 		Lockers: states,
 	}, nil
+}
+
+func (d *DebugAPI) InterruptLocker(ctx context.Context, s *pb.LockerInterrupt) (*pb.Boolean, error) {
+	locker, err := d.store.GetLockerInfo(s.GetRHash())
+	if err != nil {
+		return nil, err
+	}
+	locker.Interruption = s.GetInterrupt()
+	locker.State = types.LockerState(s.GetState())
+	if err := d.store.UpdateLockerInfo(locker); err != nil {
+		return nil, err
+	}
+	return toBoolean(true), nil
+}
+
+func (d *DebugAPI) DeleteLockerInfo(ctx context.Context, s *pb.String) (*pb.Boolean, error) {
+	panic("implement me")
+}
+
+func (d *DebugAPI) SignData(ctx context.Context, s *pb.String) (*pb.SignResponse, error) {
+	return d.neo.SignData(d.cfg.NEOCfg.SignerAddress, s.GetValue())
 }

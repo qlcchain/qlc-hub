@@ -103,7 +103,7 @@ func (g *Server) checkBaseInfo() error {
 	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
 		return fmt.Errorf("eth node connect timeout: %s", err)
 	}
-	eTransaction := eth.NewTransaction(eClient, signer, g.cfg.EthereumCfg.Contract)
+	eTransaction := eth.NewTransaction(eClient, signer, g.ctx, g.cfg.EthereumCfg.GasEndPoint, g.cfg.EthereumCfg.Contract)
 	g.eth = eTransaction
 	g.logger.Info("eth client connected successfully")
 
@@ -184,8 +184,8 @@ func (g *Server) registerApi() error {
 	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterEventAPIServer(g.rpc, apis.NewEventAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
-	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.store))
-	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.store))
+	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.neo, g.store))
+	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	return nil
 }
 
@@ -210,14 +210,15 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 
 func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 	authorizer := jwt.DefaultAuthorizer(manager, map[string][]string{
-		"/proto.DepositAPI/Lock":             jwt.Both,
-		"/proto.DepositAPI/Fetch":            jwt.Both,
-		"/proto.WithdrawAPI/Claim":           jwt.Both,
-		"/proto.EventAPI/Event":              jwt.Both,
-		"/proto.InfoAPI/Ping":                jwt.Both,
-		"/proto.DebugAPI/HashTimer":          jwt.Both,
-		"/proto.DebugAPI/LockerInfosCount":   jwt.Both,
-		"/proto.DebugAPI/LockerInfosByState": jwt.Both,
+		"/proto.DepositAPI/Lock":           jwt.Both,
+		"/proto.DepositAPI/Fetch":          jwt.Both,
+		"/proto.WithdrawAPI/Claim":         jwt.Both,
+		"/proto.EventAPI/Event":            jwt.Both,
+		"/proto.InfoAPI/Ping":              jwt.Both,
+		"/proto.DebugAPI/HashTimer":        jwt.Both,
+		"/proto.DebugAPI/LockerInfosCount": jwt.Both,
+		"/proto.DebugAPI/interruptLocker":  jwt.Admin,
+		"/proto.DebugAPI/deleteLocker":     jwt.Admin,
 	})
 	return authorizer
 }

@@ -34,6 +34,7 @@ func NewEventAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, 
 	}
 	go api.ethEventLister()
 	go api.loopLockerState()
+	go resetWithdrawTimeLimit(ctx, cfg.WithdrawFrequency)
 	return api
 }
 

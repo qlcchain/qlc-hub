@@ -14,31 +14,38 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
-	"go.uber.org/zap"
 )
 
 type Transaction struct {
-	signer   *signer.SignerClient
-	client   *ethclient.Client
-	contract string
-	logger   *zap.SugaredLogger
+	signer     *signer.SignerClient
+	client     *ethclient.Client
+	contract   string
+	averageGas int64
+	ctx        context.Context
+	gasUrl     string
+	logger     *zap.SugaredLogger
 }
 
-func NewTransaction(client *ethclient.Client, signer *signer.SignerClient, contract string) *Transaction {
-	return &Transaction{
+func NewTransaction(client *ethclient.Client, signer *signer.SignerClient, ctx context.Context, gasUrl string, contract string) *Transaction {
+	t := &Transaction{
 		signer:   signer,
 		client:   client,
 		contract: contract,
+		ctx:      ctx,
+		gasUrl:   gasUrl,
 		logger:   log.NewLogger("eth/transaction"),
 	}
+	go t.updateAverageGas()
+	return t
 }
 
 func (t *Transaction) GetTransactor(signerAddr string) (transactor *QLCChainTransactor, opts *bind.TransactOpts, err error) {
-	//TODO: fix it
 	auth, err := t.getTransactOpts(signerAddr)
 	if err != nil {
 		return nil, nil, err
@@ -56,7 +63,6 @@ func (t *Transaction) GetTransactorSession(ethAddress string) (*QLCChainSession,
 	if err != nil {
 		return nil, fmt.Errorf("new contract: %s", err)
 	}
-	//TODO: fix it
 	auth, err := t.getTransactOpts(ethAddress)
 	if err != nil {
 		return nil, err
@@ -75,15 +81,14 @@ func (t *Transaction) GetTransactorSession(ethAddress string) (*QLCChainSession,
 func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, error) {
 	addr := common.HexToAddress(signerAddr)
 	//todo rethink auth parameter settings
-	ctx := context.Background()
-	nonce, err := t.client.PendingNonceAt(ctx, addr)
+	nonce, err := t.client.PendingNonceAt(context.Background(), addr)
 	if err != nil {
 		return nil, fmt.Errorf("crypto hex to ecdsa: %s", err)
 	}
 
-	gasPrice, err := t.client.SuggestGasPrice(ctx)
+	gasPrice, err := t.getBestGas()
 	if err != nil {
-		return nil, fmt.Errorf("suggest gas price: %s", err)
+		return nil, fmt.Errorf("best gas price: %s", err)
 	}
 	auth := &bind.TransactOpts{
 		From: addr,
@@ -196,7 +201,7 @@ func (h *HashTimer) String() string {
 }
 
 func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) error {
-	cTicker := time.NewTicker(3 * time.Second)
+	cTicker := time.NewTicker(6 * time.Second)
 	cTimer := time.NewTimer(100 * time.Second)
 	for {
 		select {
@@ -251,4 +256,17 @@ func (t *Transaction) HasConfirmedBlocksHeight(startHeight int64, interval int64
 
 func (t *Transaction) Client() *ethclient.Client {
 	return t.client
+}
+
+func (t *Transaction) SetClient(c *ethclient.Client) {
+	t.client = c
+}
+
+func (t *Transaction) Balance(addr string) (int64, error) {
+	address := common.HexToAddress(addr)
+	balance, err := t.client.BalanceAt(context.Background(), address, nil)
+	if err != nil {
+		return 0, err
+	}
+	return balance.Int64(), nil
 }

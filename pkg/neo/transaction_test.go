@@ -80,3 +80,16 @@ func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
 	}
 	fmt.Println(r)
 }
+
+func TestTransaction_QlcBalance(t *testing.T) {
+	c, err := NewTransaction(url, contractAddress, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	addr := "Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W"
+	r, err := c.Balance(addr, "b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(r)
+}

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	flag "github.com/jessevdk/go-flags"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	//hubUrl = "https://hub-test.qlcchain.online"
-	hubUrl string
+	hubUrl = "https://hub.qlcchain.online"
+	//hubUrl string
 
 	// neo setting
 	neoUrl        string
@@ -30,7 +30,6 @@ var (
 	neoUserAddr             = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
 	neoWrapperAssetAddr     string
 	neoWrapperSignerAddress string
-	userEthAddress          = "2e1ac6242bb084029a9eb29dfb083757d27fced4"
 
 	// eth setting
 	ethUrl                 string
@@ -71,7 +70,7 @@ func initParams(osArgs []string) {
 
 	ethUrl = cfg.EthereumCfg.EndPoint
 	ethContract = cfg.EthereumCfg.Contract
-	ethWrapperOwnerAddress = cfg.EthereumCfg.SignerAddress
+	ethWrapperOwnerAddress = cfg.EthereumCfg.OwnerAddress
 
 	var err error
 	if singerClient, err = signer.NewSigner(cfg); err != nil {
@@ -92,7 +91,7 @@ func initParams(osArgs []string) {
 	if eClient, err := ethclient.Dial(ethUrl); err != nil {
 		log.Fatal(err)
 	} else {
-		ethTransaction = eth.NewTransaction(eClient, singerClient, ethContract)
+		ethTransaction = eth.NewTransaction(eClient, singerClient, context.Background(), cfg.EthereumCfg.GasEndPoint, ethContract)
 	}
 	//defer ethClient.Close()
 

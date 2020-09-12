@@ -4,12 +4,16 @@ option go_package = ".;proto";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "signer.proto";
 
 message PingResponse {
-   string ethContract  = 1;
-   string ethAddress   = 2;
-   string neoContract  = 3;
-   string neoAddress   = 4;
+   string ethContract   = 1;
+   string ethAddress    = 2;
+   string neoContract   = 3;
+   string neoAddress    = 4;
+   float  ethBalance    = 5;
+   float  neoBalance    = 7;
+   bool   withdrawLimit = 8;
 }
 
 message DepositLockRequest{
@@ -59,6 +63,9 @@ message LockerStateResponse {
   bool   ethTimeout          = 21;
   bool   fail                = 22;
   string remark              = 23;
+  bool   interruption        = 24;
+  bool   deleted             = 25;
+  string deletedTime         = 26;
 }
 
 message Offset {
@@ -111,7 +118,7 @@ service EventAPI {
 }
 
 service InfoAPI {
-    rpc Ping(google.protobuf.Empty) returns (PingResponse){
+    rpc Ping(String) returns (PingResponse){
         option (google.api.http) = {
           get: "/info/ping"
         };
@@ -151,6 +158,12 @@ message lockerInfosStat  {
     int64 amount    = 2;
 }
 
+message LockerInterrupt{
+    string rHash     = 1;
+    int32  state     = 2;
+    bool   interrupt = 3;
+}
+
 message HashTimerResponse  {
     string rHash          = 1;
     string rOrigin        = 2;
@@ -176,6 +189,24 @@ service DebugAPI {
     rpc LockerInfosByState(ParamAndOffset) returns (LockerStatesResponse){
         option (google.api.http) = {
           get: "/debug/lockerInfosByState"
+        };
+    }
+
+    rpc InterruptLocker(LockerInterrupt) returns (Boolean){
+        option (google.api.http) = {
+          get: "/debug/interruptLocker"
+        };
+    }
+
+    rpc DeleteLockerInfo(String) returns (Boolean){
+        option (google.api.http) = {
+          get: "/debug/deleteLockerInfo"
+        };
+    }
+
+    rpc SignData(String) returns (SignResponse){
+        option (google.api.http) = {
+          get: "/debug/signData"
         };
     }
 }

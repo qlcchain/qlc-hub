@@ -4,17 +4,20 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
-	"go.uber.org/zap"
 )
 
 func (e *EventAPI) ethEventLister() {
@@ -165,7 +168,6 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		}
 		e.logger.Infof("[%d] add [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthLockedDone))
 
-		// neo lock
 		if b, h := e.eth.HasConfirmedBlocksHeight(int64(info.LockedEthHeight), getLockDeadLineHeight(info.EthTimerInterval)); b {
 			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, info.LockedEthHeight, h)
 			e.logger.Error(err)
@@ -178,6 +180,13 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 			return
 		}
 
+		if isWithdrawLimitExceeded(hashTimer.UserAddr) {
+			err = fmt.Errorf("withdraw account %s exceed limit [%s]", hashTimer.UserAddr, rHash)
+			e.logger.Error(err)
+			return
+		}
+
+		// neo lock
 		txHash, err = e.neo.WrapperLock(e.cfg.NEOCfg.AssetsAddress, hashTimer.UserAddr, rHash, int(info.Amount), int(e.cfg.NEOCfg.WithdrawInterval))
 		if err != nil {
 			e.logger.Errorf("event/wrapper lock(neo)[%d]: %s [%s]", state, err, rHash)
@@ -195,6 +204,7 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 			return
 		}
 
+		setWithdrawLimitExceeded(hashTimer.UserAddr)
 	case eth.DestroyUnlock:
 		info, _ = e.store.GetLockerInfo(rHash)
 		if info.State != types.WithDrawEthUnlockPending {
@@ -249,6 +259,9 @@ func (e *EventAPI) loopLockerState() {
 				e.logger.Errorf("loop/getLockerInfos: %s", err)
 			}
 			for _, i := range infos {
+				if i.Interruption == true {
+					continue
+				}
 				info, _ := e.store.GetLockerInfo(i.RHash)
 				// judge if user locker is timeout, user fetch must after wrapper done
 				if info.State == types.DepositNeoLockedDone || info.State == types.DepositEthFetchDone {
@@ -320,7 +333,7 @@ func (e *EventAPI) loopLockerState() {
 					unlock(info.RHash, e.logger)
 				case types.WithDrawNeoUnLockedDone: // wrapper should unlock on eth
 					lock(info.RHash, e.logger)
-					if err := setWithDrawEthUnlockPending(info.RHash, e.eth, e.store, e.cfg.EthereumCfg.SignerAddress, e.logger); err != nil {
+					if err := setWithDrawEthUnlockPending(info.RHash, e.eth, e.store, e.cfg.EthereumCfg.OwnerAddress, e.logger); err != nil {
 						e.logger.Errorf("loop/set WithDrawEthUnlockPending: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
@@ -384,7 +397,7 @@ func (e *EventAPI) continueDepositEthLockedDone(rHash string) {
 	if b, h := e.eth.HasConfirmedBlocksHeight(int64(info.LockedEthHeight), info.EthTimerInterval); b {
 		e.logger.Infof("loop/deposit wrapper eth timeout, rHash[%s], lockerState[%s], lockerHeight[%d -> %d]", info.RHash,
 			types.LockerStateToString(info.State), info.LockedEthHeight, h)
-		tx, err := e.eth.WrapperFetch(info.RHash, e.cfg.EthereumCfg.SignerAddress)
+		tx, err := e.eth.WrapperFetch(info.RHash, e.cfg.EthereumCfg.OwnerAddress)
 		if err != nil {
 			e.logger.Errorf("loop/wrapperFetch: %s", err)
 			return
@@ -683,4 +696,40 @@ func setWithDrawEthUnlockPending(rHash string, ethTransaction *eth.Transaction, 
 	info.UnlockedEthHash = tx
 	logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(targetState))
 	return s.UpdateLockerInfo(info)
+}
+
+var withdrawTimeLimit = new(sync.Map)
+
+func resetWithdrawTimeLimit(ctx context.Context, interval int) {
+	cTimer := time.NewTimer(time.Duration(interval) * time.Minute)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-cTimer.C:
+			withdrawTimeLimit.Range(func(key, value interface{}) bool {
+				withdrawTimeLimit.Store(key, false)
+				return true
+			})
+		}
+	}
+}
+
+func isWithdrawLimitExceeded(addr string) bool {
+	if r, ok := withdrawTimeLimit.Load(RemovePrefix(addr)); ok {
+		return r.(bool)
+	} else {
+		return false
+	}
+}
+
+func setWithdrawLimitExceeded(addr string) {
+	withdrawTimeLimit.Store(RemovePrefix(addr), true)
+}
+
+func RemovePrefix(str string) string {
+	if len(str) == 42 && strings.HasPrefix(str, "0x") {
+		return str[2:]
+	}
+	return str
 }

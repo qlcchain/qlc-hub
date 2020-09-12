@@ -7,7 +7,6 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
@@ -54,7 +53,12 @@ func main() {
 
 	for i := 0; i < 10; i++ {
 		if token, err := cfg.JwtManager.Generate(jwt.User); err == nil {
-			logger.Infof("%d: %s", i, token)
+			logger.Infof("user: %d: %s", i, token)
+		}
+	}
+	for i := 0; i < 5; i++ {
+		if token, err := cfg.JwtManager.Generate(jwt.Admin); err == nil {
+			logger.Infof("admin: %d: %s", i, token)
 		}
 	}
 	server := grpc.NewServer(cfg)

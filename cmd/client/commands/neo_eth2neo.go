@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
-
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -37,7 +36,7 @@ func nEth2Neo() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
+	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, ethUserAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +61,7 @@ func nEth2NeoFetch() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, userEthAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
+	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, ethUserAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
 	if err != nil {
 		log.Fatal(err)
 	}

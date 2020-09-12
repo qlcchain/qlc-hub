@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -12,7 +14,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
-	"go.uber.org/zap"
 )
 
 type WithdrawAPI struct {
@@ -80,7 +81,7 @@ func (w *WithdrawAPI) Claim(ctx context.Context, request *pb.ClaimRequest) (*pb.
 			return
 		}
 
-		if err := setWithDrawEthUnlockPending(rHash, w.eth, w.store, w.cfg.EthereumCfg.SignerAddress, w.logger); err != nil {
+		if err := setWithDrawEthUnlockPending(rHash, w.eth, w.store, w.cfg.EthereumCfg.OwnerAddress, w.logger); err != nil {
 			w.logger.Errorf("set WithDrawEthUnlockPending: %s [%s]", err, info.RHash)
 			w.store.SetLockerStateFail(info, err)
 			return
