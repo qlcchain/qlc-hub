@@ -101,6 +101,13 @@ service DepositAPI {
 }
 
 service WithdrawAPI {
+   rpc Lock(String) returns (Boolean){
+      option (google.api.http) = {
+        post: "/withdraw/lock"
+        body: "*"
+      };
+   }
+
    rpc Claim(ClaimRequest) returns (String){
        option (google.api.http) = {
          post: "/withdraw/claim"

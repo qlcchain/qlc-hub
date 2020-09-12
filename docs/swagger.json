@@ -523,6 +523,38 @@
           "WithdrawAPI"
         ]
       }
+    },
+    "/withdraw/lock": {
+      "post": {
+        "operationId": "WithdrawAPI_Lock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoString"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawAPI"
+        ]
+      }
     }
   },
   "definitions": {

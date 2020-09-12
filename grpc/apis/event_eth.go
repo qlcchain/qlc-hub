@@ -11,13 +11,12 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 func (e *EventAPI) ethEventLister() {
@@ -70,11 +69,9 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.store.SetLockerStateFail(info, err)
 	}()
 
-	if eth.State(state) != eth.DestroyLock {
-		if info, err = e.store.GetLockerInfo(rHash); err != nil {
-			e.logger.Errorf("event/getLockerInfo[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
-			return
-		}
+	if info, err = e.store.GetLockerInfo(rHash); err != nil {
+		e.logger.Errorf("event/getLockerInfo[%d]: %s, rHash[%s], txHash[%s]", state, err, rHash, tx)
+		return
 	}
 
 	e.logger.Infof("event/waiting for eth event tx %s confirmed ", tx)
@@ -89,7 +86,6 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		return
 	}
 
-	var txHash string
 	switch eth.State(state) {
 	case eth.IssueLock:
 		info, _ = e.store.GetLockerInfo(rHash)
@@ -150,12 +146,12 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.DepositEthFetchDone))
 
 	case eth.DestroyLock:
-		if _, err := e.store.GetLockerInfo(rHash); err == nil {
-			e.logger.Infof("[%d] locker info already exist [%s]", state, rHash)
+		info, _ = e.store.GetLockerInfo(rHash)
+		if info.State != types.WithDrawInit {
+			e.logger.Infof("[%d] locker state %s not match %s, [%s] ", state, types.LockerStateToString(info.State), types.LockerStateToString(types.WithDrawInit), rHash)
 			return
 		}
 
-		info = new(types.LockerInfo)
 		info.State = types.WithDrawEthLockedDone
 		info.RHash = rHash
 		info.LockedEthHash = tx
@@ -163,41 +159,20 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		info.EthTimerInterval = e.cfg.EthereumCfg.WithdrawInterval
 		info.Amount = hashTimer.Amount.Int64()
 		info.EthUserAddr = hashTimer.UserAddr
-		if err = e.store.AddLockerInfo(info); err != nil {
-			return
-		}
-		e.logger.Infof("[%d] add [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthLockedDone))
-
-		if b, h := e.eth.HasConfirmedBlocksHeight(int64(info.LockedEthHeight), getLockDeadLineHeight(info.EthTimerInterval)); b {
-			err = fmt.Errorf("lock time deadline has been exceeded [%s] [%d -> %d]", info.RHash, info.LockedEthHeight, h)
-			e.logger.Error(err)
-			return
-		}
-
-		if hashTimer.Amount.Int64() < e.cfg.MinWithdrawAmount {
-			err = fmt.Errorf("withdraw locked amount %d should more than %d [%s]", hashTimer.Amount.Int64(), e.cfg.MinWithdrawAmount, rHash)
-			e.logger.Error(err)
-			return
-		}
-
-		if isWithdrawLimitExceeded(hashTimer.UserAddr) {
-			err = fmt.Errorf("withdraw account %s exceed limit [%s]", hashTimer.UserAddr, rHash)
-			e.logger.Error(err)
-			return
-		}
-
-		// neo lock
-		txHash, err = e.neo.WrapperLock(e.cfg.NEOCfg.AssetsAddress, hashTimer.UserAddr, rHash, int(info.Amount), int(e.cfg.NEOCfg.WithdrawInterval))
-		if err != nil {
-			e.logger.Errorf("event/wrapper lock(neo)[%d]: %s [%s]", state, err, rHash)
-			return
-		}
-		e.logger.Infof("[%d] withdraw/wrapper neo lock tx: %s [%s]", state, txHash, info.RHash)
-		info.State = types.WithDrawNeoLockedPending
 		if err = e.store.UpdateLockerInfo(info); err != nil {
 			return
 		}
-		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawNeoLockedPending))
+		e.logger.Infof("[%d] update [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthLockedDone))
+
+		if err := e.withdrawCheck(int64(info.LockedEthHeight), info.EthTimerInterval, hashTimer.Amount.Int64(), hashTimer.UserAddr); err != nil {
+			e.logger.Error("withdraw check: %s [%s]", err, rHash)
+			return
+		}
+
+		if err := setWithDrawNeoLockedPending(e.cfg.NEOCfg.AssetsAddress, hashTimer.UserAddr, rHash, int(info.Amount), int(e.cfg.NEOCfg.WithdrawInterval), e.store, e.neo, e.logger); err != nil {
+			e.logger.Errorf("event/set WithDrawNeoLockedPending: %s [%s]", err, rHash)
+			return
+		}
 
 		if err := setWithDrawNeoLockedDone(rHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, true, e.logger); err != nil {
 			e.logger.Errorf("event/set WithDrawNeoLockedDone: %s [%s]", err, rHash)
@@ -236,6 +211,21 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 		}
 		e.logger.Infof("[%d] set [%s] state to [%s]", state, info.RHash, types.LockerStateToString(types.WithDrawEthFetchDone))
 	}
+}
+
+func (e *EventAPI) withdrawCheck(startHeight, interval int64, amount int64, userAddr string) error {
+	if b, h := e.eth.HasConfirmedBlocksHeight(startHeight, getLockDeadLineHeight(interval)); b {
+		return fmt.Errorf("lock time deadline has been exceeded [%d -> %d]", startHeight, h)
+	}
+
+	if amount < e.cfg.MinWithdrawAmount {
+		return fmt.Errorf("withdraw locked amount %d should more than %d", amount, e.cfg.MinWithdrawAmount)
+	}
+
+	if isWithdrawLimitExceeded(userAddr) {
+		return fmt.Errorf("withdraw account %s exceed limit", userAddr)
+	}
+	return nil
 }
 
 func (e *EventAPI) loopLockerState() {
@@ -316,6 +306,8 @@ func (e *EventAPI) loopLockerState() {
 						e.logger.Errorf("loop/set depositNeoFetchDone: %s [%s]", err, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
+				case types.WithDrawInit:
+					e.continueWithDrawInit(info.RHash)
 				case types.WithDrawNeoLockedPending: // should confirm tx
 					lock(info.RHash, e.logger)
 					e.logger.Infof("loop/continue locker state %s [%s]", types.LockerStateToString(info.State), info.RHash)
@@ -505,6 +497,51 @@ func (e *EventAPI) continueWithDrawEthUnlockPending(rHash string) {
 	}
 }
 
+func (e *EventAPI) continueWithDrawInit(rHash string) {
+	lock(rHash, e.logger)
+	defer unlock(rHash, e.logger)
+	info, _ := e.store.GetLockerInfo(rHash)
+	if info.State >= types.WithDrawEthLockedDone {
+		return
+	}
+
+	hashTimer, err := e.eth.GetHashTimer(rHash)
+	if err != nil {
+		return
+	}
+
+	e.logger.Infof("loop/continue withdraw init [%s]", info.RHash)
+
+	if hashTimer.LockedHeight > 0 && hashTimer.UnlockedHeight == 0 && hashTimer.UserAddr != "" {
+		info.State = types.WithDrawEthLockedDone
+		info.RHash = rHash
+		info.LockedEthHeight = hashTimer.LockedHeight
+		info.EthTimerInterval = e.cfg.EthereumCfg.WithdrawInterval
+		info.Amount = hashTimer.Amount.Int64()
+		info.EthUserAddr = hashTimer.UserAddr
+		if err = e.store.UpdateLockerInfo(info); err != nil {
+			return
+		}
+		e.logger.Infof("update [%s] state to [%s]", info.RHash, types.LockerStateToString(types.WithDrawEthLockedDone))
+
+		if err := e.withdrawCheck(int64(info.LockedEthHeight), info.EthTimerInterval, hashTimer.Amount.Int64(), hashTimer.UserAddr); err != nil {
+			e.logger.Error("withdraw check: %s [%s]", err, rHash)
+			return
+		}
+
+		if err := setWithDrawNeoLockedPending(e.cfg.NEOCfg.AssetsAddress, hashTimer.UserAddr, rHash, int(info.Amount), int(e.cfg.NEOCfg.WithdrawInterval), e.store, e.neo, e.logger); err != nil {
+			e.logger.Errorf("set WithDrawNeoLockedPending: %s [%s]", err, rHash)
+			return
+		}
+
+		if err := setWithDrawNeoLockedDone(rHash, e.neo, e.store, e.cfg.NEOCfg.ConfirmedHeight, true, e.logger); err != nil {
+			e.logger.Errorf("set WithDrawNeoLockedDone: %s [%s]", err, rHash)
+			return
+		}
+		setWithdrawLimitExceeded(hashTimer.UserAddr)
+	}
+}
+
 func getLockDeadLineHeight(height int64) int64 {
 	return (height / 2) - 5
 }
@@ -645,6 +682,29 @@ func setWithDrawNeoUnLockedDone(rHash string, neoTransaction *neo.Transaction, s
 
 	logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(targetState))
 	return s.UpdateLockerInfo(info)
+}
+
+func setWithDrawNeoLockedPending(assetsAddress, userEthAddr, rHash string, amount, withdrawInterval int, s *store.Store, neoTransaction *neo.Transaction, logger *zap.SugaredLogger) error {
+	info, err := s.GetLockerInfo(rHash)
+	if err != nil {
+		return err
+	}
+	targetState := types.WithDrawNeoLockedPending
+	if info.State >= targetState {
+		return nil
+	}
+
+	txHash, err := neoTransaction.WrapperLock(assetsAddress, userEthAddr, rHash, amount, withdrawInterval)
+	if err != nil {
+		return fmt.Errorf("event/wrapper lock(neo): %s [%s]", err, rHash)
+	}
+	logger.Infof("withdraw/wrapper neo lock tx: %s [%s]", txHash, info.RHash)
+	info.State = targetState
+	if err = s.UpdateLockerInfo(info); err != nil {
+		return err
+	}
+	logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(targetState))
+	return nil
 }
 
 func setWithDrawNeoLockedDone(rHash string, neoTransaction *neo.Transaction, s *store.Store, confirmedHeight int, sync bool, logger *zap.SugaredLogger) error {

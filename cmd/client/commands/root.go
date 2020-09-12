@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	hubUrl = "https://hub.qlcchain.online"
-	//hubUrl string
+	//hubUrl = "https://hub-test.qlcchain.online"
+	hubUrl string
 
 	// neo setting
 	neoUrl        string

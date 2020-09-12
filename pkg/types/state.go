@@ -18,11 +18,12 @@ const (
 	DepositNeoFetchDone //10
 
 	// withdraw
+	WithDrawInit
 	WithDrawEthLockedDone
 	WithDrawNeoLockedPending
 	WithDrawNeoLockedDone
-	WithDrawNeoUnLockedPending
-	WithDrawNeoUnLockedDone //15
+	WithDrawNeoUnLockedPending //15
+	WithDrawNeoUnLockedDone
 	WithDrawEthUnlockPending
 	WithDrawEthUnlockDone
 	WithDrawNeoFetchPending
@@ -56,6 +57,8 @@ func LockerStateToString(t LockerState) string {
 		return "DepositNeoFetchPending"
 	case DepositNeoFetchDone:
 		return "DepositNeoFetchDone"
+	case WithDrawInit:
+		return "WithDrawInit"
 	case WithDrawEthLockedDone:
 		return "WithDrawEthLockedDone"
 	case WithDrawNeoLockedPending:

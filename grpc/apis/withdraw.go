@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -14,6 +12,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
 )
 
 type WithdrawAPI struct {
@@ -33,6 +32,20 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 		eth:    eth,
 		ctx:    ctx,
 		logger: log.NewLogger("api/withdraw"),
+	}
+}
+
+func (w *WithdrawAPI) Lock(ctx context.Context, s *pb.String) (*pb.Boolean, error) {
+	w.logger.Infof("api - withdraw lock  [%s]", s.String())
+	lockerInfo := &types.LockerInfo{
+		RHash: s.GetValue(),
+		State: types.WithDrawInit,
+	}
+	err := w.store.AddLockerInfo(lockerInfo)
+	if err != nil {
+		return nil, err
+	} else {
+		return toBoolean(true), nil
 	}
 }
 
