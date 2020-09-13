@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
@@ -32,9 +33,10 @@ func main() {
 		if fe, ok := err.(*flag.Error); ok {
 			if fe.Type == flag.ErrHelp {
 				code = 0
+			} else {
+				log.Root.Error(err)
 			}
 		}
-		fmt.Println(err)
 		os.Exit(code)
 	}
 

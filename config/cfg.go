@@ -7,9 +7,10 @@ import (
 	"runtime"
 	"time"
 
+	"gopkg.in/validator.v2"
+
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/util"
-	"gopkg.in/validator.v2"
 )
 
 const (
@@ -39,17 +40,17 @@ type NEOCfg struct {
 	EndPoint         string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" default:"http://seed2.ngd.network:20332" validate:"nonzero"`
 	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"cedfd8f78bf46d28ac07b8e40b911199bd51951f" validate:"nonzero"`
 	AssetId          string `json:"assetId" long:"assetId" description:"qlc token asset id" default:"b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263" validate:"nonzero"`
-	SignerAddress    string `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" default:"ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ" validate:"nonzero"`
-	AssetsAddress    string `json:"assetsAddress" long:"neoAssetsAddress" description:"NEO address to keep assets" default:"Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W" validate:"nonzero"`
+	SignerAddress    string `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" validate:"nonzero"`
+	AssetsAddress    string `json:"assetsAddress" long:"neoAssetsAddress" description:"NEO address to keep assets" validate:"nonzero"`
 	ConfirmedHeight  int    `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"0" validate:""`
 	DepositInterval  int64  `json:"neoDepositInterval" long:"neoDepositInterval" description:"Lock timeout interval height of deposit" default:"40" validate:"nonzero"`
 	WithdrawInterval int64  `json:"neoWithdrawInterval" long:"neoWithdrawInterval" description:"Lock timeout interval height of withdraw" default:"20" validate:"nonzero"`
 }
 
 type EthereumCfg struct {
-	EndPoint         string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" default:"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57" validate:"min=1"`
+	EndPoint         string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" validate:"min=1"`
 	Contract         string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address" default:"0x9a36F711133188EDb3952b3A6ee29c6a3d2e3836" validate:"nonzero"`
-	OwnerAddress     string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address" default:"0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1" validate:"nonzero"`
+	OwnerAddress     string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address" validate:"nonzero"`
 	ConfirmedHeight  int    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
 	DepositInterval  int64  `json:"ethDepositHeight" long:"ethDepositHeight" description:"Lock timeout Height of deposit" default:"20" validate:"nonzero"`
 	WithdrawInterval int64  `json:"ethWithdrawHeight" long:"ethWithdrawHeight" description:"Lock timeout Height of withdraw" default:"40" validate:"nonzero"`
@@ -85,11 +86,11 @@ func (c *Config) Verify() error {
 		return err
 	}
 
-	jwt, err := jwt.NewJWTManager(c.Key, d)
+	jm, err := jwt.NewJWTManager(c.Key, d)
 	if err != nil {
 		return err
 	}
-	c.JwtManager = jwt
+	c.JwtManager = jm
 	return nil
 }
 

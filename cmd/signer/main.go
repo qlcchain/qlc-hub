@@ -34,9 +34,11 @@ func main() {
 		if fe, ok := err.(*flag.Error); ok {
 			if fe.Type == flag.ErrHelp {
 				code = 0
+			} else {
+				log.Root.Error(err)
 			}
 		}
-		log.Root.Error(err)
+
 		os.Exit(code)
 	}
 

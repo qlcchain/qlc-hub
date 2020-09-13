@@ -9,10 +9,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
+	"gopkg.in/validator.v2"
+
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
-	"gopkg.in/validator.v2"
 )
 
 const (
@@ -22,8 +23,8 @@ const (
 
 type SignerConfig struct {
 	Verbose           bool                                      `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
-	Key               string                                    `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
-	KeyDuration       string                                    `json:"duration" long:"duration" default:"8760h0m0s" validate:"nonzero"`
+	Key               string                                    `json:"key" short:"K" long:"key" description:"private key for JWT manager" validate:"nonzero"`
+	KeyDuration       string                                    `json:"duration" long:"duration" default:"8760h0m0s" description:"JWT token validity duration" validate:"nonzero"`
 	LogLevel          string                                    `json:"logLevel" short:"l" long:"level" description:"log level" default:"warn"` //info,warn,debug.
 	NeoAccounts       []string                                  `json:"neoAccounts" long:"neoAccounts" description:"NEO private keys" validate:"min=1"`
 	EthAccounts       []string                                  `json:"ethAccounts" long:"ethAccounts" description:"ETH private keys" validate:"min=1"`
