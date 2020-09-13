@@ -32,7 +32,7 @@ jobs:
           name: qlcchain/qlc-hub
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          dockerfile: Dockerfile
+          dockerfile: docker/Dockerfile
 
       - name: Publish signer image to DockerHub
         uses: docker://goreng/publish-docker-github-action:v2.4
@@ -40,4 +40,4 @@ jobs:
           name: qlcchain/qlc-signer
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          dockerfile: Dockerfile_signer
+          dockerfile: docker/Dockerfile_signer

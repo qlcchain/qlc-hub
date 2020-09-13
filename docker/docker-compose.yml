@@ -1,0 +1,43 @@
+version: "3.5"
+
+services:
+  hub-test:
+    image: qlcchain/qlc-hub:latest
+    container_name: qlc-hub-test
+    command:
+      - --signerToken=eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJRTENDaGFpbiBCb3QiLCJleHAiOjE2MzEwNjcxNjAsImp0aSI6IjFiMmMzMzI4LWUzZmEtNGJlYS1hMzMyLWZlZDFiZmM3ZDRlMSIsImlhdCI6MTU5OTUzMTE2MCwiaXNzIjoiUUxDQ2hhaW4gQm90Iiwic3ViIjoic2lnbmVyIiwicm9sZXMiOlsidXNlciJdfQ.AZxUwJcn-ZTmE1q9ik3CUyweRxjk4ulgN7KkdKb4YF1y2TXL5r8XDjtLgtFspna0ZsFC7KZH7ON4mZ2-XwIJqoJuALSzx4WQJf28coZAgTiJjX9JtN7ePVR-JaYet7yT9JdbOzeLYv4NHJGD6s5V3guQyZHEUOhoBBUXmKhwbtYKddZZ
+      - --key=XoKWAwU2QhedEUr6vdfHLoiLXjkgWBoMK25edEE7YbuBxgjKhUKcFMW7n5dmky2XUQ5gQEGyCwnqYVUmS2kGebXW5pxThzRGWivZNbZaXQgXHNKFmLTV14K62AmkwHDZxQxN8bbDGdHCXq2fhgJWeU1sk3ZuAiv41gTRpnCnmgXzV8LEPTbhJk1VGzKCNyVge5eAxg1m5ziymezX7THhDq42sHFwGDFJPpvJosd5awFQrHoE8FYoKquRBqYJuwKd5Gj8ebsfhJmm3zUmqJ8kxfHyZNHEJowQ7Fxv9zdThxRAKdvMLiiYvJtQQnrWkDfwjmSZGpgWzYtFFQofq2RC7BgVRhHtYkNqb61QY1zzSjX21AHLSkNisu3fmmGiFao18LxZF2UVnVFfDpYXfwtpkjqJedT2ccR11HckyVD7nf51udvTypD64evZQpLaQdTPXGBpHM8v2drXLQLzbZDLpoSPgmegq6h5PuaQta56oT
+      - --signerEndPoint=http://qlc-signer-test:19747
+      - --ethereumUrl=wss://rinkeby.infura.io/ws/v3/9865b420656e4d70bcbbcc76e265fd57
+    ports:
+      - "127.0.0.1:19745:19745"
+      - "127.0.0.1:19746:19746"
+    networks:
+      - qlc-hub
+      - traefik
+    volumes:
+      - ./data:/qlchub/.ghub
+    restart: unless-stopped
+    
+  qlc-signer-test:
+     image: qlcchain/qlc-signer:latest
+     container_name: qlc-signer-test
+     command:
+      #  - --verbose
+       - --key=XoKWAwU2QhedEUr6vXuHLoiLXjkgWBoMK25edEE7YbuBxgjKhUKcFMkh47ugcEAKTLrZDUct8uuMM25GenPq2kcyXySuarjKNbHnt4MqFybw3TqxZfrLbpkXgSrVDhvEf7LV8inyCDjHMuboF3mzR4cfLh5eg4Z31KFqKef78Qs9Tvo7w4zhjWXBVVBY1JvPVDMCEkcJvxiUzVJLj3fA7QETbS1hgx6ZE19QQjPfqh75McjMbMCXrdu8cMiwEodkx9ytvQDdHk2PVEe3W1epxLyWUojvYbiCLeJe9jeJo4v1D7oj8eGKLfJa1crEw1n3WDufKPzuRf5dUdNvqx9eCoJeHN9ce9ARYnjsameo4gqaTd7Wxa38aH6LiYd9YiSLLmH4A5yjL3LNanpyHLwGUCVLEhd75qpsidMrdASt8u4FFGChHF9vPPYQj9hfucNeovxYoskM1eMCLUGDZHJTuXkLHRyxP2DDp8KmVzYLR7
+       - --neoAccounts=15455622b40232549fb24d22e075ddccccf54eb2adf4b4f02d0691938d417d5e
+       - --neoAccounts=96e118b8455dc535bc7caba478b1ef673b44539c0485e715fd9e739b9e59d4e7
+       - --neoAccounts=737492bd4b2473cd49390607b87d1641611094c3458cdf18ec936b1d7f2a4b37
+       - --ethAccounts=144980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234
+       - --ethAccounts=37652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e
+     ports:
+       - "127.0.0.1:19747:19747"
+     networks:
+       - qlc-hub
+     restart: unless-stopped
+
+networks:
+  qlc-hub:
+    name: qlc-hub
+
+

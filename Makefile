@@ -31,6 +31,7 @@ build:
 
 changelog:
 	git-chglog $(VERSION) > CHANGELOG.md
+	@cat assets/footer.txt >> CHANGELOG.md
 
 clean:
 	rm -rf $(BUILDDIR)/
@@ -59,7 +60,7 @@ release: changelog
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(GOPATH)/src:/go/src \
 		-w /qlc-hub \
-		goreng/golang-cross:$(GO_BUILDER_VERSION) --rm-dist --release-notes=CHANGELOG.md
+		goreng/golang-cross:$(GO_BUILDER_VERSION) --rm-dist --debug --release-notes=CHANGELOG.md
 
 signer-proto:
 	protoc -I$(GOPATH)/src -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I=$(shell pwd)/grpc/proto/ --go_out=plugins=grpc:$(shell pwd)/grpc/proto $(shell pwd)/grpc/proto/signer.proto
