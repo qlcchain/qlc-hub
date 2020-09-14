@@ -36,7 +36,7 @@ func (n *Transaction) WrapperUnlock(rOrigin, signerAddress, userEthAddress strin
 			ArrayTypeParam(userEthAddress),
 		}),
 	}
-	r, err := n.CreateTransactionAppendWitness2(TransactionParam{
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
 		Params:        params,
 		SignerAddress: signerAddress,
 		ROrigin:       rOrigin,
@@ -56,7 +56,7 @@ func (n *Transaction) RefundUser(rOrigin string, signerAddress string) (string, 
 			StringTypeParam(rOrigin),
 		}),
 	}
-	r, err := n.CreateTransactionAppendWitness2(TransactionParam{
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
 		Params:        params,
 		SignerAddress: signerAddress,
 		ROrigin:       rOrigin,
@@ -120,15 +120,33 @@ func (n *Transaction) RefundWrapper(rHash, signerAddr string) (string, error) {
 			ArrayTypeParam(rHash),
 		}),
 	}
-	r, err := n.CreateTransactionAppendWitness2(TransactionParam{
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
 		Params:        params,
 		SignerAddress: signerAddr,
-		RHash:         rHash,
 		FuncName:      "refundWrapper",
 		EmitIndex:     "1",
 	})
 	if err != nil {
 		return "", fmt.Errorf("refundWrapper/createTransaction: %s", err)
+	}
+	return r, nil
+}
+
+func (n *Transaction) DeleteSwapInfo(rHash, signerAddr string) (string, error) {
+	params := []request.Param{
+		FunctionName("deleteSwapInfo"),
+		ArrayParams([]request.Param{
+			ArrayTypeParam(rHash),
+		}),
+	}
+	r, err := n.CreateTransactionAppendWitness(TransactionParam{
+		Params:        params,
+		SignerAddress: signerAddr,
+		FuncName:      "deleteSwapInfo",
+		EmitIndex:     "1",
+	})
+	if err != nil {
+		return "", fmt.Errorf("deleteSwapInfo/createTransaction: %s", err)
 	}
 	return r, nil
 }

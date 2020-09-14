@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	flag "github.com/jessevdk/go-flags"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
@@ -22,22 +21,20 @@ var (
 	hubUrl string
 
 	// neo setting
-	neoUrl        string
-	neoContract   string
-	neoContractLE util.Uint160
-
-	//neoUserWif          = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
-	//neoUserAccount, _   = wallet.NewAccountFromWIF(neoUserWif)
-	neoUserAddr             = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
-	neoWrapperAssetAddr     string
-	neoWrapperSignerAddress string
+	neoUrl             string
+	neoContract        string
+	neoContractLE      util.Uint160
+	neoAssetAddr       = "Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W"
+	neoSignerAddress   = "ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ"
+	neoUserAddr        = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
+	neoConfirmedHeight int
 
 	// eth setting
-	ethUrl                 string
-	ethContract            string
-	ethWrapperOwnerAddress string // also eth wrapper signer address
-	//ethUserPrikey           = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
-	ethUserAddress = "0x6A786bf6E1c68E981D04139137f81dDA2d0acBF1"
+	ethUrl             string
+	ethContract        string
+	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
+	ethUserAddress     = "0x6A786bf6E1c68E981D04139137f81dDA2d0acBF1"
+	ethConfirmedHeight int
 )
 
 var (
@@ -66,12 +63,11 @@ func initParams(osArgs []string) {
 	}
 	neoUrl = cfg.NEOCfg.EndPoint
 	neoContract = cfg.NEOCfg.Contract
-	neoWrapperSignerAddress = cfg.NEOCfg.SignerAddress
-	neoWrapperAssetAddr = cfg.NEOCfg.AssetsAddress
+	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight
 
 	ethUrl = cfg.EthereumCfg.EndPoint
 	ethContract = cfg.EthereumCfg.Contract
-	ethWrapperOwnerAddress = cfg.EthereumCfg.OwnerAddress
+	ethConfirmedHeight = cfg.EthereumCfg.ConfirmedHeight
 
 	var err error
 	if singerClient, err = signer.NewSigner(cfg); err != nil {

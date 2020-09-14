@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -60,7 +59,7 @@ func hEth2Neo() {
 	}
 
 	//  user lock(eth)
-	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, int64(withdrawAmount))
+	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethOwnerAddress, int64(withdrawAmount))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,7 +102,7 @@ func hEth2NeoFetch() {
 	}
 
 	//  user lock(eth)
-	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, int64(withdrawAmount))
+	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethOwnerAddress, int64(withdrawAmount))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -5,13 +5,12 @@ import (
 	"testing"
 
 	"github.com/nspcc-dev/neo-go/pkg/util"
-
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 var (
 	url             = "http://seed3.ngd.network:20332"
-	contractAddress = "278df62f9ba1312f1e1f4b5d239f07beaa1b5b94"
+	contractAddress = "cedfd8f78bf46d28ac07b8e40b911199bd51951f"
 	contractLE, _   = util.Uint160DecodeStringLE(contractAddress)
 
 	//userWif            = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
@@ -31,7 +30,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rHash := "9091cae2c07b6ed45c257341e098d55b3f2924fb83d485804cc927223f214445"
+	rHash := "cd76ae68ed900eda74ec78cbc7fd9bc33a9d200546091ba6052f107066e3e66a"
 
 	r, err := c.QuerySwapData(rHash)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func (t *Transaction) getBestGas() (*big.Int, error) {
+func (t *Transaction) GetBestGas() (*big.Int, error) {
 	suggestPrice, err := t.client.SuggestGasPrice(context.Background()) // unit is wei
 	if err != nil {
 		return nil, fmt.Errorf("suggest gas price: %s", err)

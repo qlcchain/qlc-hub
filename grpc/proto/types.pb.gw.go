@@ -496,7 +496,7 @@ var (
 )
 
 func request_DebugAPI_DeleteLockerInfo_0(ctx context.Context, marshaler runtime.Marshaler, client DebugAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq String
+	var protoReq DeleteLockerInfoRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -512,7 +512,7 @@ func request_DebugAPI_DeleteLockerInfo_0(ctx context.Context, marshaler runtime.
 }
 
 func local_request_DebugAPI_DeleteLockerInfo_0(ctx context.Context, marshaler runtime.Marshaler, server DebugAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq String
+	var protoReq DeleteLockerInfoRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -523,6 +523,42 @@ func local_request_DebugAPI_DeleteLockerInfo_0(ctx context.Context, marshaler ru
 	}
 
 	msg, err := server.DeleteLockerInfo(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_DebugAPI_LockerInfosByDeletedState_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_DebugAPI_LockerInfosByDeletedState_0(ctx context.Context, marshaler runtime.Marshaler, client DebugAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DebugAPI_LockerInfosByDeletedState_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.LockerInfosByDeletedState(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DebugAPI_LockerInfosByDeletedState_0(ctx context.Context, marshaler runtime.Marshaler, server DebugAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ParamAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DebugAPI_LockerInfosByDeletedState_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.LockerInfosByDeletedState(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -884,6 +920,26 @@ func RegisterDebugAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 		}
 
 		forward_DebugAPI_DeleteLockerInfo_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_DebugAPI_LockerInfosByDeletedState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DebugAPI_LockerInfosByDeletedState_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_LockerInfosByDeletedState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1468,6 +1524,26 @@ func RegisterDebugAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 
 	})
 
+	mux.Handle("GET", pattern_DebugAPI_LockerInfosByDeletedState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DebugAPI_LockerInfosByDeletedState_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_LockerInfosByDeletedState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_DebugAPI_SignData_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1502,6 +1578,8 @@ var (
 
 	pattern_DebugAPI_DeleteLockerInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"debug", "deleteLockerInfo"}, "", runtime.AssumeColonVerbOpt(true)))
 
+	pattern_DebugAPI_LockerInfosByDeletedState_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"debug", "lockerInfosByDeletedState"}, "", runtime.AssumeColonVerbOpt(true)))
+
 	pattern_DebugAPI_SignData_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"debug", "signData"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
@@ -1515,6 +1593,8 @@ var (
 	forward_DebugAPI_InterruptLocker_0 = runtime.ForwardResponseMessage
 
 	forward_DebugAPI_DeleteLockerInfo_0 = runtime.ForwardResponseMessage
+
+	forward_DebugAPI_LockerInfosByDeletedState_0 = runtime.ForwardResponseMessage
 
 	forward_DebugAPI_SignData_0 = runtime.ForwardResponseMessage
 )

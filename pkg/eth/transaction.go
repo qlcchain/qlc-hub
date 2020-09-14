@@ -86,7 +86,7 @@ func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, er
 		return nil, fmt.Errorf("crypto hex to ecdsa: %s", err)
 	}
 
-	gasPrice, err := t.getBestGas()
+	gasPrice, err := t.GetBestGas()
 	if err != nil {
 		return nil, fmt.Errorf("best gas price: %s", err)
 	}

@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -38,7 +37,7 @@ func eEth2Neo() {
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, amount)
+	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethOwnerAddress, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +47,7 @@ func eEth2Neo() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	tx, err = ethTransaction.WrapperUnlock(rHash, rOrigin, ethWrapperOwnerAddress)
+	tx, _, err = ethTransaction.WrapperUnlock(rHash, rOrigin, ethOwnerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,7 +68,7 @@ func eEth2NeoFetch() {
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethWrapperOwnerAddress, amount)
+	tx, err := ethTransaction.UserLock(rHash, ethUserAddress, ethOwnerAddress, amount)
 	if err != nil {
 		log.Fatal(err)
 	}

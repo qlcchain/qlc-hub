@@ -211,16 +211,17 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 
 func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 	authorizer := jwt.DefaultAuthorizer(manager, map[string][]string{
-		"/proto.DepositAPI/Lock":           jwt.Both,
-		"/proto.DepositAPI/Fetch":          jwt.Both,
-		"/proto.WithdrawAPI/Lock":          jwt.Both,
-		"/proto.WithdrawAPI/Claim":         jwt.Both,
-		"/proto.EventAPI/Event":            jwt.Both,
-		"/proto.InfoAPI/Ping":              jwt.Both,
-		"/proto.DebugAPI/HashTimer":        jwt.Both,
-		"/proto.DebugAPI/LockerInfosCount": jwt.Both,
-		"/proto.DebugAPI/interruptLocker":  jwt.Admin,
-		"/proto.DebugAPI/deleteLocker":     jwt.Admin,
+		"/proto.DepositAPI/Lock":                    jwt.Both,
+		"/proto.DepositAPI/Fetch":                   jwt.Both,
+		"/proto.WithdrawAPI/Lock":                   jwt.Both,
+		"/proto.WithdrawAPI/Claim":                  jwt.Both,
+		"/proto.EventAPI/Event":                     jwt.Both,
+		"/proto.InfoAPI/Ping":                       jwt.Both,
+		"/proto.DebugAPI/HashTimer":                 jwt.Both,
+		"/proto.DebugAPI/LockerInfosCount":          jwt.Both,
+		"/proto.DebugAPI/interruptLocker":           jwt.Admin,
+		"/proto.DebugAPI/deleteLocker":              jwt.Admin,
+		"/proto.DebugAPI/lockerInfosByDeletedState": jwt.Admin,
 	})
 	return authorizer
 }

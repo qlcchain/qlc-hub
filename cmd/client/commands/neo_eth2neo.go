@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
-
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -31,38 +30,41 @@ func nEth2NeoFetchCmd(parentCmd *ishell.Cmd) {
 }
 
 func nEth2Neo() {
-	amount := 140000000
+	amount := 280000000
 
 	log.Println("====eth2neo====")
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, ethUserAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
+	tx, err := neoTrasaction.WrapperLock(neoAssetAddr, ethUserAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("wrapper lock tx: ", tx)
-
-	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, 1)
+	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, neoConfirmedHeight)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tx, err = neoTrasaction.UserUnlock(rOrigin, neoUserAddr, neoWrapperSignerAddress)
+	tx, err = neoTrasaction.UserUnlock(rOrigin, neoUserAddr, neoSignerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user unlock tx: ", tx)
+	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, neoConfirmedHeight)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func nEth2NeoFetch() {
-	amount := 160000000
+	amount := 260000000
 
 	log.Println("====eth2neoRefund====")
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.WrapperLock(neoWrapperAssetAddr, ethUserAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
+	tx, err := neoTrasaction.WrapperLock(neoAssetAddr, ethUserAddress, rHash, amount, int(cfg.NEOCfg.WithdrawInterval))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,9 +72,13 @@ func nEth2NeoFetch() {
 
 	waitingForNeoBlocksConfirmed(20)
 
-	tx, err = neoTrasaction.RefundWrapper(rHash, neoWrapperSignerAddress)
+	tx, err = neoTrasaction.RefundWrapper(rHash, neoSignerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("wrapper refund tx: ", tx)
+	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, neoConfirmedHeight)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

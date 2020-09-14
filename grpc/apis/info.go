@@ -184,12 +184,13 @@ func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
 		LastModifyTime:    time.Unix(s.LastModifyTime, 0).Format(time.RFC3339),
 		NeoUserAddr:       s.NeoUserAddr,
 		EthUserAddr:       s.EthUserAddr,
+		GasPrice:          s.GasPrice,
 		NeoTimeout:        s.NeoTimeout,
 		EthTimeout:        s.EthTimeout,
 		Fail:              s.Fail,
 		Remark:            s.Remark,
 		Interruption:      s.Interruption,
-		Deleted:           s.Deleted,
+		Deleted:           types.LockerDeletedToString(s.Deleted),
 		DeletedTime:       time.Unix(s.DeletedTime, 0).Format(time.RFC3339),
 	}
 }

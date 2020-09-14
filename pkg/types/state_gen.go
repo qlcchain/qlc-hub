@@ -7,6 +7,55 @@ import (
 )
 
 // DecodeMsg implements msgp.Decodable
+func (z *LockerDeleted) DecodeMsg(dc *msgp.Reader) (err error) {
+	{
+		var zb0001 byte
+		zb0001, err = dc.ReadByte()
+		if err != nil {
+			return
+		}
+		(*z) = LockerDeleted(zb0001)
+	}
+	return
+}
+
+// EncodeMsg implements msgp.Encodable
+func (z LockerDeleted) EncodeMsg(en *msgp.Writer) (err error) {
+	err = en.WriteByte(byte(z))
+	if err != nil {
+		return
+	}
+	return
+}
+
+// MarshalMsg implements msgp.Marshaler
+func (z LockerDeleted) MarshalMsg(b []byte) (o []byte, err error) {
+	o = msgp.Require(b, z.Msgsize())
+	o = msgp.AppendByte(o, byte(z))
+	return
+}
+
+// UnmarshalMsg implements msgp.Unmarshaler
+func (z *LockerDeleted) UnmarshalMsg(bts []byte) (o []byte, err error) {
+	{
+		var zb0001 byte
+		zb0001, bts, err = msgp.ReadByteBytes(bts)
+		if err != nil {
+			return
+		}
+		(*z) = LockerDeleted(zb0001)
+	}
+	o = bts
+	return
+}
+
+// Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
+func (z LockerDeleted) Msgsize() (s int) {
+	s = msgp.ByteSize
+	return
+}
+
+// DecodeMsg implements msgp.Decodable
 func (z *LockerState) DecodeMsg(dc *msgp.Reader) (err error) {
 	{
 		var zb0001 byte

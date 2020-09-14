@@ -61,6 +61,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			State:         types.DepositInit,
 			RHash:         request.GetRHash(),
 			LockedNeoHash: request.GetNep5TxHash(),
+			Deleted:       types.NotDeleted,
 		}
 		if err := d.store.AddLockerInfo(info); err != nil {
 			return nil, err
@@ -128,13 +129,15 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 
 		// wrapper to eth lock
 		var tx string
-		tx, err = d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.OwnerAddress, swapInfo.Amount)
+		var gasPrice int64
+		tx, gasPrice, err = d.eth.WrapperLock(request.GetRHash(), d.cfg.EthereumCfg.OwnerAddress, swapInfo.Amount)
 		if err != nil {
 			d.logger.Error(err)
 			return
 		}
 		d.logger.Infof("deposit/wrapper eth lock tx: %s [%s]", request.GetRHash(), tx)
 		info.State = types.DepositEthLockedPending
+		info.GasPrice = gasPrice
 		info.EthTimerInterval = d.cfg.EthereumCfg.DepositInterval
 		if err := d.store.UpdateLockerInfo(info); err != nil {
 			return

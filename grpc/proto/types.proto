@@ -61,13 +61,14 @@ message LockerStateResponse {
   string lastModifyTime      = 17;
   string neoUserAddr         = 18;
   string ethUserAddr         = 19;
-  bool   neoTimeout          = 20;
-  bool   ethTimeout          = 21;
-  bool   fail                = 22;
-  string remark              = 23;
-  bool   interruption        = 24;
-  bool   deleted             = 25;
-  string deletedTime         = 26;
+  int64  gasPrice            = 20;
+  bool   neoTimeout          = 21;
+  bool   ethTimeout          = 22;
+  bool   fail                = 23;
+  string remark              = 24;
+  bool   interruption        = 25;
+  string deleted             = 26;
+  string deletedTime         = 27;
 }
 
 message Offset {
@@ -182,6 +183,13 @@ message HashTimerResponse  {
     uint32 unlockedHeight = 6;
 }
 
+message DeleteLockerInfoRequest {
+    string rHash           = 1;
+    uint32 confirmedHeight = 2;
+    int32  maxCount        = 3;
+    int32  gasTimes        = 4;
+}
+
 service DebugAPI {
     rpc HashTimer(String) returns (HashTimerResponse){
         option (google.api.http) = {
@@ -207,9 +215,15 @@ service DebugAPI {
         };
     }
 
-    rpc DeleteLockerInfo(String) returns (Boolean){
+    rpc DeleteLockerInfo(DeleteLockerInfoRequest) returns (Boolean){
         option (google.api.http) = {
           get: "/debug/deleteLockerInfo"
+        };
+    }
+
+    rpc LockerInfosByDeletedState(ParamAndOffset) returns (LockerStatesResponse){
+        option (google.api.http) = {
+          get: "/debug/lockerInfosByDeletedState"
         };
     }
 

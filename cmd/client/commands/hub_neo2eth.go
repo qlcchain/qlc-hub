@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -23,6 +22,7 @@ func addHubCmd(shell *ishell.Shell) {
 	hNeo2EthFetchCmd(ethCmd)
 	hEth2NeoCmd(ethCmd)
 	hEth2NeoFetchCmd(ethCmd)
+	hDelete(ethCmd)
 }
 
 func hNeo2EthCmd(parentCmd *ishell.Cmd) {
@@ -54,7 +54,7 @@ func hNeo2Eth() {
 	log.Println("hash: ", rOrigin, " ==> ", rHash)
 
 	// user lock (neo)
-	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoAssetAddr, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func hNeo2Eth() {
 		"nep5TxHash": "%s",
 		"rHash": "%s",
 		"addr": "%s"
-	}`, tx, rHash, ethWrapperOwnerAddress)
+	}`, tx, rHash, ethOwnerAddress)
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
 	if err != nil || !r.(bool) {
 		log.Fatal(err, r)
@@ -95,7 +95,7 @@ func hNeo2EthFetch() {
 	log.Println("hash: ", rOrigin, " ==> ", rHash)
 
 	// user lock (neo)
-	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoAssetAddr, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func hNeo2EthFetch() {
 		"nep5TxHash": "%s",
 		"rHash": "%s",
 		"addr": "%s"
-	}`, tx, rHash, ethWrapperOwnerAddress)
+	}`, tx, rHash, ethOwnerAddress)
 	r, err := post(paras, fmt.Sprintf("%s/deposit/lock", hubUrl))
 	if err != nil || !r.(bool) {
 		log.Fatal(err, r)

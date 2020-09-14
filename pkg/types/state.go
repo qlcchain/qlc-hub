@@ -83,3 +83,24 @@ func LockerStateToString(t LockerState) string {
 		return "Invalid"
 	}
 }
+
+type LockerDeleted byte
+
+const (
+	NotDeleted LockerDeleted = iota
+	DeletedPending
+	DeletedDone
+)
+
+func LockerDeletedToString(t LockerDeleted) string {
+	switch t {
+	case NotDeleted:
+		return ""
+	case DeletedPending:
+		return "DeletedPending"
+	case DeletedDone:
+		return "DeletedDone"
+	default:
+		return "Invalid"
+	}
+}
