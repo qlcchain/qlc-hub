@@ -38,7 +38,7 @@ type Config struct {
 type NEOCfg struct {
 	EndPoint         string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" default:"http://seed3.ngd.network:20332" validate:"nonzero"`
 	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"cedfd8f78bf46d28ac07b8e40b911199bd51951f" validate:"nonzero"`
-	AssetId          string `json:"assetId" long:"assetId" description:"qlc token asset id" default:"b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263" validate:"nonzero"`
+	AssetId          string `json:"assetId" long:"neoAssetId" description:"qlc token asset id" default:"b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263" validate:"nonzero"`
 	SignerAddress    string `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" validate:"nonzero"`
 	AssetsAddress    string `json:"assetsAddress" long:"neoAssetsAddress" description:"NEO address to keep assets" validate:"nonzero"`
 	ConfirmedHeight  int    `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"0" validate:""`
