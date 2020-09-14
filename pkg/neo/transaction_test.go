@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/nspcc-dev/neo-go/pkg/util"
+
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -25,6 +26,7 @@ var (
 )
 
 func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
+	t.Skip()
 	c, err := NewTransaction(url, contractAddress, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -81,6 +83,7 @@ func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
 }
 
 func TestTransaction_QlcBalance(t *testing.T) {
+	t.Skip()
 	c, err := NewTransaction(url, contractAddress, nil)
 	if err != nil {
 		t.Fatal(err)
