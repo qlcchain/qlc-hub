@@ -802,12 +802,13 @@ var logger = log.NewLogger("timelimit")
 
 func resetWithdrawTimeLimit(ctx context.Context, interval int) {
 	logger.Info("==== resetWithdrawTimeLimit", interval)
-	cTimer := time.NewTimer(time.Duration(interval) * time.Minute)
+	cTicker := time.NewTicker(time.Duration(interval) * time.Minute)
 	for {
 		select {
 		case <-ctx.Done():
+			logger.Info("==== return")
 			return
-		case <-cTimer.C:
+		case <-cTicker.C:
 			withdrawTimeLimit.Range(func(key, value interface{}) bool {
 				logger.Info("==== reset ", key.(string))
 				withdrawTimeLimit.Store(key, false)
