@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/qlcchain/qlc-hub/pkg/log"
 	"strings"
 	"sync"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/qlcchain/qlc-hub/pkg/eth"
+	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
