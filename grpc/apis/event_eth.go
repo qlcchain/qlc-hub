@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"github.com/qlcchain/qlc-hub/pkg/log"
 	"strings"
 	"sync"
 	"time"
@@ -797,8 +798,10 @@ func setWithDrawEthUnlockPending(rHash string, ethTransaction *eth.Transaction, 
 }
 
 var withdrawTimeLimit = new(sync.Map)
+var logger = log.NewLogger("timelimit")
 
 func resetWithdrawTimeLimit(ctx context.Context, interval int) {
+	logger.Info("==== resetWithdrawTimeLimit", interval)
 	cTimer := time.NewTimer(time.Duration(interval) * time.Minute)
 	for {
 		select {
@@ -806,6 +809,7 @@ func resetWithdrawTimeLimit(ctx context.Context, interval int) {
 			return
 		case <-cTimer.C:
 			withdrawTimeLimit.Range(func(key, value interface{}) bool {
+				logger.Info("==== reset ", key.(string))
 				withdrawTimeLimit.Store(key, false)
 				return true
 			})
@@ -814,6 +818,7 @@ func resetWithdrawTimeLimit(ctx context.Context, interval int) {
 }
 
 func isWithdrawLimitExceeded(addr string) bool {
+	logger.Info("==== get ", RemovePrefix(addr))
 	if r, ok := withdrawTimeLimit.Load(RemovePrefix(addr)); ok {
 		return r.(bool)
 	} else {
@@ -822,6 +827,7 @@ func isWithdrawLimitExceeded(addr string) bool {
 }
 
 func setWithdrawLimitExceeded(addr string) {
+	logger.Info("==== set ", RemovePrefix(addr))
 	withdrawTimeLimit.Store(RemovePrefix(addr), true)
 }
 

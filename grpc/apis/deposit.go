@@ -135,7 +135,7 @@ func (d *DepositAPI) Lock(ctx context.Context, request *pb.DepositLockRequest) (
 			d.logger.Error(err)
 			return
 		}
-		d.logger.Infof("deposit/wrapper eth lock tx: %s [%s]", request.GetRHash(), tx)
+		d.logger.Infof("deposit/wrapper eth lock tx: %s [%s]", tx, request.GetRHash())
 		info.State = types.DepositEthLockedPending
 		info.GasPrice = gasPrice
 		info.EthTimerInterval = d.cfg.EthereumCfg.DepositInterval
