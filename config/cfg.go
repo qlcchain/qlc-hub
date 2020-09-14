@@ -21,7 +21,7 @@ type Config struct {
 	Verbose           bool            `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
 	LogLevel          string          `json:"logLevel" short:"l" long:"level" description:"log level" default:"info"` //info,warn,debug.
 	SignerToken       string          `json:"signerToken"  long:"signerToken" description:"singer JWT token" validate:"nonzero"`
-	SignerEndPoint    string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" default:"http://127.0.0.1:19747" validate:"nonzero"`
+	SignerEndPoint    string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" validate:"nonzero"`
 	NEOCfg            *NEOCfg         `json:"neo" validate:"nonnil"`
 	EthereumCfg       *EthereumCfg    `json:"ethereum" validate:"nonnil"`
 	RPCCfg            *RPCCfg         `json:"rpc" validate:"nonnil"`
@@ -36,9 +36,9 @@ type Config struct {
 }
 
 type NEOCfg struct {
-	EndPoint         string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" default:"http://seed3.ngd.network:20332" validate:"nonzero"`
-	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" default:"cedfd8f78bf46d28ac07b8e40b911199bd51951f" validate:"nonzero"`
-	AssetId          string `json:"assetId" long:"neoAssetId" description:"qlc token asset id" default:"b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263" validate:"nonzero"`
+	EndPoint         string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" validate:"nonzero"`
+	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" validate:"nonzero"`
+	AssetId          string `json:"assetId" long:"neoAssetId" description:"qlc token asset id"  validate:"nonzero"`
 	SignerAddress    string `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" validate:"nonzero"`
 	AssetsAddress    string `json:"assetsAddress" long:"neoAssetsAddress" description:"NEO address to keep assets" validate:"nonzero"`
 	ConfirmedHeight  int    `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"0" validate:""`
@@ -47,14 +47,14 @@ type NEOCfg struct {
 }
 
 type EthereumCfg struct {
-	EndPoint         string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" default:"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57" validate:"nonzero"`
-	Contract         string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address" default:"0x16e502c867C2d4CAC0F4B4dBd39AB722F5cEc050" validate:"nonzero"`
+	EndPoint         string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" validate:"nonzero"`
+	Contract         string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address"  validate:"nonzero"`
 	OwnerAddress     string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address" validate:"nonzero"`
 	ConfirmedHeight  int    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
 	DepositInterval  int64  `json:"ethDepositHeight" long:"ethDepositHeight" description:"Lock timeout Height of deposit" default:"20" validate:"nonzero"`
 	WithdrawInterval int64  `json:"ethWithdrawHeight" long:"ethWithdrawHeight" description:"Lock timeout Height of withdraw" default:"40" validate:"nonzero"`
 	MaxGasPerDay     int64  `json:"maxGasDay" long:"maxGasDay" description:"maximum gas balance per day" default:"10" validate:"nonzero"`
-	GasEndPoint      string `json:"gasEndPoint" long:"gasEndPoint" description:"endpoint to get gas price" default:"https://ethgasstation.info/api/ethgasAPI.json?api-key=dcc85335d8be462feedfc78fa4f69536a953b37b7942aca02b044c1e0816" validate:"nonzero"`
+	GasEndPoint      string `json:"gasEndPoint" long:"gasEndPoint" description:"endpoint to get gas price" validate:"nonzero"`
 }
 
 type RPCCfg struct {

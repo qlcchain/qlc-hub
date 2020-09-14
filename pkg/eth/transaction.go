@@ -202,7 +202,7 @@ func (h *HashTimer) String() string {
 
 func (t *Transaction) TxVerifyAndConfirmed(txHash string, txHeight int64, interval int64) error {
 	cTicker := time.NewTicker(6 * time.Second)
-	cTimer := time.NewTimer(100 * time.Second)
+	cTimer := time.NewTimer(300 * time.Second)
 	for {
 		select {
 		case <-cTicker.C:
@@ -256,10 +256,6 @@ func (t *Transaction) HasConfirmedBlocksHeight(startHeight int64, interval int64
 
 func (t *Transaction) Client() *ethclient.Client {
 	return t.client
-}
-
-func (t *Transaction) SetClient(c *ethclient.Client) {
-	t.client = c
 }
 
 func (t *Transaction) Balance(addr string) (int64, error) {

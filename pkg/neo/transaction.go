@@ -393,7 +393,7 @@ HeightConfirmed:
 		return txHeight, nil
 	}
 	nTicker := time.NewTicker(6 * time.Second)
-	nTimer := time.NewTimer(time.Duration((interval+1)*61) * time.Second)
+	nTimer := time.NewTimer(time.Duration((interval+1)*121) * time.Second)
 	for {
 		select {
 		case <-nTicker.C:

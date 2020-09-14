@@ -33,7 +33,7 @@ func hEth2NeoFetchCmd(parentCmd *ishell.Cmd) {
 
 var withdrawAmount = 110000000
 
-func hEth2Neo() {
+func hEth2Neo() string {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, " ==> ", rHash)
 
@@ -84,6 +84,7 @@ func hEth2Neo() {
 		log.Fatal(err)
 	}
 	log.Println("successfully")
+	return rHash
 }
 
 func hEth2NeoFetch() {

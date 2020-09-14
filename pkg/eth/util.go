@@ -26,6 +26,14 @@ func (t *Transaction) GetBestGas() (*big.Int, error) {
 	}
 }
 
+func (t *Transaction) Gas() (int64, int64, error) {
+	suggestPrice, err := t.client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return 0, 0, fmt.Errorf("suggest gas price: %s", err)
+	}
+	return t.averageGas, suggestPrice.Int64(), err
+}
+
 func (t *Transaction) updateAverageGas() {
 	averageGas, err := getAverageGas(t.gasUrl)
 	if err != nil {
@@ -42,7 +50,7 @@ func (t *Transaction) updateAverageGas() {
 				t.logger.Error(err)
 			} else {
 				t.averageGas = averageGas
-				t.logger.Infof("update average gas: %d", averageGas)
+				t.logger.Debugf("update average gas: %d", averageGas)
 			}
 		}
 	}

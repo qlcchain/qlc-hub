@@ -56,6 +56,7 @@ func (i *InfoAPI) Ping(ctx context.Context, s *pb.String) (*pb.PingResponse, err
 	if err != nil {
 		return nil, err
 	}
+	averageGas, suggestGas, _ := i.eth.Gas()
 	return &pb.PingResponse{
 		EthContract:       i.cfg.EthereumCfg.Contract,
 		EthAddress:        i.cfg.EthereumCfg.OwnerAddress,
@@ -66,6 +67,8 @@ func (i *InfoAPI) Ping(ctx context.Context, s *pb.String) (*pb.PingResponse, err
 		WithdrawLimit:     isWithdrawLimitExceeded(s.GetValue()),
 		MinDepositAmount:  i.cfg.MinDepositAmount,
 		MinWithdrawAmount: i.cfg.MinDepositAmount,
+		AverageGas:        averageGas,
+		SuggestGas:        suggestGas,
 	}, nil
 }
 

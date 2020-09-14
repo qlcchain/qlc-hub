@@ -17,12 +17,11 @@ import (
 )
 
 var (
-	//hubUrl = "https://hub-test.qlcchain.online"
 	hubUrl string
 
 	// neo setting
-	neoUrl             string
-	neoContract        string
+	neoUrl             = "http://seed3.ngd.network:20332"
+	neoContract        = "cedfd8f78bf46d28ac07b8e40b911199bd51951f"
 	neoContractLE      util.Uint160
 	neoAssetAddr       = "Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W"
 	neoSignerAddress   = "ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ"
@@ -30,8 +29,8 @@ var (
 	neoConfirmedHeight int
 
 	// eth setting
-	ethUrl             string
-	ethContract        string
+	ethUrl             = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
+	ethContract        = "0x16e502c867C2d4CAC0F4B4dBd39AB722F5cEc050"
 	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
 	ethUserAddress     = "0x6A786bf6E1c68E981D04139137f81dDA2d0acBF1"
 	ethConfirmedHeight int
@@ -61,14 +60,11 @@ func initParams(osArgs []string) {
 	} else {
 		hubUrl = "http://127.0.0.1:19745"
 	}
-	neoUrl = cfg.NEOCfg.EndPoint
-	neoContract = cfg.NEOCfg.Contract
-	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight
 
-	ethUrl = cfg.EthereumCfg.EndPoint
-	ethContract = cfg.EthereumCfg.Contract
+	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight
 	ethConfirmedHeight = cfg.EthereumCfg.ConfirmedHeight
 
+	cfg.SignerEndPoint = "http://127.0.0.1:19747"
 	var err error
 	if singerClient, err = signer.NewSigner(cfg); err != nil {
 		log.Fatal(err)

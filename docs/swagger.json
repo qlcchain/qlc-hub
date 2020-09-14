@@ -12,7 +12,7 @@
   ],
   "paths": {
     "/debug/deleteLockerInfo": {
-      "get": {
+      "post": {
         "operationId": "DebugAPI_DeleteLockerInfo",
         "responses": {
           "200": {
@@ -30,31 +30,12 @@
         },
         "parameters": [
           {
-            "name": "rHash",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "confirmedHeight",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "maxCount",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "gasTimes",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoDeleteLockerInfoRequest"
+            }
           }
         ],
         "tags": [
@@ -643,6 +624,26 @@
         }
       }
     },
+    "protoDeleteLockerInfoRequest": {
+      "type": "object",
+      "properties": {
+        "rHash": {
+          "type": "string"
+        },
+        "confirmedHeight": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "maxCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "gasTimes": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "protoDepositLockRequest": {
       "type": "object",
       "properties": {
@@ -854,6 +855,14 @@
           "format": "int64"
         },
         "minWithdrawAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "averageGas": {
+          "type": "string",
+          "format": "int64"
+        },
+        "suggestGas": {
           "type": "string",
           "format": "int64"
         }
