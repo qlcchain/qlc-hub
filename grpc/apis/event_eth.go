@@ -141,7 +141,6 @@ func (e *EventAPI) processEthEvent(state int64, rHash, tx string, txHeight uint6
 			return
 		}
 
-		return
 		info.State = types.DepositEthFetchDone
 		info.UnlockedEthHeight = hashTimer.UnlockedHeight
 		info.UnlockedEthHash = tx
