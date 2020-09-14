@@ -39,8 +39,9 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 func (w *WithdrawAPI) Lock(ctx context.Context, s *pb.String) (*pb.Boolean, error) {
 	w.logger.Infof("api - withdraw lock  [%s]", s.String())
 	lockerInfo := &types.LockerInfo{
-		RHash: s.GetValue(),
-		State: types.WithDrawInit,
+		RHash:   s.GetValue(),
+		State:   types.WithDrawInit,
+		Deleted: types.NotDeleted,
 	}
 	err := w.store.AddLockerInfo(lockerInfo)
 	if err != nil {

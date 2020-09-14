@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -23,6 +22,7 @@ func addEthCmd(shell *ishell.Shell) {
 	eNeo2EthFetchCmd(ethCmd)
 	eEth2NeoCmd(ethCmd)
 	eEth2NeoFetchCmd(ethCmd)
+	eDelete(ethCmd)
 }
 
 func eNeo2EthCmd(parentCmd *ishell.Cmd) {
@@ -47,14 +47,14 @@ func eNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 	parentCmd.AddCmd(c)
 }
 
-func eNeo2Eth() {
+func eNeo2Eth() string {
 	var amount int64 = 1300000000
 
 	log.Println("=====neo2eth: issue====")
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
+	tx, _, err := ethTransaction.WrapperLock(rHash, ethOwnerAddress, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,6 +76,7 @@ func eNeo2Eth() {
 	}
 
 	log.Println("successfully")
+	return rHash
 }
 
 func eNeo2EthFetch() {
@@ -85,7 +86,7 @@ func eNeo2EthFetch() {
 	rOrigin, rHash := util.Sha256Hash()
 	fmt.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := ethTransaction.WrapperLock(rHash, ethWrapperOwnerAddress, amount)
+	tx, _, err := ethTransaction.WrapperLock(rHash, ethOwnerAddress, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,7 +99,7 @@ func eNeo2EthFetch() {
 
 	waitingForEthBlocksConfirmed(20)
 
-	tx, err = ethTransaction.WrapperFetch(rHash, ethWrapperOwnerAddress)
+	tx, err = ethTransaction.WrapperFetch(rHash, ethOwnerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}

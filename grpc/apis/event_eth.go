@@ -55,7 +55,9 @@ func (e *EventAPI) ethEventLister() {
 			txHeight := vLog.BlockNumber
 
 			e.logger.Infof("[%d] event log: rHash[%s], txHash[%s], txHeight[%d]", state, rHash, txHash, txHeight)
-			go e.processEthEvent(state, rHash, txHash, txHeight)
+			if eth.State(state) <= eth.DestroyFetch {
+				go e.processEthEvent(state, rHash, txHash, txHeight)
+			}
 		}
 	}
 }
@@ -238,17 +240,51 @@ func (e *EventAPI) loopLockerState() {
 			return
 		case <-cTicker.C:
 			infos := make([]*types.LockerInfo, 0)
+			dInfos := make([]*types.LockerInfo, 0)
 			if err := e.store.GetLockerInfos(func(info *types.LockerInfo) error {
 				if info.State != types.DepositNeoUnLockedDone &&
 					info.State != types.DepositNeoFetchDone &&
 					info.State != types.WithDrawEthUnlockDone &&
 					info.State != types.WithDrawEthFetchDone {
 					infos = append(infos, info)
+				} else {
+					if info.Deleted == types.DeletedPending {
+						dInfos = append(dInfos, info)
+					}
 				}
 				return nil
 			}); err != nil {
 				e.logger.Errorf("loop/getLockerInfos: %s", err)
 			}
+
+			for _, i := range dInfos {
+				if i.Interruption == true {
+					continue
+				}
+				info, _ := e.store.GetLockerInfo(i.RHash)
+				currentTime := time.Now().Unix()
+				if currentTime-info.DeletedTime > 10*60 {
+					e.logger.Infof("loop/check locker info deleted state [%s]", info.RHash)
+					_, err := e.neo.QuerySwapInfo(info.RHash)
+					if err == nil {
+						continue
+					}
+					ht, err := e.eth.GetHashTimer(info.RHash)
+					if err != nil {
+						continue
+					}
+					if ht.LockedHeight != 0 || ht.UnlockedHeight != 0 {
+						continue
+					}
+					info.Deleted = types.DeletedDone
+					if err := e.store.UpdateLockerInfo(info); err != nil {
+						e.logger.Errorf("loop/updateLocker: %s [%s]", err, info.RHash)
+					} else {
+						e.logger.Infof("loop/set deleted done, [%s]", info.RHash)
+					}
+				}
+			}
+
 			for _, i := range infos {
 				if i.Interruption == true {
 					continue
@@ -748,12 +784,13 @@ func setWithDrawEthUnlockPending(rHash string, ethTransaction *eth.Transaction, 
 		return nil
 	}
 
-	tx, err := ethTransaction.WrapperUnlock(info.RHash, info.ROrigin, signerAddr)
+	tx, gasPrice, err := ethTransaction.WrapperUnlock(info.RHash, info.ROrigin, signerAddr)
 	if err != nil {
 		return err
 	}
 	logger.Infof("withdraw/wrapper eth unlock: %s [%s]", tx, info.RHash)
 	info.State = targetState
+	info.GasPrice = gasPrice
 	info.UnlockedEthHash = tx
 	logger.Infof("set [%s] state to [%s]", info.RHash, types.LockerStateToString(targetState))
 	return s.UpdateLockerInfo(info)

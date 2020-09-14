@@ -34,3 +34,15 @@ func TestNewTransaction(t *testing.T) {
 	fmt.Println("gas: ", tx.Gas())
 	fmt.Println("gas price: ", tx.GasPrice())
 }
+
+func TestTransaction_GetHashTimer(t *testing.T) {
+	ethTransaction, fn := getTransaction(t)
+	defer fn()
+
+	txHash := "32fce00156b280b1cf4dd7d0e085a7ab30b1adfb062bfd7bd64a38de290a8817"
+	r, err := ethTransaction.GetHashTimer(txHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(r)
+}

@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/abiosoft/ishell"
-
-	"github.com/qlcchain/qlc-hub/pkg/neo"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -23,6 +21,7 @@ func addNeoCmd(shell *ishell.Shell) {
 	nNeo2EthFetchCmd(ethCmd)
 	nEth2NeoCmd(ethCmd)
 	nEth2NeoFetchCmd(ethCmd)
+	nDelete(ethCmd)
 }
 
 func nNeo2EthCmd(parentCmd *ishell.Cmd) {
@@ -47,33 +46,34 @@ func nNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 	parentCmd.AddCmd(c)
 }
 
-func nNeo2Eth() {
+func nNeo2Eth() string {
 	amount := 220000000
 
 	log.Println("====neo2eth====")
-	n, err := neo.NewTransaction(neoUrl, neoContract, singerClient)
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := n.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoAssetAddr, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user lock tx: ", tx)
-
-	_, err = n.TxVerifyAndConfirmed(tx, 1)
+	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, neoConfirmedHeight)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	tx, err = n.WrapperUnlock(rOrigin, neoWrapperSignerAddress, ethUserAddress)
+	tx, err = neoTrasaction.WrapperUnlock(rOrigin, neoSignerAddress, ethUserAddress[2:])
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("wrapper unlock tx: ", tx)
+	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, neoConfirmedHeight)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return rHash
 }
 
 func nNeo2EthFetch() {
@@ -83,17 +83,21 @@ func nNeo2EthFetch() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, "==>", rHash)
 
-	tx, err := neoTrasaction.UserLock(neoUserAddr, neoWrapperAssetAddr, rHash, amount)
+	tx, err := neoTrasaction.UserLock(neoUserAddr, neoAssetAddr, rHash, amount)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user lock tx: ", tx)
 	waitingForNeoBlocksConfirmed(40)
-	tx, err = neoTrasaction.RefundUser(rOrigin, neoWrapperSignerAddress)
+	tx, err = neoTrasaction.RefundUser(rOrigin, neoSignerAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("user refund tx: ", tx)
+	_, err = neoTrasaction.TxVerifyAndConfirmed(tx, neoConfirmedHeight)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func waitingForNeoBlocksConfirmed(n uint32) {

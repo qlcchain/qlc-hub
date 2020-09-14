@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"go.uber.org/zap"
@@ -110,8 +111,113 @@ func (d *DebugAPI) InterruptLocker(ctx context.Context, s *pb.LockerInterrupt) (
 	return toBoolean(true), nil
 }
 
-func (d *DebugAPI) DeleteLockerInfo(ctx context.Context, s *pb.String) (*pb.Boolean, error) {
-	panic("implement me")
+func (d *DebugAPI) DeleteLockerInfo(ctx context.Context, request *pb.DeleteLockerInfoRequest) (*pb.Boolean, error) {
+	d.logger.Infof("delete locker info: %s", request.String())
+	var confirmedHeight uint32 = 10
+	var gasTimes int32 = 2
+	var maxCount int32 = 10
+
+	if request.GetConfirmedHeight() > 0 {
+		confirmedHeight = request.GetConfirmedHeight()
+	}
+	if request.GetMaxCount() > 0 {
+		maxCount = request.GetMaxCount()
+	}
+	if request.GetGasTimes() > 0 {
+		gasTimes = request.GetGasTimes()
+	}
+
+	rHashes := make([]string, 0)
+	if request.GetRHash() != "" {
+		_, err := d.store.GetLockerInfo(request.GetRHash())
+		if err != nil {
+			return nil, err
+		}
+		rHashes = append(rHashes, request.GetRHash())
+		d.deleteLockerInfos(rHashes)
+	} else {
+		currentGas, err := d.eth.GetBestGas()
+		if err != nil {
+			return nil, err
+		}
+		currentHeight, err := d.eth.GetBestBlockHeight()
+		if err != nil {
+			return nil, err
+		}
+		if err := d.store.GetLockerInfos(func(info *types.LockerInfo) error {
+			if info.State == types.DepositNeoUnLockedDone || info.State == types.DepositNeoFetchDone ||
+				info.State == types.WithDrawEthUnlockDone || info.State == types.WithDrawEthFetchDone {
+				if (uint32(currentHeight)-info.UnlockedEthHeight > confirmedHeight) &&
+					(currentGas.Int64()/info.GasPrice >= int64(gasTimes)) &&
+					info.Deleted == types.NotDeleted {
+					if len(rHashes) <= int(maxCount) {
+						rHashes = append(rHashes, info.RHash)
+					}
+				}
+			}
+			return nil
+		}); err != nil {
+			return nil, err
+		}
+	}
+	go d.deleteLockerInfos(rHashes)
+	return toBoolean(true), nil
+}
+
+func (d *DebugAPI) deleteLockerInfos(rHashes []string) {
+	for _, rHash := range rHashes {
+		info, err := d.store.GetLockerInfo(rHash)
+		if err != nil {
+			return
+		}
+		if info.Deleted == types.DeletedDone {
+			continue
+		}
+		d.logger.Infof("delete locker info [%s]", rHash)
+		info.Deleted = types.DeletedPending
+		info.DeletedTime = time.Now().Unix()
+		if err := d.store.UpdateLockerInfo(info); err != nil {
+			d.logger.Errorf("delete locker: %s [%s]", err, rHash)
+			continue
+		}
+		tx, err := d.neo.DeleteSwapInfo(info.RHash, d.cfg.NEOCfg.SignerAddress)
+		if err != nil {
+			d.logger.Errorf("delete locker: %s [%s]", err, rHash)
+			continue
+		}
+		d.logger.Infof("neo swap info deleted, tx: %s  [%s]", tx, rHash)
+
+		tx, err = d.eth.DeleteHashTimer(info.RHash, d.cfg.EthereumCfg.OwnerAddress)
+		if err != nil {
+			d.logger.Errorf("delete locker: %s [%s]", err, rHash)
+			continue
+		}
+		d.logger.Infof("eth hash timer deleted, tx: %s [%s]", tx, rHash)
+	}
+}
+
+func (d *DebugAPI) LockerInfosByDeletedState(ctx context.Context, params *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
+	if params.GetCount() < 0 || params.GetOffset() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d", params.GetCount(), params.GetOffset())
+	}
+	as := make([]*pb.LockerStateResponse, 0)
+	err := d.store.GetLockerInfos(func(info *types.LockerInfo) error {
+		if types.LockerDeletedToString(info.Deleted) == params.GetValue() {
+			as = append(as, toLockerState(info))
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(as, func(i, j int) bool {
+		return as[i].LastModifyTime > as[j].LastModifyTime
+	})
+	states := getStateByOffset(as, params.GetCount(), params.GetOffset())
+
+	return &pb.LockerStatesResponse{
+		Lockers: states,
+	}, nil
 }
 
 func (d *DebugAPI) SignData(ctx context.Context, s *pb.String) (*pb.SignResponse, error) {

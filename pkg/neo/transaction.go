@@ -151,7 +151,7 @@ func (w witnessWrapper) GetScriptHash() *util.Uint160 {
 	return w.ScriptHash
 }
 
-func (n *Transaction) CreateTransactionAppendWitness2(param TransactionParam) (string, error) {
+func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
 	accountUint, err := address.StringToUint160(param.SignerAddress)
 	if err != nil {
 		return "", fmt.Errorf("addr %s to uint160: %s ", param.SignerAddress, err)
@@ -201,102 +201,6 @@ func (n *Transaction) CreateTransactionAppendWitness2(param TransactionParam) (s
 	emit.Int(script.BinWriter, 1)
 	emit.Opcode(script.BinWriter, opcode.PACK)
 	emit.String(script.BinWriter, param.EmitIndex)
-	tmp = append(tmp, &witnessWrapper{
-		Witness: transaction.Witness{
-			InvocationScript:   script.Bytes(),
-			VerificationScript: []byte{},
-		},
-		ScriptHash: &n.contractLE,
-	})
-
-	sort.Slice(tmp, func(i, j int) bool {
-		h1 := tmp[i].GetScriptHash()
-		h2 := tmp[j].GetScriptHash()
-
-		return big.NewInt(0).SetBytes(h1.BytesLE()).Cmp(big.NewInt(0).SetBytes(h2.BytesLE())) < 0
-	})
-
-	size := len(tmp)
-	witness := make([]transaction.Witness, size)
-	for i := 0; i < size; i++ {
-		witness[i] = transaction.Witness{
-			InvocationScript:   tmp[i].InvocationScript,
-			VerificationScript: tmp[i].VerificationScript,
-		}
-	}
-
-	tx.Scripts = witness
-
-	n.logger.Debug("tx hex: ", hex.EncodeToString(tx.Bytes()))
-	n.logger.Debug("tx detail: ", u.ToIndentString(tx))
-
-	if err := n.client.SendRawTransaction(tx); err != nil {
-		return "", fmt.Errorf("sendRawTransaction: %s", err)
-	}
-	//n.logger.Debugf("transaction successfully: %s", tx.Hash().StringLE())
-	return tx.Hash().StringLE(), nil
-}
-
-func (n *Transaction) CreateTransactionAppendWitness(param TransactionParam) (string, error) {
-	accountUint, err := address.StringToUint160(param.SignerAddress)
-	if err != nil {
-		return "", err
-	}
-	scripts, err := request.CreateFunctionInvocationScript(n.contractLE, param.Params)
-	if err != nil {
-		return "", fmt.Errorf("create script: %s", err)
-	}
-	tx := transaction.NewInvocationTX(scripts, 0)
-
-	// add attributes
-	tx.AddVerificationHash(accountUint)
-	tx.Attributes = append(tx.Attributes, transaction.Attribute{
-		Usage: transaction.Script,
-		Data:  n.contractLE.BytesBE(),
-	})
-
-	if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
-		tx.Attributes = append(tx.Attributes, transaction.Attribute{
-			Usage: transaction.Script,
-			Data:  accountUint.BytesBE(),
-		})
-		r := remark()
-		//r, _ := hex.DecodeString("00000174483c1ff2d76670ab")
-		tx.Attributes = append(tx.Attributes, transaction.Attribute{
-			Usage: transaction.Remark,
-			Data:  r,
-		})
-	}
-
-	if err := n.SignTx(tx, param.SignerAddress); err != nil {
-		return "", fmt.Errorf("signTx: %s", err)
-	}
-
-	var tmp []*witnessWrapper
-	// sign
-	tmp = append(tmp, &witnessWrapper{
-		Witness: transaction.Witness{
-			InvocationScript:   tx.Scripts[0].InvocationScript,
-			VerificationScript: tx.Scripts[0].VerificationScript,
-		},
-		ScriptHash: nil,
-	})
-	// add witness
-	script := io.NewBufBinWriter()
-	if param.ROrigin != "" && param.RHash == "" {
-		emit.String(script.BinWriter, param.ROrigin)
-	} else if param.ROrigin == "" && param.RHash != "" {
-		rHex, err := hex.DecodeString(param.RHash)
-		if err != nil {
-			return "", fmt.Errorf("decode error: %s", err)
-		}
-		emit.Bytes(script.BinWriter, rHex)
-	} else {
-		return "", errors.New("invalid r text")
-	}
-	emit.Int(script.BinWriter, 1)
-	emit.Opcode(script.BinWriter, opcode.PACK)
-	emit.String(script.BinWriter, param.FuncName)
 	tmp = append(tmp, &witnessWrapper{
 		Witness: transaction.Witness{
 			InvocationScript:   script.Bytes(),
@@ -485,10 +389,6 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (uint32,
 
 HeightConfirmed:
 
-	if _, _, err := n.lockerEventFromApplicationLog(txHash); err != nil { // check if failed
-		return 0, err
-	}
-
 	if b, _ := n.HasConfirmedBlocksHeight(txHeight, int64(interval)); b {
 		return txHeight, nil
 	}
@@ -498,7 +398,11 @@ HeightConfirmed:
 		select {
 		case <-nTicker.C:
 			if b, _ := n.HasConfirmedBlocksHeight(txHeight, int64(interval)); b {
-				return txHeight, nil
+				if _, _, err := n.lockerEventFromApplicationLog(txHash); err != nil { // check if failed
+					return 0, err
+				} else {
+					return txHeight, nil
+				}
 			}
 		case <-nTimer.C:
 			return 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
