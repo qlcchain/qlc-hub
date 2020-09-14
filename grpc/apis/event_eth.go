@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/qlcchain/qlc-hub/pkg/eth"
+	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
@@ -280,7 +281,7 @@ func (e *EventAPI) loopLockerState() {
 					if err := e.store.UpdateLockerInfo(info); err != nil {
 						e.logger.Errorf("loop/updateLocker: %s [%s]", err, info.RHash)
 					} else {
-						e.logger.Infof("loop/set deleted done, [%s]", info.RHash)
+						e.logger.Warnf("loop/deleted done, [%s]", info.RHash)
 					}
 				}
 			}
@@ -330,6 +331,8 @@ func (e *EventAPI) loopLockerState() {
 						e.logger.Errorf("loop/set DepositNeoUnLockedPending: %s [%s -> %s]", err, info.ROrigin, info.RHash)
 					}
 					unlock(info.RHash, e.logger)
+				case types.DepositEthFetchPending: // should confirmed tx
+					e.continueDepositEthFetchPending(info.RHash)
 				case types.DepositNeoUnLockedPending: // should confirmed tx
 					lock(info.RHash, e.logger)
 					e.logger.Infof("loop/continue locker state %s [%s]", types.LockerStateToString(info.State), info.RHash)
@@ -406,10 +409,10 @@ func (e *EventAPI) continueDepositEthLockedPending(rHash string) {
 	var hashTimer *eth.HashTimer
 	hashTimer, err := e.eth.GetHashTimer(info.RHash)
 	if err != nil {
-		e.logger.Errorf("event/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", info.State, err, info.RHash, info.LockedEthHeight)
+		e.logger.Errorf("event/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", info.State, err, info.RHash, info.LockedEthHash)
 		return
 	}
-	if hashTimer.LockedHeight > 0 {
+	if hashTimer.LockedHeight > 0 && hashTimer.UnlockedHeight == 0 {
 		e.logger.Infof("loop/continue deposit eth locked pending [%s]", info.RHash)
 		info.State = types.DepositEthLockedDone
 		info.LockedEthHeight = hashTimer.LockedHeight
@@ -454,7 +457,7 @@ func (e *EventAPI) continueDepositEthLockedDone(rHash string) {
 			return
 		}
 
-		if hashTimer.UnlockedHeight > 0 {
+		if hashTimer.UnlockedHeight > 0 && hashTimer.UnlockedHeight-hashTimer.LockedHeight <= uint32(e.cfg.EthereumCfg.DepositInterval) {
 			e.logger.Infof("loop/continue deposit eth locked done [%s]", info.RHash)
 			info.State = types.DepositEthUnLockedDone
 			info.ROrigin = hashTimer.ROrigin
@@ -476,6 +479,30 @@ func (e *EventAPI) continueDepositEthLockedDone(rHash string) {
 				return
 			}
 		}
+	}
+}
+
+func (e *EventAPI) continueDepositEthFetchPending(rHash string) {
+	lock(rHash, e.logger)
+	defer unlock(rHash, e.logger)
+	info, _ := e.store.GetLockerInfo(rHash)
+	if info.State >= types.DepositEthFetchDone {
+		return
+	}
+
+	hashTimer, err := e.eth.GetHashTimer(info.RHash)
+	if err != nil {
+		e.logger.Errorf("event/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", info.State, err, info.RHash, info.LockedEthHash)
+		return
+	}
+	if hashTimer.UnlockedHeight > 0 && hashTimer.UnlockedHeight-hashTimer.LockedHeight > uint32(e.cfg.EthereumCfg.DepositInterval) {
+		e.logger.Infof("loop/continue withdraw eth fetch pending [%s]", info.RHash)
+		info.UnlockedEthHeight = hashTimer.UnlockedHeight
+		info.State = types.DepositEthFetchDone
+		if err = e.store.UpdateLockerInfo(info); err != nil {
+			return
+		}
+		e.logger.Infof("loop/set [%s] state to [%s]", info.RHash, types.LockerStateToString(types.DepositEthFetchDone))
 	}
 }
 
@@ -520,10 +547,10 @@ func (e *EventAPI) continueWithDrawEthUnlockPending(rHash string) {
 
 	hashTimer, err := e.eth.GetHashTimer(info.RHash)
 	if err != nil {
-		e.logger.Errorf("event/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", info.State, err, info.RHash, info.LockedEthHeight)
+		e.logger.Errorf("event/getHashTimer[%d]: %s, rHash[%s], txHash[%s]", info.State, err, info.RHash, info.LockedEthHash)
 		return
 	}
-	if hashTimer.UnlockedHeight > 0 {
+	if hashTimer.UnlockedHeight > 0 && hashTimer.UnlockedHeight-hashTimer.LockedHeight <= uint32(e.cfg.EthereumCfg.WithdrawInterval) {
 		e.logger.Infof("loop/continue withdraw eth unlocked pending [%s]", info.RHash)
 		info.UnlockedEthHeight = hashTimer.UnlockedHeight
 		info.State = types.WithDrawEthUnlockDone
@@ -547,9 +574,9 @@ func (e *EventAPI) continueWithDrawInit(rHash string) {
 		return
 	}
 
-	e.logger.Infof("loop/continue withdraw init [%s]", info.RHash)
+	if hashTimer.LockedHeight > 0 && hashTimer.UnlockedHeight == 0 {
+		e.logger.Infof("loop/continue withdraw init [%s]", info.RHash)
 
-	if hashTimer.LockedHeight > 0 && hashTimer.UnlockedHeight == 0 && hashTimer.UserAddr != "" {
 		info.State = types.WithDrawEthLockedDone
 		info.RHash = rHash
 		info.LockedEthHeight = hashTimer.LockedHeight
@@ -797,14 +824,15 @@ func setWithDrawEthUnlockPending(rHash string, ethTransaction *eth.Transaction, 
 }
 
 var withdrawTimeLimit = new(sync.Map)
+var logger = log.NewLogger("timelimit")
 
 func resetWithdrawTimeLimit(ctx context.Context, interval int) {
-	cTimer := time.NewTimer(time.Duration(interval) * time.Minute)
+	cTicker := time.NewTicker(time.Duration(interval) * time.Minute)
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-cTimer.C:
+		case <-cTicker.C:
 			withdrawTimeLimit.Range(func(key, value interface{}) bool {
 				withdrawTimeLimit.Store(key, false)
 				return true
@@ -822,6 +850,7 @@ func isWithdrawLimitExceeded(addr string) bool {
 }
 
 func setWithdrawLimitExceeded(addr string) {
+	logger.Info("==== set ", RemovePrefix(addr))
 	withdrawTimeLimit.Store(RemovePrefix(addr), true)
 }
 

@@ -112,15 +112,15 @@ func (d *DebugAPI) InterruptLocker(ctx context.Context, s *pb.LockerInterrupt) (
 }
 
 func (d *DebugAPI) DeleteLockerInfo(ctx context.Context, request *pb.DeleteLockerInfoRequest) (*pb.Boolean, error) {
-	d.logger.Infof("delete locker info: %s", request.String())
+	d.logger.Infof("api -> delete : %s", request.String())
 	var confirmedHeight uint32 = 10
 	var gasTimes int32 = 2
-	var maxCount int32 = 10
+	var maxCount int32 = 20
 
 	if request.GetConfirmedHeight() > 0 {
 		confirmedHeight = request.GetConfirmedHeight()
 	}
-	if request.GetMaxCount() > 0 {
+	if request.GetMaxCount() < maxCount {
 		maxCount = request.GetMaxCount()
 	}
 	if request.GetGasTimes() > 0 {
@@ -159,8 +159,8 @@ func (d *DebugAPI) DeleteLockerInfo(ctx context.Context, request *pb.DeleteLocke
 		}); err != nil {
 			return nil, err
 		}
+		go d.deleteLockerInfos(rHashes)
 	}
-	go d.deleteLockerInfos(rHashes)
 	return toBoolean(true), nil
 }
 
@@ -173,7 +173,7 @@ func (d *DebugAPI) deleteLockerInfos(rHashes []string) {
 		if info.Deleted == types.DeletedDone {
 			continue
 		}
-		d.logger.Infof("delete locker info [%s]", rHash)
+		d.logger.Warnf("delete locker info [%s]", rHash)
 		info.Deleted = types.DeletedPending
 		info.DeletedTime = time.Now().Unix()
 		if err := d.store.UpdateLockerInfo(info); err != nil {
@@ -185,14 +185,14 @@ func (d *DebugAPI) deleteLockerInfos(rHashes []string) {
 			d.logger.Errorf("delete locker: %s [%s]", err, rHash)
 			continue
 		}
-		d.logger.Infof("neo swap info deleted, tx: %s  [%s]", tx, rHash)
+		d.logger.Warnf("neo swap info deleted, tx: %s  [%s]", tx, rHash)
 
 		tx, err = d.eth.DeleteHashTimer(info.RHash, d.cfg.EthereumCfg.OwnerAddress)
 		if err != nil {
 			d.logger.Errorf("delete locker: %s [%s]", err, rHash)
 			continue
 		}
-		d.logger.Infof("eth hash timer deleted, tx: %s [%s]", tx, rHash)
+		d.logger.Warnf("eth hash timer deleted, tx: %s [%s]", tx, rHash)
 	}
 }
 

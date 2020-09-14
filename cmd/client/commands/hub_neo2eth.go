@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/abiosoft/ishell"
+
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -47,7 +48,7 @@ func hNeo2EthFetchCmd(parentCmd *ishell.Cmd) {
 	parentCmd.AddCmd(c)
 }
 
-func hNeo2Eth() {
+func hNeo2Eth() string {
 	amount := 290000000
 
 	rOrigin, rHash := hubUtil.Sha256Hash()
@@ -86,6 +87,7 @@ func hNeo2Eth() {
 		log.Fatal(err)
 	}
 	log.Println("successfully")
+	return rHash
 }
 
 func hNeo2EthFetch() {

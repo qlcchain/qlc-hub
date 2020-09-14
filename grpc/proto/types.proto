@@ -16,6 +16,8 @@ message PingResponse {
    bool   withdrawLimit = 8;
    int64  minDepositAmount  = 9;
    int64  minWithdrawAmount = 10;
+   int64  averageGas        = 11;
+   int64  suggestGas        = 12;
 }
 
 message DepositLockRequest{
@@ -217,7 +219,8 @@ service DebugAPI {
 
     rpc DeleteLockerInfo(DeleteLockerInfoRequest) returns (Boolean){
         option (google.api.http) = {
-          get: "/debug/deleteLockerInfo"
+          post: "/debug/deleteLockerInfo"
+          body: "*"
         };
     }
 

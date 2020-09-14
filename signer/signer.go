@@ -4,17 +4,15 @@ import (
 	"context"
 	"time"
 
-	"google.golang.org/grpc/backoff"
-
-	"github.com/qlcchain/qlc-hub/pkg/util"
-
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/metadata"
 
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
+	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 type SignerClient struct {

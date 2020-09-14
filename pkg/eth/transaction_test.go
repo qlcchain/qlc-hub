@@ -15,7 +15,7 @@ func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
 	ethTransaction, fn := getTransaction(t)
 	defer fn()
 
-	if err := ethTransaction.TxVerifyAndConfirmed("0x6aaa384ae047bd9e3f6c5f8cd16a81f3a6d79bf86b0b25447e612346e42cc61e", 0, 0); err != nil {
+	if err := ethTransaction.TxVerifyAndConfirmed("0xa3d90416aa98920602ddabdf9f5c3d69e13817aa121e6633f540e6475cf7b0b1", 0, 0); err != nil {
 		t.Fatal(err)
 	}
 }
