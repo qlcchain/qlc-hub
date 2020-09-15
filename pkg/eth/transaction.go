@@ -114,7 +114,7 @@ func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, er
 	auth.Value = big.NewInt(0)      // in wei
 	auth.GasLimit = uint64(8000000) // in units
 	auth.GasPrice = gasPrice
-	t.logger.Infof("eth tx auth, gasLimit: %d, gasPrice: %d, nonce: %d ", auth.GasLimit, gasPrice, nonce)
+	t.logger.Debugf("eth tx auth, gasLimit: %d, gasPrice: %d, nonce: %d ", auth.GasLimit, gasPrice, nonce)
 	return auth, nil
 }
 

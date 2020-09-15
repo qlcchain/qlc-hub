@@ -51,13 +51,17 @@ func (e *EventAPI) ethEventLister() {
 				continue
 			}
 			rHash := hex.EncodeToString(event.RHash[:])
-			state := event.State.Int64()
-			txHash := vLog.TxHash.Hex()
-			txHeight := vLog.BlockNumber
+			if event.State != nil {
+				state := event.State.Int64()
+				txHash := vLog.TxHash.Hex()
+				txHeight := vLog.BlockNumber
 
-			e.logger.Infof("[%d] event log: rHash[%s], txHash[%s], txHeight[%d]", state, rHash, txHash, txHeight)
-			if eth.State(state) <= eth.DestroyFetch {
-				go e.processEthEvent(state, rHash, txHash, txHeight)
+				e.logger.Infof("[%d] event log: rHash[%s], txHash[%s], txHeight[%d]", state, rHash, txHash, txHeight)
+				if eth.State(state) <= eth.DestroyFetch {
+					go e.processEthEvent(state, rHash, txHash, txHeight)
+				}
+			} else {
+				e.logger.Infof("event log: state is nil , %s [%s]", vLog.TxHash.String(), rHash)
 			}
 		}
 	}
@@ -850,7 +854,6 @@ func isWithdrawLimitExceeded(addr string) bool {
 }
 
 func setWithdrawLimitExceeded(addr string) {
-	logger.Info("==== set ", RemovePrefix(addr))
 	withdrawTimeLimit.Store(RemovePrefix(addr), true)
 }
 

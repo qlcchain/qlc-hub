@@ -54,7 +54,6 @@ type EthereumCfg struct {
 	ConfirmedHeight  int    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
 	DepositInterval  int64  `json:"ethDepositHeight" long:"ethDepositHeight" description:"Lock timeout Height of deposit" default:"20" validate:"nonzero"`
 	WithdrawInterval int64  `json:"ethWithdrawHeight" long:"ethWithdrawHeight" description:"Lock timeout Height of withdraw" default:"40" validate:"nonzero"`
-	MaxGasPerDay     int64  `json:"maxGasDay" long:"maxGasDay" description:"maximum gas balance per day" default:"10" validate:"nonzero"`
 	GasEndPoint      string `json:"gasEndPoint" long:"gasEndPoint" description:"endpoint to get gas price" validate:"nonzero"`
 }
 

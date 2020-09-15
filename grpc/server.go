@@ -219,9 +219,9 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.InfoAPI/Ping":                       jwt.Both,
 		"/proto.DebugAPI/HashTimer":                 jwt.Both,
 		"/proto.DebugAPI/LockerInfosCount":          jwt.Both,
-		"/proto.DebugAPI/interruptLocker":           jwt.Admin,
-		"/proto.DebugAPI/deleteLocker":              jwt.Admin,
-		"/proto.DebugAPI/lockerInfosByDeletedState": jwt.Admin,
+		"/proto.DebugAPI/InterruptLocker":           jwt.Admin,
+		"/proto.DebugAPI/DeleteLockerInfo":          jwt.Admin,
+		"/proto.DebugAPI/LockerInfosByDeletedState": jwt.Admin,
 	})
 	return authorizer
 }

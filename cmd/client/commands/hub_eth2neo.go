@@ -38,7 +38,7 @@ func hEth2Neo() string {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, " ==> ", rHash)
 
-	pingInfo, err := getPing("6A786bf6E1c68E981D04139137f81dDA2d0acBF1")
+	pingInfo, err := getPing(ethUserAddress)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -91,6 +91,15 @@ func hEth2Neo() string {
 func hEth2NeoFetch() {
 	rOrigin, rHash := hubUtil.Sha256Hash()
 	log.Println("hash: ", rOrigin, " ==> ", rHash)
+
+	pingInfo, err := getPing(ethUserAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if pingInfo["withdrawLimit"].(bool) {
+		log.Fatal("withdraw limit")
+	}
+	fmt.Println("ping info ", hubUtil.ToString(pingInfo))
 
 	paras := fmt.Sprintf(`{
 		"value": "%s"
