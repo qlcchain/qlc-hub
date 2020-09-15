@@ -216,7 +216,7 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.WithdrawAPI/Lock":                   jwt.Both,
 		"/proto.WithdrawAPI/Claim":                  jwt.Both,
 		"/proto.EventAPI/Event":                     jwt.Both,
-		"/proto.InfoAPI/Ping":                       jwt.Admin,
+		"/proto.InfoAPI/Ping":                       jwt.Both,
 		"/proto.DebugAPI/HashTimer":                 jwt.Both,
 		"/proto.DebugAPI/LockerInfosCount":          jwt.Both,
 		"/proto.DebugAPI/InterruptLocker":           jwt.Admin,
