@@ -13,31 +13,35 @@ Application Options:
   -V, --verbose              show verbose debug information
   -l, --level=               log level (default: warn)
       --signerToken=         singer JWT token
-      --signerEndPoint=      singer endpoint (default: http://127.0.0.1:19747)
-  -n, --neoUrl=              NEO RPC endpoint (default: http://seed2.ngd.network:20332)
-      --neoContract=         NEO staking contract address (default: 278df62f9ba1312f1e1f4b5d239f07beaa1b5b94)
+      --signerEndPoint=      singer endpoint
+  -n, --neoUrl=              NEO RPC endpoint
+      --neoContract=         NEO staking contract address
+      --neoAssetId=          qlc token asset id
       --neoSignerAddress=    NEO address to sign tx
       --neoAssetsAddress=    NEO address to keep assets
       --neoConfirmedHeight=  Neo transaction Confirmed Height (default: 0)
       --neoDepositInterval=  Lock timeout interval height of deposit (default: 40)
       --neoWithdrawInterval= Lock timeout interval height of withdraw (default: 20)
   -e, --ethereumUrl=         Ethereum RPC endpoint
-      --ethereumContract=    ethereum staking contract address (default: 0x9a36F711133188EDb3952b3A6ee29c6a3d2e3836)
-      --ethSignerAddress=    Ethereum address to sign tx
+      --ethereumContract=    ethereum staking contract address
+      --ethOwnerAddress=     Ethereum owner address
       --ethConfirmedHeight=  Eth transaction Confirmed Height (default: 0)
       --ethDepositHeight=    Lock timeout Height of deposit (default: 20)
       --ethWithdrawHeight=   Lock timeout Height of withdraw (default: 40)
+      --gasEndPoint=         endpoint to get gas price
       --listenAddress=       RPC server listen address (default: tcp://0.0.0.0:19745)
       --grpcAddress=         GRPC server listen address (default: tcp://0.0.0.0:19746)
       --allowedOrigins=      AllowedOrigins of CORS (default: *)
       --minDepositAmount=    minimal amount to deposit (default: 100000000)
       --minWithdrawAmount=   minimal amount to withdraw (default: 100000000)
+      --withdrawFrequency=   time interval to every withdraw (minute) (default: 10)
       --stateInterval=       time interval to check locker state (default: 2)
-  -K, --key=                 private key for JWT manager
+  -K, --key=                 private key
       --duration=
 
 Help Options:
   -h, --help                 Show this help message
+
 ```
 
 ## QLC-Signer CLI
