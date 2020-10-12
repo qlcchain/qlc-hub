@@ -9,7 +9,7 @@ require (
 	github.com/ethereum/go-ethereum v1.9.22
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2
-	github.com/grpc-ecosystem/grpc-gateway v1.15.0
+	github.com/grpc-ecosystem/grpc-gateway v1.15.2
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c
 	github.com/mr-tron/base58 v1.2.0
