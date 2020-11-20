@@ -14,13 +14,17 @@ require (
 	github.com/miguelmota/go-ethereum-hdwallet v0.0.0-20200123000308-a60dcd172b4c
 	github.com/mr-tron/base58 v1.2.0
 	github.com/nspcc-dev/neo-go v0.77.0
+	github.com/qlcchain/go-qlc v1.4.1 // indirect
 	github.com/tinylib/msgp v1.1.4
 	go.uber.org/zap v1.16.0
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
 	google.golang.org/grpc v1.33.2
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
+	gorm.io/driver/sqlite v1.1.3
+	gorm.io/gorm v1.20.7
 )
 
 go 1.14

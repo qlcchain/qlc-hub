@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"sort"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -23,13 +24,12 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -38,6 +38,7 @@ type Transaction struct {
 	client       *client.Client
 	contractLE   util.Uint160
 	contractAddr string
+	pendingTx    *sync.Map
 	logger       *zap.SugaredLogger
 }
 
@@ -56,6 +57,7 @@ func NewTransaction(url, contractAddr string, signer *signer.SignerClient) (*Tra
 		client:       c,
 		contractLE:   contract,
 		contractAddr: contractAddr,
+		pendingTx:    new(sync.Map),
 		logger:       log.NewLogger("neo/transaction"),
 	}, nil
 }
@@ -69,6 +71,40 @@ type TransactionParam struct {
 	RHash         string
 	FuncName      string
 	EmitIndex     string
+}
+
+func (n *Transaction) CreateUnsignedTransaction(param TransactionParam) (string, string, error) {
+	scripts, err := request.CreateFunctionInvocationScript(n.contractLE, param.Params)
+	if err != nil {
+		return "", "", fmt.Errorf("CreateFunctionInvocationScript: %s", err)
+	}
+
+	tx := transaction.NewInvocationTX(scripts, param.Sysfee)
+	gas := param.Sysfee + param.Netfee
+
+	if gas > 0 {
+		if err = request.AddInputsAndUnspentsToTx(tx, param.SignerAddress, core.UtilityTokenID(), gas, n.client); err != nil {
+			return "", "", fmt.Errorf("failed to add inputs and unspents to transaction: %s ", err)
+		}
+	} else {
+		addr, err := address.StringToUint160(param.SignerAddress)
+		if err != nil {
+			return "", "", fmt.Errorf("address to unint160：%s, %s", err, param.SignerAddress)
+		}
+		tx.AddVerificationHash(addr)
+		if len(tx.Inputs) == 0 && len(tx.Outputs) == 0 {
+			tx.Attributes = append(tx.Attributes, transaction.Attribute{
+				Usage: transaction.Remark,
+				Data:  remark(),
+			})
+		}
+	}
+	data := tx.GetSignedPart()
+	if data == nil {
+		return "", "", errors.New("failed to get transaction's signed part")
+	}
+	n.pendingTx.Store(tx.Hash().StringLE(), tx)
+	return tx.Hash().StringLE(), hex.EncodeToString(data), nil
 }
 
 func (n *Transaction) CreateTransaction(param TransactionParam) (string, error) {
@@ -338,20 +374,20 @@ SwapFound:
 
 	n.logger.Debugf("swap info: %s", hubUtil.ToString(sInfo))
 	if state == UserLock || state == WrapperLock {
-		if _, err := n.TxVerifyAndConfirmed(sInfo.TxIdIn, interval); err != nil {
+		if _, err := n.WaitTxVerifyAndConfirmed(sInfo.TxIdIn, interval); err != nil {
 			return nil, err
 		} else {
 			return sInfo, nil
 		}
 	} else if state == WrapperUnlock || state == UserUnlock {
-		if h, err := n.TxVerifyAndConfirmed(sInfo.TxIdOut, interval); err != nil {
+		if h, err := n.WaitTxVerifyAndConfirmed(sInfo.TxIdOut, interval); err != nil {
 			return nil, err
 		} else {
 			sInfo.UnlockedHeight = h
 			return sInfo, nil
 		}
 	} else if state == RefundUser || state == RefundWrapper {
-		if h, err := n.TxVerifyAndConfirmed(sInfo.TxIdRefund, interval); err != nil {
+		if h, err := n.WaitTxVerifyAndConfirmed(sInfo.TxIdRefund, interval); err != nil {
 			return nil, err
 		} else {
 			sInfo.UnlockedHeight = h
@@ -362,7 +398,7 @@ SwapFound:
 	}
 }
 
-func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) (uint32, error) {
+func (n *Transaction) WaitTxVerifyAndConfirmed(txHash string, interval int) (uint32, error) {
 	hash, err := util.Uint256DecodeStringLE(txHash)
 	if err != nil {
 		return 0, fmt.Errorf("tx verify decode hash: %s, %s", err, txHash)
@@ -397,12 +433,13 @@ HeightConfirmed:
 	for {
 		select {
 		case <-nTicker.C:
-			if b, _ := n.HasConfirmedBlocksHeight(txHeight, int64(interval)); b {
-				if _, _, err := n.lockerEventFromApplicationLog(txHash); err != nil { // check if failed
-					return 0, err
-				} else {
-					return txHeight, nil
-				}
+			if b, _ := n.HasConfirmedBlocksHeight(txHeight, int64(interval)); b { //todo
+				//if _, _, err := n.lockerEventFromApplicationLog(txHash); err != nil { // check if failed
+				//	return 0, err
+				//} else {
+				//	return txHeight, nil
+				//}
+				return txHeight, nil
 			}
 		case <-nTimer.C:
 			return 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
@@ -460,7 +497,7 @@ func (n *Transaction) lockerEventFromApplicationLog(hash string) (string, State,
 
 func (n *Transaction) CheckTxAndRHash(txHash, rHash string, confirmedHeight int, state State) (uint32, error) {
 	n.logger.Infof("waiting for neo tx %s confirmed", txHash)
-	height, err := n.TxVerifyAndConfirmed(txHash, confirmedHeight)
+	height, err := n.WaitTxVerifyAndConfirmed(txHash, confirmedHeight)
 	if err != nil {
 		return 0, fmt.Errorf("neo tx confirmed: %s, %s, [%s]", err, txHash, rHash)
 	}
@@ -525,4 +562,19 @@ func (n *Transaction) SignData(address string, str string) (*proto.SignResponse,
 		return nil, err
 	}
 	return n.signer.Sign(proto.SignType_NEO, address, data)
+}
+
+func (n *Transaction) HasTransactionConfirmed(txHash string, interval int) error {
+	hash, err := util.Uint256DecodeStringLE(txHash)
+	if err != nil {
+		return fmt.Errorf("tx verify decode hash: %s, %s", err, txHash)
+	}
+	var txHeight uint32
+	if txHeight, err = n.client.GetTransactionHeight(hash); err != nil {
+		return fmt.Errorf("verify neo transaction: %s, tx:%s", err, hash)
+	}
+	if b, current := n.HasConfirmedBlocksHeight(txHeight, int64(interval)); !b {
+		return fmt.Errorf("confirmed neo transaction fail, %s,  %d/%d", txHash, txHeight, current)
+	}
+	return nil
 }

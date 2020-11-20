@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net"
@@ -9,20 +10,20 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
-	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"gorm.io/gorm"
 )
 
 type Server struct {
@@ -34,7 +35,7 @@ type Server struct {
 	cfg    *config.Config
 	eth    *eth.Transaction
 	neo    *neo.Transaction
-	store  *store.Store
+	store  *gorm.DB
 	logger *zap.SugaredLogger
 }
 
@@ -60,7 +61,6 @@ func (g *Server) Start() error {
 		g.logger.Error(err)
 		return err
 	}
-	g.logger.Info("config info checked")
 
 	network, address, err := util.Scheme(g.cfg.RPCCfg.GRPCListenAddress)
 	if err != nil {
@@ -86,25 +86,32 @@ func (g *Server) Start() error {
 			g.logger.Errorf("gateway listen err: %s", err)
 		}
 	}()
+
+	g.logger.Info("grpc server started")
+
 	return nil
 }
 
 func (g *Server) checkBaseInfo() error {
 	signer, err := signer.NewSigner(g.cfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("new signer: %s", err)
+	}
+
+	if _, err := signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.OwnerAddress, bytes.Repeat([]byte{0}, 32)); err != nil {
+		return fmt.Errorf("sign: %s", err)
 	}
 	g.signer = signer
 	g.logger.Info("signer client connected successfully")
 
-	eClient, err := ethclient.Dial(g.cfg.EthereumCfg.EndPoint)
+	eClient, err := ethclient.Dial(g.cfg.EthCfg.EndPoint)
 	if err != nil {
 		return fmt.Errorf("eth dail: %s", err)
 	}
 	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
 		return fmt.Errorf("eth node connect timeout: %s", err)
 	}
-	eTransaction := eth.NewTransaction(eClient, signer, g.ctx, g.cfg.EthereumCfg.GasEndPoint, g.cfg.EthereumCfg.Contract)
+	eTransaction := eth.NewTransaction(eClient, g.cfg.EthCfg.Contract)
 	g.eth = eTransaction
 	g.logger.Info("eth client connected successfully")
 
@@ -118,12 +125,16 @@ func (g *Server) checkBaseInfo() error {
 	g.neo = nTransaction
 	g.logger.Info("neo client connected successfully")
 
-	store, err := store.NewStore(g.cfg.DataDir())
+	//store, err := store.NewStore(g.cfg.DataDir())
+	//if err != nil {
+	//	return fmt.Errorf("new store fail: %s", err)
+	//}
+	db, err := db.NewDB(g.cfg.Database())
 	if err != nil {
 		return fmt.Errorf("new store fail: %s", err)
 	}
-	g.logger.Infof("store dir: %s ", g.cfg.DataDir())
-	g.store = store
+	g.logger.Infof("store dir: %s ", g.cfg.Database())
+	g.store = db
 
 	return nil
 }
@@ -177,15 +188,12 @@ func (g *Server) Stop() {
 	g.rpc.Stop()
 	g.signer.Stop()
 
-	g.store.Close() //todo wait all server stop
-
+	g.logger.Info("grpc stopped")
 }
 
 func (g *Server) registerApi() error {
-	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
+	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.eth, g.signer, g.store))
 	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
-	pb.RegisterEventAPIServer(g.rpc, apis.NewEventAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
-	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.neo, g.store))
 	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	return nil
 }
@@ -194,16 +202,7 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 	if err := pb.RegisterDepositAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := pb.RegisterWithdrawAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
-		return err
-	}
 	if err := pb.RegisterInfoAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
-		return err
-	}
-	if err := pb.RegisterDebugAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
-		return err
-	}
-	if err := pb.RegisterEventAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil

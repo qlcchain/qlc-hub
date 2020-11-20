@@ -1,11 +1,13 @@
 package neo
 
 import (
+	"encoding/hex"
 	"fmt"
 	"testing"
 
+	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-
+	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	u "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -68,14 +70,14 @@ func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
 	}
 
 	txHash := "789dd4ba43790baf62182b2c3af21d722414a24bcd48a8a2210d06795a4d1a86"
-	r, err := c.TxVerifyAndConfirmed(txHash, 1)
+	r, err := c.WaitTxVerifyAndConfirmed(txHash, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(r)
 
 	failedHash := "3d2462e274778615d36b7efe493022ec6fd943ccb904a57ec714019e1872fcab"
-	r, err = c.TxVerifyAndConfirmed(failedHash, 1)
+	r, err = c.WaitTxVerifyAndConfirmed(failedHash, 1)
 	if err == nil {
 		t.Fatal(r)
 	}
@@ -94,4 +96,22 @@ func TestTransaction_QlcBalance(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(r)
+}
+
+func TestNewTransaction_PublicKey(t *testing.T) {
+	account, err := wallet.NewAccountFromWIF("L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR")
+	if err != nil {
+		t.Fatal(err)
+	}
+	//pk := account.PrivateKey().PublicKey().String()
+	//fmt.Println(pk)
+	pks := account.PrivateKey().PublicKey().Bytes()
+	pk := hex.EncodeToString(pks)
+	fmt.Println(pk)
+
+	pubk, err := keys.NewPublicKeyFromString(pk)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(hex.EncodeToString(pubk.Bytes()))
 }

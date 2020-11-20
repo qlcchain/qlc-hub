@@ -118,6 +118,13 @@ func RemoveHexPrefix(str string) string {
 	return str
 }
 
+func AddHashPrefix(str string) string {
+	if len(str) == 64 {
+		return fmt.Sprintf("0x%s", str)
+	}
+	return str
+}
+
 func IsvalidNEOAddress(addr string) bool {
 	_, err := address.StringToUint160(addr)
 	return err == nil

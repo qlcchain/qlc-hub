@@ -2,31 +2,35 @@ package apis
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
+	"math/big"
+	"time"
 
-	"go.uber.org/zap"
-
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
+	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/qlcchain/qlc-hub/config"
-	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
-	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
-	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type WithdrawAPI struct {
 	neo    *neo.Transaction
 	eth    *eth.Transaction
-	store  *store.Store
+	store  *gorm.DB
 	cfg    *config.Config
 	ctx    context.Context
 	logger *zap.SugaredLogger
 }
 
-func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *eth.Transaction, s *store.Store) *WithdrawAPI {
-	return &WithdrawAPI{
+func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *eth.Transaction, s *gorm.DB) *WithdrawAPI {
+	api := &WithdrawAPI{
 		cfg:    cfg,
 		neo:    neo,
 		store:  s,
@@ -34,74 +38,112 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 		ctx:    ctx,
 		logger: log.NewLogger("api/withdraw"),
 	}
+	go api.lister()
+	return api
 }
 
-func (w *WithdrawAPI) Lock(ctx context.Context, s *pb.String) (*pb.Boolean, error) {
-	w.logger.Infof("api - withdraw lock  [%s]", s.String())
-	lockerInfo := &types.LockerInfo{
-		RHash:   s.GetValue(),
-		State:   types.WithDrawInit,
-		Deleted: types.NotDeleted,
+func (w *WithdrawAPI) lister() {
+	contractAddress := common.HexToAddress(w.cfg.EthCfg.Contract)
+	query := ethereum.FilterQuery{
+		Addresses: []common.Address{contractAddress},
 	}
-	err := w.store.AddLockerInfo(lockerInfo)
+	filterer, err := eth.NewQLCChainFilterer(contractAddress, w.eth.Client())
 	if err != nil {
-		return nil, err
-	} else {
-		return toBoolean(true), nil
+		w.logger.Error("NewQLCChainFilterer: ", err)
+		return
+	}
+	logs := make(chan ethTypes.Log)
+	sub, err := w.eth.Client().SubscribeFilterLogs(context.Background(), query, logs)
+	if err != nil {
+		w.logger.Error("SubscribeFilterLogs: ", err)
+		return
+	}
+	for {
+		select {
+		case <-w.ctx.Done():
+			return
+		case err := <-sub.Err():
+			if err != nil {
+				w.logger.Error("SubscribeFilterLogs: ", err)
+			}
+		case vLog := <-logs:
+			if event, err := filterer.ParseBurn(vLog); event != nil && err == nil {
+				user := event.User
+				amount := event.Amount
+				nep5Addr := event.Nep5Addr
+				txHash := vLog.TxHash
+				txHeight := vLog.BlockNumber
+
+				w.logger.Infof("withdraw event, user:%s, amount:%s, nep5Addr:%s. eth tx[%s,%d]",
+					user.String(), amount.String(), nep5Addr, txHash.String(), txHeight)
+
+				if err := w.toConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr); err != nil {
+					w.logger.Errorf("withdraw event: %s, tx[%s]", err, txHash.String())
+					continue
+				}
+			}
+			if event, err := filterer.ParseMint(vLog); event != nil && err == nil {
+				user := event.User
+				amount := event.Amount
+				nep5Hash := event.Nep5Hash
+				txHash := vLog.TxHash
+				txHeight := vLog.BlockNumber
+				nHash := hex.EncodeToString(nep5Hash[:])
+
+				w.logger.Infof("deposit event, user:%s, amount:%s, nep5Hash:%s. eth tx[%s,%d]",
+					user.String(), amount.String(), nHash, txHash.String(), txHeight)
+
+				swapInfo, err := db.GetSwapInfoByTxHash(w.store, nHash, types.NEO)
+				if err != nil {
+					w.logger.Error(err)
+					continue
+				}
+				if swapInfo.EthUserAddr != user.String() || swapInfo.Amount != amount.Int64() {
+					w.logger.Errorf("wrong info: %s", nHash)
+					continue
+				}
+				if err := w.toConfirmDepositEthTx(txHash, txHeight, nHash, user.String()); err != nil {
+					w.logger.Errorf("withdraw event: %s, tx[%s]", err, txHash.String())
+					continue
+				}
+			}
+		}
 	}
 }
 
-func (w *WithdrawAPI) Claim(ctx context.Context, request *pb.ClaimRequest) (*pb.String, error) {
-	rHash := util.Sha256(request.GetROrigin())
-	w.logger.Infof("api - withdraw claim: %s, [%s]", request.String(), rHash)
-	if err := w.neo.ValidateAddress(request.GetUserNep5Addr()); err != nil {
-		return nil, fmt.Errorf("invalid address: %s", request.GetUserNep5Addr())
+func (w *WithdrawAPI) toConfirmWithdrawEthTx(txHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string) error {
+	if err := w.eth.TxVerifyAndConfirmed(txHash, txHeight, w.cfg.EthCfg.ConfirmedHeight); err != nil {
+		return fmt.Errorf("tx confirmed: %s", err)
 	}
+	w.logger.Infof("withdraw eth tx[%s] confirmed", txHash.String())
 
-	info, err := w.store.GetLockerInfo(rHash)
+	swapInfo := &types.SwapInfo{
+		State:       types.WithDrawPending,
+		Amount:      amount.Int64(),
+		EthTxHash:   txHash.String(),
+		NeoTxHash:   "",
+		EthUserAddr: user.String(),
+		NeoUserAddr: "",
+		StartTime:   time.Now().Unix(),
+	}
+	return db.InsertSwapInfo(w.store, swapInfo)
+}
+
+func (w *WithdrawAPI) toConfirmDepositEthTx(txHash common.Hash, txHeight uint64, neoTxHash string, ethUserAddr string) error {
+	if err := w.eth.TxVerifyAndConfirmed(txHash, txHeight, w.cfg.EthCfg.ConfirmedHeight); err != nil {
+		return fmt.Errorf("tx confirmed: %s", err)
+	}
+	w.logger.Infof("deposit eth tx[%s] confirmed", txHash.String())
+
+	swapInfo, err := db.GetSwapInfoByTxHash(w.store, neoTxHash, types.NEO)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("get swapInfo: %s", err)
 	}
-	if info.State < types.WithDrawNeoLockedDone {
-		//w.logger.Errorf("current state is %s, [%s]", types.LockerStateToString(lockInfo.State), lockInfo.RHash)
-		return nil, fmt.Errorf("invalid state: %s", types.LockerStateToString(info.State))
+	swapInfo.State = types.DepositDone
+	swapInfo.EthTxHash = txHash.String()
+	swapInfo.EthUserAddr = ethUserAddr
+	if err := db.UpdateSwapInfo(w.store, swapInfo); err != nil {
+		return fmt.Errorf("set swapInfo: %s", err)
 	}
-
-	neoUnlockTx, err := w.neo.UserUnlock(request.GetROrigin(), request.GetUserNep5Addr(), w.cfg.NEOCfg.SignerAddress)
-	if err != nil {
-		w.logger.Errorf("user unlock: %s, [%s]", err, rHash)
-		return nil, err
-	}
-	w.logger.Infof("withdraw/claim neo unlock tx: %s [%s]", neoUnlockTx, rHash)
-	info.State = types.WithDrawNeoUnLockedPending
-	if err := w.store.UpdateLockerInfo(info); err != nil {
-		return nil, err
-	}
-	w.logger.Infof("set [%s] state to [%s]", rHash, types.LockerStateToString(types.WithDrawNeoUnLockedPending))
-
-	go func() {
-		lock(rHash, w.logger)
-		defer unlock(rHash, w.logger)
-
-		info, _ := w.store.GetLockerInfo(rHash)
-		if info.State >= types.WithDrawNeoUnLockedDone {
-			w.logger.Infof("locker state already ahead of %s, [%s] ", types.LockerStateToString(types.WithDrawNeoUnLockedDone), info.RHash)
-			w.store.SetLockerStateFail(info, err)
-			return
-		}
-
-		if err := setWithDrawNeoUnLockedDone(rHash, w.neo, w.store, w.cfg.NEOCfg.ConfirmedHeight, true, w.logger); err != nil {
-			w.logger.Errorf("set neo unlocked done: %s [%s]", err, rHash)
-			w.store.SetLockerStateFail(info, err)
-			return
-		}
-
-		if err := setWithDrawEthUnlockPending(rHash, w.eth, w.store, w.cfg.EthereumCfg.OwnerAddress, w.logger); err != nil {
-			w.logger.Errorf("set WithDrawEthUnlockPending: %s [%s]", err, info.RHash)
-			w.store.SetLockerStateFail(info, err)
-			return
-		}
-	}()
-
-	return toString(neoUnlockTx), nil
+	return nil
 }

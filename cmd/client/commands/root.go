@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"log"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	flag "github.com/jessevdk/go-flags"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-
+	"github.com/nspcc-dev/neo-go/pkg/wallet"
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
@@ -21,19 +20,21 @@ var (
 	hubUrl string
 
 	// neo setting
-	neoUrl             = "http://seed3.ngd.network:20332"
-	neoContract        = "cedfd8f78bf46d28ac07b8e40b911199bd51951f"
-	neoContractLE      util.Uint160
-	neoAssetAddr       = "Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W"
-	neoSignerAddress   = "ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ"
-	neoUserAddr        = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
+	neoUrl            = "http://seed3.ngd.network:20332"
+	neoContract       = "cedfd8f78bf46d28ac07b8e40b911199bd51951f"
+	neoContractLE     util.Uint160
+	neoAssetAddr      = "Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W"
+	neoUserAccount, _ = wallet.NewAccountFromWIF("L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR")
+	neoUserAddr       = neoUserAccount.Address
+	//neoUserAddr        = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
 	neoConfirmedHeight int
 
 	// eth setting
 	ethUrl             = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
-	ethContract        = "0x16e502c867C2d4CAC0F4B4dBd39AB722F5cEc050"
+	ethContract        = "0x0bA64B339281D4F57DF8B535D61c6ceA71CCc956"
 	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
-	ethUserAddress     = "0x6A786bf6E1c68E981D04139137f81dDA2d0acBF1"
+	ethUserPrivate     = "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
+	ethUserAddress     = "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
 	ethConfirmedHeight int
 )
 
@@ -63,7 +64,7 @@ func initParams(osArgs []string) {
 	}
 
 	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight
-	ethConfirmedHeight = cfg.EthereumCfg.ConfirmedHeight
+	ethConfirmedHeight = int(cfg.EthCfg.ConfirmedHeight)
 
 	cfg.SignerEndPoint = "http://127.0.0.1:19747"
 	var err error
@@ -85,7 +86,7 @@ func initParams(osArgs []string) {
 	if eClient, err := ethclient.Dial(ethUrl); err != nil {
 		log.Fatal(err)
 	} else {
-		ethTransaction = eth.NewTransaction(eClient, singerClient, context.Background(), cfg.EthereumCfg.GasEndPoint, ethContract)
+		ethTransaction = eth.NewTransaction(eClient, ethContract)
 	}
 	//defer ethClient.Close()
 
@@ -109,7 +110,6 @@ func Execute(osArgs []string) {
 	})
 	shell.Println("QLC Hub Client")
 	//set common variable
-	addEthCmd(shell)
 	addNeoCmd(shell)
 	addHubCmd(shell)
 	// run shell
