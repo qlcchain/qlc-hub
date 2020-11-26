@@ -7,10 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"gopkg.in/validator.v2"
-
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"gopkg.in/validator.v2"
 )
 
 const (
@@ -24,37 +23,30 @@ type Config struct {
 	SignerToken       string          `json:"signerToken"  long:"signerToken" description:"singer JWT token" validate:"nonzero"`
 	SignerEndPoint    string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" validate:"nonzero"`
 	NEOCfg            *NEOCfg         `json:"neo" validate:"nonnil"`
-	EthereumCfg       *EthereumCfg    `json:"ethereum" validate:"nonnil"`
+	EthCfg            *EthCfg         `json:"ethereum" validate:"nonnil"`
 	RPCCfg            *RPCCfg         `json:"rpc" validate:"nonnil"`
 	DateDir           string          `json:"dateDir" validate:"nonnil"`
 	MinDepositAmount  int64           `json:"minDepositAmount" long:"minDepositAmount" description:"minimal amount to deposit" default:"100000000" validate:"nonzero"`
 	MinWithdrawAmount int64           `json:"minWithdrawAmount" long:"minWithdrawAmount" description:"minimal amount to withdraw" default:"100000000" validate:"nonzero"`
-	WithdrawFrequency int             `json:"withdrawFrequency" long:"withdrawFrequency" description:"time interval to every withdraw (minute)" default:"10" validate:"nonzero"`
-	StateInterval     int             `json:"stateInterval" long:"stateInterval" description:"time interval to check locker state" default:"2" validate:"nonzero"`
 	Key               string          `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
 	KeyDuration       string          `json:"duration" long:"duration" default:"0s" validate:"nonzero"`
 	JwtManager        *jwt.JWTManager `json:"-"`
 }
 
 type NEOCfg struct {
-	EndPoint         string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" validate:"nonzero"`
-	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" validate:"nonzero"`
-	AssetId          string `json:"assetId" long:"neoAssetId" description:"qlc token asset id"  validate:"nonzero"`
-	SignerAddress    string `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" validate:"nonzero"`
-	AssetsAddress    string `json:"assetsAddress" long:"neoAssetsAddress" description:"NEO address to keep assets" validate:"nonzero"`
-	ConfirmedHeight  int    `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"0" validate:""`
-	DepositInterval  int64  `json:"neoDepositInterval" long:"neoDepositInterval" description:"Lock timeout interval height of deposit" default:"40" validate:"nonzero"`
-	WithdrawInterval int64  `json:"neoWithdrawInterval" long:"neoWithdrawInterval" description:"Lock timeout interval height of withdraw" default:"20" validate:"nonzero"`
+	EndPoints        []string `json:"neoUrls"  long:"neoUrls" description:"NEO RPC endpoint" validate:"min=1"`
+	Contract         string   `json:"contract" long:"neoContract" description:"NEO staking contract address" validate:"nonzero"`
+	SignerAddress    string   `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" validate:"nonzero"`
+	ConfirmedHeight  int      `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"1" validate:""`
+	DepositInterval  int64    `json:"neoDepositInterval" long:"neoDepositInterval" description:"Lock timeout interval height of deposit" default:"40" validate:"nonzero"`
+	WithdrawInterval int64    `json:"neoWithdrawInterval" long:"neoWithdrawInterval" description:"Lock timeout interval height of withdraw" default:"20" validate:"nonzero"`
 }
 
-type EthereumCfg struct {
-	EndPoint         string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" validate:"nonzero"`
-	Contract         string `json:"contract" long:"ethereumContract" description:"ethereum staking contract address"  validate:"nonzero"`
-	OwnerAddress     string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address" validate:"nonzero"`
-	ConfirmedHeight  int    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
-	DepositInterval  int64  `json:"ethDepositHeight" long:"ethDepositHeight" description:"Lock timeout Height of deposit" default:"20" validate:"nonzero"`
-	WithdrawInterval int64  `json:"ethWithdrawHeight" long:"ethWithdrawHeight" description:"Lock timeout Height of withdraw" default:"40" validate:"nonzero"`
-	GasEndPoint      string `json:"gasEndPoint" long:"gasEndPoint" description:"endpoint to get gas price" validate:"nonzero"`
+type EthCfg struct {
+	EndPoint        string `json:"endpoint" short:"e" long:"ethUrl" description:"Ethereum RPC endpoint" validate:"nonzero"`
+	Contract        string `json:"contract" long:"ethContract" description:"ethereum staking contract address"  validate:"nonzero"`
+	OwnerAddress    string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
+	ConfirmedHeight int64  `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`
 }
 
 type RPCCfg struct {
@@ -74,6 +66,12 @@ func (c *Config) DataDir() string {
 	_ = util.CreateDirIfNotExist(dir)
 
 	return dir
+}
+
+func (c *Config) Database() string {
+	dir := filepath.Join(DefaultDataDir(), "db")
+	_ = util.CreateDirIfNotExist(dir)
+	return filepath.Join(dir, "swap.db")
 }
 
 func (c *Config) Verify() error {

@@ -1,24 +1,30 @@
 package eth
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"log"
+	"math/big"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
-
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
-func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
-	t.Skip()
-	ethTransaction, fn := getTransaction(t)
-	defer fn()
-
-	if err := ethTransaction.TxVerifyAndConfirmed("0xa3d90416aa98920602ddabdf9f5c3d69e13817aa121e6633f540e6475cf7b0b1", 0, 0); err != nil {
-		t.Fatal(err)
-	}
-}
+//func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
+//	t.Skip()
+//	ethTransaction, fn := getTransaction(t)
+//	defer fn()
+//
+//	if err := ethTransaction.WaitTxVerifyAndConfirmed("0xa3d90416aa98920602ddabdf9f5c3d69e13817aa121e6633f540e6475cf7b0b1", 0, 0); err != nil {
+//		t.Fatal(err)
+//	}
+//}
 
 func TestNewTransaction(t *testing.T) {
 	ethTransaction, fn := getTransaction(t)
@@ -35,14 +41,87 @@ func TestNewTransaction(t *testing.T) {
 	fmt.Println("gas price: ", tx.GasPrice())
 }
 
-func TestTransaction_GetHashTimer(t *testing.T) {
-	ethTransaction, fn := getTransaction(t)
-	defer fn()
+func TestTransaction_Sign(t *testing.T) {
+	r := make([]byte, 0)
+	a := []byte("abc")
+	b := []byte("edg")
+	r = append(r, a...)
+	r = append(r, b...)
+	h := sha256.Sum256(r)
+	rHash := hex.EncodeToString(h[:])
+	fmt.Println(rHash)
+}
 
-	txHash := "32fce00156b280b1cf4dd7d0e085a7ab30b1adfb062bfd7bd64a38de290a8817"
-	r, err := ethTransaction.GetHashTimer(txHash)
+func TestTransaction_Sign2(t *testing.T) {
+	r := make([]byte, 0)
+
+	amount := big.NewInt(0).Mul(big.NewInt(100), big.NewInt(1))
+
+	address := common.HexToAddress("0x5B38Da6a701c568545dCfcB03FcB875f56beddC4")
+	a := amount.Bytes()
+	b := address.Bytes()
+	r = append(r, a...)
+	r = append(r, b...)
+	fmt.Println(a)
+	fmt.Println(hex.EncodeToString(a))
+	fmt.Println(b)
+	fmt.Println(hex.EncodeToString(b))
+	h := sha256.Sum256(r)
+	rHash := hex.EncodeToString(h[:])
+	fmt.Println("====hash====")
+	fmt.Println(rHash)
+
+	r1 := bytes.Repeat([]byte{0}, 32)
+	fmt.Println(amount.String())
+	fmt.Println(r1)
+	copy(r1[len(r1)-len(a):], a)
+	fmt.Println(r1)
+	fmt.Println(hex.EncodeToString(r1))
+
+	fmt.Println("====hash2====")
+
+	r2 := make([]byte, 0)
+	//a2 := amount.Bytes()
+	b2 := address.Bytes()
+	r2 = append(r2, r1...)
+	r2 = append(r2, b2...)
+
+	h2 := sha256.Sum256(r2)
+	rHash2 := hex.EncodeToString(h2[:])
+	fmt.Println(rHash2)
+
+	fmt.Println("=====sign===")
+	privateKey, _, err := GetAccountByPriKey("67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e")
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(r)
+
+	sig, err := crypto.Sign(h2[:], privateKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(hex.EncodeToString(h2[:]))
+	fmt.Println(sig)
+	fmt.Println(hex.EncodeToString(sig))
+}
+
+//func completion(amount *big.Int) []byte {
+//	//r := make([]byte,0)
+//	//ar := amount.Bytes()
+//	//copy[r[0:1], ar]
+//
+//}
+
+func TestTransaction_SyncLog(t *testing.T) {
+	t.Skip()
+	eClient, err := ethclient.Dial("wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57")
+	if err != nil {
+		t.Fatal(err)
+	}
+	contract := "0x0bA64B339281D4F57DF8B535D61c6ceA71CCc956"
+	client := NewTransaction(eClient, contract)
+	hash := "0x98219592dfacebe8988a14a61a13294b1b01fe27dcf31704e29979ca1ec5739e"
+	if _, _, _, err := client.SyncBurnLog(hash); err != nil {
+		t.Fatal(err)
+	}
 }

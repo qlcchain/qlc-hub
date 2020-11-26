@@ -4,238 +4,156 @@ option go_package = ".;proto";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "signer.proto";
 
-message PingResponse {
-   string ethContract   = 1;
-   string ethAddress    = 2;
-   string neoContract   = 3;
-   string neoAddress    = 4;
-   float  ethBalance    = 5;
-   float  neoBalance    = 7;
-   bool   withdrawLimit = 8;
-   int64  minDepositAmount  = 9;
-   int64  minWithdrawAmount = 10;
-   int64  averageGas        = 11;
-   int64  suggestGas        = 12;
+message PackNeoTxRequest {
+    int64   amount              = 1;
+    string  nep5SenderAddr      = 2;
+    string  erc20ReceiverAddr   = 3;
 }
 
-message DepositLockRequest{
-   string nep5TxHash = 1;
-   string rHash      = 2;
-   string addr       = 3;
+message PackNeoTxResponse {
+    string  txHash           = 1;
+    string  unsignedData     = 2;
 }
 
-message FetchRequest{
-   string rOrigin      = 1;
-   string userNep5Addr = 2;
+message SendNeoTxnRequest {
+    string  signature         = 1;
+    string  txHash            = 2;
+    string  publicKey         = 3;
+    string  address           = 4;
 }
 
-message ClaimRequest{
-  string rOrigin        = 1;
-  string userNep5Addr   = 2;
+message EthOwnerSignRequest {
+    string  neoTxHash       = 1;
 }
-
-message EventResponse {
-  int64  state      = 1;
-  string stateStr   = 2;
-  string rHash      = 3;
-  string txHash     = 4;
-}
-
-message LockerStateResponse {
-  int64  state        = 1;
-  string stateStr     = 2;
-  string rHash        = 3;
-  string rOrigin      = 4;
-  int64  amount       = 5;
-  string lockedNeoHash       = 6;
-  uint32 lockedNeoHeight     = 7;
-  string lockedEthHash       = 8;
-  uint32 lockedEthHeight     = 9;
-  string unlockedNeoHash     = 10;
-  uint32 unlockedNeoHeight   = 11;
-  string unlockedEthHash     = 12;
-  uint32 unlockedEthHeight   = 13;
-  uint32 neoTimerInterval    = 14;
-  uint32 ethTimerInterval    = 15;
-  string startTime           = 16;
-  string lastModifyTime      = 17;
-  string neoUserAddr         = 18;
-  string ethUserAddr         = 19;
-  int64  gasPrice            = 20;
-  bool   neoTimeout          = 21;
-  bool   ethTimeout          = 22;
-  bool   fail                = 23;
-  string remark              = 24;
-  bool   interruption        = 25;
-  string deleted             = 26;
-  string deletedTime         = 27;
-}
-
-message Offset {
-    int32   count      = 1;
-    int32   offset     = 2;
-}
-
-message ParamAndOffset {
-    string  value      = 1;
-    int32   count      = 2;
-    int32   offset     = 3;
-}
-
-message LockerStatesResponse {
-    repeated LockerStateResponse lockers = 1;
-}
-
 
 service DepositAPI {
-    rpc Lock(DepositLockRequest) returns (Boolean){
+    rpc PackNeoTransaction(PackNeoTxRequest) returns (PackNeoTxResponse){
         option (google.api.http) = {
-          post: "/deposit/lock"
+          post: "/deposit/packNeoTransaction"
           body: "*"
         };
     }
 
-    rpc Fetch(FetchRequest) returns (String){
-       option (google.api.http) = {
-           post: "/deposit/fetch"
-           body: "*"
+    rpc SendNeoTransaction(SendNeoTxnRequest) returns (Boolean){
+        option (google.api.http) = {
+          post: "/deposit/sendNeoTransaction"
+          body: "*"
+        };
+    }
+
+    rpc NeoTransactionConfirmed(Hash) returns (Boolean){
+        option (google.api.http) = {
+          post: "/deposit/neoTransactionConfirmed"
+          body: "*"
+        };
+    }
+
+    rpc GetEthOwnerSign(EthOwnerSignRequest) returns (String){
+        option (google.api.http) = {
+          post: "/deposit/getEthOwnerSign"
+          body: "*"
         };
     }
 }
 
 service WithdrawAPI {
-   rpc Lock(String) returns (Boolean){
-      option (google.api.http) = {
-        post: "/withdraw/lock"
-        body: "*"
-      };
-   }
-
-   rpc Claim(ClaimRequest) returns (String){
-       option (google.api.http) = {
-         post: "/withdraw/claim"
-         body: "*"
-       };
+    rpc EthTransactionConfirmed(Hash) returns (String){
+        option (google.api.http) = {
+          post: "/withdraw/EthTransactionConfirmed"
+          body: "*"
+        };
     }
 }
 
-service EventAPI {
-    rpc Event(google.protobuf.Empty) returns (stream EventResponse){
-       option (google.api.http) = {
-         get: "/event/state"
-       };
-    }
+message PingResponse {
+   string ethContract   = 1;
+   string ethOwner      = 2;
+   string ethUrl        = 3;
+   string neoContract   = 4;
+   string neoOwner      = 5;
+   string neoUrl        = 6;
+   int64  minDepositAmount  = 7;
+   int64  minWithdrawAmount = 8;
+}
+
+message Offset {
+    int32   page         = 1;
+    int32   pageSize     = 2;
+}
+
+message AddrAndOffset {
+    string  address      = 1;
+    int32   page         = 3;
+    int32   pageSize     = 4;
+}
+
+message StateAndOffset {
+    string  state        = 1;
+    int32   page         = 2;
+    int32   pageSize     = 3;
+}
+
+message SwapInfo {
+    int32  state            = 1;
+    string stateStr         = 2;
+	int64  amount           = 3;
+	string ethTxHash        = 4;
+	string neoTxHash        = 5;
+	string ethUserAddr      = 6;
+	string neoUserAddr      = 7;
+	string startTime        = 8;
+	string lastModifyTime   = 9;
+}
+
+message SwapInfos {
+    repeated SwapInfo infos = 1;
 }
 
 service InfoAPI {
-    rpc Ping(String) returns (PingResponse){
+    rpc Ping(google.protobuf.Empty) returns (PingResponse){
         option (google.api.http) = {
           get: "/info/ping"
         };
     }
 
-    rpc LockerInfo(String) returns (LockerStateResponse){
-        option (google.api.http) = {
-          get: "/info/lockerInfo"
-        };
-    }
+   rpc SwapInfoList(Offset) returns (SwapInfos){
+       option (google.api.http) = {
+         get: "/info/swapInfoList"
+       };
+   }
 
-    rpc LockerInfosByErc20Addr(ParamAndOffset) returns (LockerStatesResponse){
-        option (google.api.http) = {
-          get: "/info/lockerInfosByErc20Addr"
-        };
-    }
+   rpc SwapInfosByAddress(AddrAndOffset) returns (SwapInfos){
+       option (google.api.http) = {
+         get: "/info/swapInfosByAddress"
+       };
+   }
 
-    rpc LockerInfosByNep5Addr(ParamAndOffset) returns (LockerStatesResponse){
-        option (google.api.http) = {
-          get: "/info/lockerInfosByNep5Addr"
-        };
-    }
+   rpc SwapInfoByTxHash(Hash) returns (SwapInfo){
+       option (google.api.http) = {
+         get: "/info/swapInfoByTxHash"
+       };
+   }
 
-    rpc LockerInfos(Offset) returns (LockerStatesResponse){
-        option (google.api.http) = {
-          get: "/info/lockerInfos"
-        };
-    }
+   rpc SwapInfosByState(StateAndOffset) returns (SwapInfos){
+      option (google.api.http) = {
+        get: "/info/swapInfosByState"
+      };
+   }
+
+   rpc SwapCountByState(google.protobuf.Empty) returns (Map){
+      option (google.api.http) = {
+        get: "/info/swapCountByState"
+      };
+   }
+
+   rpc SwapAmountByState(google.protobuf.Empty) returns (Map){
+      option (google.api.http) = {
+        get: "/info/swapAmountByState"
+      };
+   }
 }
 
-message lockerInfosStatResponse  {
-    map<string, lockerInfosStat> result = 1;
-}
-
-message lockerInfosStat  {
-    int64 count     = 1;
-    int64 amount    = 2;
-}
-
-message LockerInterrupt{
-    string rHash     = 1;
-    int32  state     = 2;
-    bool   interrupt = 3;
-}
-
-message HashTimerResponse  {
-    string rHash          = 1;
-    string rOrigin        = 2;
-    int64  amount         = 3;
-    string userAddr       = 4;
-    uint32 lockedHeight   = 5;
-    uint32 unlockedHeight = 6;
-}
-
-message DeleteLockerInfoRequest {
-    string rHash           = 1;
-    uint32 confirmedHeight = 2;
-    int32  maxCount        = 3;
-    int32  gasTimes        = 4;
-}
-
-service DebugAPI {
-    rpc HashTimer(String) returns (HashTimerResponse){
-        option (google.api.http) = {
-          get: "/debug/hashTimer"
-        };
-    }
-
-    rpc LockerInfosCount(google.protobuf.Empty) returns (lockerInfosStatResponse){
-        option (google.api.http) = {
-          get: "/debug/lockerInfosCount"
-        };
-    }
-
-    rpc LockerInfosByState(ParamAndOffset) returns (LockerStatesResponse){
-        option (google.api.http) = {
-          get: "/debug/lockerInfosByState"
-        };
-    }
-
-    rpc InterruptLocker(LockerInterrupt) returns (Boolean){
-        option (google.api.http) = {
-          get: "/debug/interruptLocker"
-        };
-    }
-
-    rpc DeleteLockerInfo(DeleteLockerInfoRequest) returns (Boolean){
-        option (google.api.http) = {
-          post: "/debug/deleteLockerInfo"
-          body: "*"
-        };
-    }
-
-    rpc LockerInfosByDeletedState(ParamAndOffset) returns (LockerStatesResponse){
-        option (google.api.http) = {
-          get: "/debug/lockerInfosByDeletedState"
-        };
-    }
-
-    rpc SignData(String) returns (SignResponse){
-        option (google.api.http) = {
-          get: "/debug/signData"
-        };
-    }
-}
 
 message Boolean {
     bool value = 1;
@@ -243,4 +161,12 @@ message Boolean {
 
 message String {
     string value = 1;
+}
+
+message Hash {
+    string hash = 1;
+}
+
+message Map {
+    map<string, int64> count = 1;
 }

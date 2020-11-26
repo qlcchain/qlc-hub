@@ -1,106 +1,53 @@
 package types
 
 //go:generate msgp
-type LockerState byte
+type SwapState byte
 
 const (
 	// deposit
-	DepositInit LockerState = iota
-	DepositNeoLockedDone
-	DepositEthLockedPending
-	DepositEthLockedDone
-	DepositEthUnLockedDone
-	DepositNeoUnLockedPending //5
-	DepositNeoUnLockedDone
-	DepositEthFetchPending
-	DepositEthFetchDone
-	DepositNeoFetchPending
-	DepositNeoFetchDone //10
+	DepositPending SwapState = iota
+	DepositDone
 
 	// withdraw
-	WithDrawInit
-	WithDrawEthLockedDone
-	WithDrawNeoLockedPending
-	WithDrawNeoLockedDone
-	WithDrawNeoUnLockedPending //15
-	WithDrawNeoUnLockedDone
-	WithDrawEthUnlockPending
-	WithDrawEthUnlockDone
-	WithDrawNeoFetchPending
-	WithDrawNeoFetchDone
-	WithDrawEthFetchDone
+	WithDrawPending
+	WithDrawDone
 
 	Invalid
 )
 
-func LockerStateToString(t LockerState) string {
+func SwapStateToString(t SwapState) string {
 	switch t {
-	case DepositInit:
-		return "DepositInit"
-	case DepositNeoLockedDone:
-		return "DepositNeoLockedDone"
-	case DepositEthLockedPending:
-		return "DepositEthLockedPending"
-	case DepositEthLockedDone:
-		return "DepositEthLockedDone"
-	case DepositEthUnLockedDone:
-		return "DepositEthUnLockedDone"
-	case DepositNeoUnLockedPending:
-		return "DepositNeoUnLockedPending"
-	case DepositNeoUnLockedDone:
-		return "DepositNeoUnLockedDone"
-	case DepositEthFetchPending:
-		return "DepositEthFetchPending"
-	case DepositEthFetchDone:
-		return "DepositEthFetchDone"
-	case DepositNeoFetchPending:
-		return "DepositNeoFetchPending"
-	case DepositNeoFetchDone:
-		return "DepositNeoFetchDone"
-	case WithDrawInit:
-		return "WithDrawInit"
-	case WithDrawEthLockedDone:
-		return "WithDrawEthLockedDone"
-	case WithDrawNeoLockedPending:
-		return "WithDrawNeoLockedPending"
-	case WithDrawNeoLockedDone:
-		return "WithDrawNeoLockedDone"
-	case WithDrawNeoUnLockedPending:
-		return "WithDrawNeoUnLockedPending"
-	case WithDrawNeoUnLockedDone:
-		return "WithDrawNeoUnLockedDone"
-	case WithDrawEthUnlockPending:
-		return "WithDrawEthUnlockPending"
-	case WithDrawEthUnlockDone:
-		return "WithDrawEthUnlockDone"
-	case WithDrawNeoFetchPending:
-		return "WithDrawNeoFetchPending"
-	case WithDrawNeoFetchDone:
-		return "WithDrawNeoFetchDone"
-	case WithDrawEthFetchDone:
-		return "WithDrawEthFetchDone"
+	case DepositPending:
+		return "DepositPending"
+	case DepositDone:
+		return "DepositDone"
+	case WithDrawPending:
+		return "WithDrawPending"
+	case WithDrawDone:
+		return "WithDrawDone"
 	default:
 		return "Invalid"
 	}
 }
 
-type LockerDeleted byte
+func StringToSwapState(t string) SwapState {
+	switch t {
+	case "DepositPending":
+		return DepositPending
+	case "DepositDone":
+		return DepositDone
+	case "WithDrawPending":
+		return WithDrawPending
+	case "WithDrawDone":
+		return WithDrawDone
+	default:
+		return Invalid
+	}
+}
+
+type ChainType byte
 
 const (
-	NotDeleted LockerDeleted = iota
-	DeletedPending
-	DeletedDone
+	ETH ChainType = iota
+	NEO
 )
-
-func LockerDeletedToString(t LockerDeleted) string {
-	switch t {
-	case NotDeleted:
-		return ""
-	case DeletedPending:
-		return "DeletedPending"
-	case DeletedDone:
-		return "DeletedDone"
-	default:
-		return "Invalid"
-	}
-}

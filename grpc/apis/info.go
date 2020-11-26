@@ -3,20 +3,18 @@ package apis
 import (
 	"context"
 	"fmt"
-	"sort"
-	"strconv"
 	"time"
 
-	"go.uber.org/zap"
-
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
-	"github.com/qlcchain/qlc-hub/pkg/store"
 	"github.com/qlcchain/qlc-hub/pkg/types"
-	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type InfoAPI struct {
@@ -24,11 +22,11 @@ type InfoAPI struct {
 	neo    *neo.Transaction
 	cfg    *config.Config
 	ctx    context.Context
-	store  *store.Store
+	store  *gorm.DB
 	logger *zap.SugaredLogger
 }
 
-func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *eth.Transaction, s *store.Store) *InfoAPI {
+func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *eth.Transaction, s *gorm.DB) *InfoAPI {
 	return &InfoAPI{
 		ctx:    ctx,
 		cfg:    cfg,
@@ -39,161 +37,149 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e
 	}
 }
 
-func (i *InfoAPI) Ping(ctx context.Context, s *pb.String) (*pb.PingResponse, error) {
-	ethBalance, err := i.eth.Balance(i.cfg.EthereumCfg.OwnerAddress)
-	if err != nil {
-		return nil, err
-	}
-	eb, err := strconv.ParseFloat(fmt.Sprintf("%.8f", float64(ethBalance)/1e18), 64)
-	if err != nil {
-		return nil, err
-	}
-	neoBalance, err := i.neo.Balance(i.cfg.NEOCfg.AssetsAddress, i.cfg.NEOCfg.AssetId)
-	if err != nil {
-		return nil, err
-	}
-	nb, err := strconv.ParseFloat(fmt.Sprintf("%.8f", float64(neoBalance)/1e8), 64)
-	if err != nil {
-		return nil, err
-	}
-	averageGas, suggestGas, _ := i.eth.Gas()
+func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		EthContract:       i.cfg.EthereumCfg.Contract,
-		EthAddress:        i.cfg.EthereumCfg.OwnerAddress,
+		EthContract:       i.cfg.EthCfg.Contract,
+		EthOwner:          i.cfg.EthCfg.OwnerAddress,
+		EthUrl:            i.cfg.EthCfg.EndPoint,
 		NeoContract:       i.cfg.NEOCfg.Contract,
-		NeoAddress:        i.cfg.NEOCfg.SignerAddress,
-		EthBalance:        float32(eb),
-		NeoBalance:        float32(nb),
-		WithdrawLimit:     isWithdrawLimitExceeded(s.GetValue()),
+		NeoOwner:          i.cfg.NEOCfg.SignerAddress,
+		NeoUrl:            i.neo.ClientEndpoint(),
 		MinDepositAmount:  i.cfg.MinDepositAmount,
-		MinWithdrawAmount: i.cfg.MinDepositAmount,
-		AverageGas:        averageGas,
-		SuggestGas:        suggestGas,
+		MinWithdrawAmount: i.cfg.MinWithdrawAmount,
 	}, nil
 }
 
-func (i *InfoAPI) LockerInfo(ctx context.Context, s *pb.String) (*pb.LockerStateResponse, error) {
-	rHash := util.RemoveHexPrefix(s.GetValue())
-	r, err := i.store.GetLockerInfo(rHash)
-	if err != nil {
-		return nil, err
+func (i *InfoAPI) SwapInfoList(ctx context.Context, offset *pb.Offset) (*pb.SwapInfos, error) {
+	if offset.GetPage() < 0 || offset.GetPageSize() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetPage(), offset.GetPageSize())
 	}
-	return toLockerState(r), nil
+	page := offset.GetPage()
+	pageSize := offset.GetPageSize()
+
+	infos, err := db.GetSwapInfos(i.store, int(page), int(pageSize))
+	if err != nil {
+		return nil, fmt.Errorf("get swapInfos: %s", err)
+	}
+	return toSwapInfos(infos), nil
 }
 
-func (i *InfoAPI) LockerInfosByErc20Addr(ctx context.Context, offset *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
-	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
-		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
+func (i *InfoAPI) SwapInfosByAddress(ctx context.Context, offset *pb.AddrAndOffset) (*pb.SwapInfos, error) {
+	if offset.GetPage() < 0 || offset.GetPageSize() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d, %s", offset.GetPage(), offset.GetPageSize(), offset.GetAddress())
 	}
-	as := make([]*pb.LockerStateResponse, 0)
-	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
-		if info.EthUserAddr == offset.GetValue() {
-			as = append(as, toLockerState(info))
+	page := offset.GetPage()
+	pageSize := offset.GetPageSize()
+	addr := offset.GetAddress()
+
+	if err := i.neo.ValidateAddress(addr); err == nil {
+		infos, err := db.GetSwapInfosByAddr(i.store, int(page), int(pageSize), addr, types.NEO)
+		if err != nil {
+			return nil, fmt.Errorf("get swapInfos: %s", err)
 		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	sort.Slice(as, func(i, j int) bool {
-		return as[i].LastModifyTime > as[j].LastModifyTime
-	})
-	states := getStateByOffset(as, offset.GetCount(), offset.GetOffset())
-	return &pb.LockerStatesResponse{
-		Lockers: states,
-	}, nil
-}
-
-func (i *InfoAPI) LockerInfosByNep5Addr(ctx context.Context, offset *pb.ParamAndOffset) (*pb.LockerStatesResponse, error) {
-	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
-		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
-	}
-	as := make([]*pb.LockerStateResponse, 0)
-	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
-		if info.NeoUserAddr == offset.GetValue() {
-			as = append(as, toLockerState(info))
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	sort.Slice(as, func(i, j int) bool {
-		return as[i].LastModifyTime > as[j].LastModifyTime
-	})
-	states := getStateByOffset(as, offset.GetCount(), offset.GetOffset())
-	return &pb.LockerStatesResponse{
-		Lockers: states,
-	}, nil
-}
-
-func (i *InfoAPI) LockerInfos(ctx context.Context, offset *pb.Offset) (*pb.LockerStatesResponse, error) {
-	if offset.GetCount() < 0 || offset.GetOffset() < 0 {
-		return nil, fmt.Errorf("invalid offset, %d, %d", offset.GetCount(), offset.GetOffset())
-	}
-	as := make([]*pb.LockerStateResponse, 0)
-	err := i.store.GetLockerInfos(func(info *types.LockerInfo) error {
-		as = append(as, toLockerState(info))
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	sort.Slice(as, func(i, j int) bool {
-		return as[i].LastModifyTime > as[j].LastModifyTime
-	})
-	states := getStateByOffset(as, offset.GetCount(), offset.GetOffset())
-	return &pb.LockerStatesResponse{
-		Lockers: states,
-	}, nil
-}
-
-func getStateByOffset(states []*pb.LockerStateResponse, count, offset int32) []*pb.LockerStateResponse {
-	length := int32(len(states))
-	if length == 0 {
-		return make([]*pb.LockerStateResponse, 0)
-	}
-	if count == 0 && offset == 0 {
-		return states
-	}
-	if length < offset {
-		return make([]*pb.LockerStateResponse, 0)
-	}
-	if length < offset+count {
-		return states[offset:length]
+		return toSwapInfos(infos), nil
 	} else {
-		return states[offset : offset+count]
+		infos, err := db.GetSwapInfosByAddr(i.store, int(page), int(pageSize), addr, types.ETH)
+		if err != nil {
+			return nil, fmt.Errorf("get swapInfos: %s", err)
+		}
+		return toSwapInfos(infos), nil
 	}
 }
 
-func toLockerState(s *types.LockerInfo) *pb.LockerStateResponse {
-	return &pb.LockerStateResponse{
-		State:             int64(s.State),
-		StateStr:          types.LockerStateToString(s.State),
-		RHash:             s.RHash,
-		ROrigin:           s.ROrigin,
-		Amount:            s.Amount,
-		LockedNeoHash:     s.LockedNeoHash,
-		LockedNeoHeight:   s.LockedNeoHeight,
-		LockedEthHash:     s.LockedEthHash,
-		LockedEthHeight:   s.LockedEthHeight,
-		UnlockedNeoHash:   s.UnlockedNeoHash,
-		UnlockedNeoHeight: s.UnlockedNeoHeight,
-		UnlockedEthHash:   s.UnlockedEthHash,
-		UnlockedEthHeight: s.UnlockedEthHeight,
-		NeoTimerInterval:  uint32(s.NeoTimerInterval),
-		EthTimerInterval:  uint32(s.EthTimerInterval),
-		StartTime:         time.Unix(s.StartTime, 0).Format(time.RFC3339),
-		LastModifyTime:    time.Unix(s.LastModifyTime, 0).Format(time.RFC3339),
-		NeoUserAddr:       s.NeoUserAddr,
-		EthUserAddr:       s.EthUserAddr,
-		GasPrice:          s.GasPrice,
-		NeoTimeout:        s.NeoTimeout,
-		EthTimeout:        s.EthTimeout,
-		Fail:              s.Fail,
-		Remark:            s.Remark,
-		Interruption:      s.Interruption,
-		Deleted:           types.LockerDeletedToString(s.Deleted),
-		DeletedTime:       time.Unix(s.DeletedTime, 0).Format(time.RFC3339),
+func (i *InfoAPI) SwapInfoByTxHash(ctx context.Context, h *pb.Hash) (*pb.SwapInfo, error) {
+	hash := h.GetHash()
+	if !(len(hash) == 66 || len(hash) == 64) {
+		return nil, fmt.Errorf("invalid hash: %s", hash)
+	}
+	info, err := db.GetSwapInfoByTxHash(i.store, hash, types.ETH)
+	if err != nil {
+		info, err := db.GetSwapInfoByTxHash(i.store, hash, types.NEO)
+		if err != nil {
+			return nil, fmt.Errorf("get swapInfos: %s", err)
+		} else {
+			return toSwapInfo(info), nil
+		}
+	} else {
+		return toSwapInfo(info), nil
+	}
+}
+
+func (i *InfoAPI) SwapInfosByState(ctx context.Context, offset *pb.StateAndOffset) (*pb.SwapInfos, error) {
+	if types.StringToSwapState(offset.GetState()) == types.Invalid {
+		return nil, fmt.Errorf("invalid state: %s", offset.GetState())
+	}
+	if offset.GetPage() < 0 || offset.GetPageSize() < 0 {
+		return nil, fmt.Errorf("invalid offset, %d, %d, %s", offset.GetPage(), offset.GetPageSize(), offset.GetState())
+	}
+	page := offset.GetPage()
+	pageSize := offset.GetPageSize()
+	state := types.StringToSwapState(offset.GetState())
+	infos, err := db.GetSwapInfosByState(i.store, int(page), int(pageSize), state)
+	if err != nil {
+		return nil, fmt.Errorf("get swapInfos: %s", err)
+	}
+	return toSwapInfos(infos), nil
+}
+
+func (i *InfoAPI) SwapCountByState(ctx context.Context, empty *empty.Empty) (*pb.Map, error) {
+	count := make(map[string]int64)
+	infos, err := db.GetSwapInfos(i.store, 0, 0)
+	if err != nil {
+		return nil, fmt.Errorf("get swapInfos: %s", err)
+	}
+	for _, info := range infos {
+		if info.State <= types.DepositDone {
+			count["Deposit"] = count["Deposit"] + 1
+		} else {
+			count["Withdraw"] = count["Withdraw"] + 1
+		}
+		count[types.SwapStateToString(info.State)] = count[types.SwapStateToString(info.State)] + 1
+	}
+	return &pb.Map{
+		Count: count,
+	}, nil
+}
+
+func (i *InfoAPI) SwapAmountByState(ctx context.Context, empty *empty.Empty) (*pb.Map, error) {
+	amount := make(map[string]int64)
+	infos, err := db.GetSwapInfos(i.store, 0, 0)
+	if err != nil {
+		return nil, fmt.Errorf("get swapInfos: %s", err)
+	}
+	for _, info := range infos {
+		if info.State <= types.DepositDone {
+			amount["Deposit"] = amount["Deposit"] + info.Amount
+		} else {
+			amount["Withdraw"] = amount["Withdraw"] + info.Amount
+		}
+		amount[types.SwapStateToString(info.State)] = amount[types.SwapStateToString(info.State)] + info.Amount
+	}
+	return &pb.Map{
+		Count: amount,
+	}, nil
+}
+
+func toSwapInfos(infos []*types.SwapInfo) *pb.SwapInfos {
+	r := make([]*pb.SwapInfo, 0)
+	for _, info := range infos {
+		r = append(r, toSwapInfo(info))
+	}
+	return &pb.SwapInfos{
+		Infos: r,
+	}
+}
+
+func toSwapInfo(info *types.SwapInfo) *pb.SwapInfo {
+	return &pb.SwapInfo{
+		State:          int32(info.State),
+		StateStr:       types.SwapStateToString(info.State),
+		Amount:         info.Amount,
+		EthTxHash:      info.EthTxHash,
+		NeoTxHash:      info.NeoTxHash,
+		EthUserAddr:    info.EthUserAddr,
+		NeoUserAddr:    info.NeoUserAddr,
+		StartTime:      time.Unix(info.StartTime, 0).Format(time.RFC3339),
+		LastModifyTime: time.Unix(info.LastModifyTime, 0).Format(time.RFC3339),
 	}
 }

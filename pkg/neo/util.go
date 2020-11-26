@@ -77,9 +77,9 @@ func FunctionName(name string) request.Param {
 func StackToSwapInfo(stack []smartcontract.Parameter) (map[string]interface{}, error) {
 	value := stack[0].Value
 	if v, ok := value.([]byte); ok {
-		return nil, fmt.Errorf("valid value type: %s", string(v))
+		return nil, fmt.Errorf("invalid value type: %s", string(v))
 	} else if data, ok := value.([]smartcontract.Parameter); ok {
-		if len(data) != 15 {
+		if len(data) != 8 {
 			return nil, fmt.Errorf("invalid data, exp: 15, got: %d", len(data))
 		}
 		result := make(map[string]interface{}, 0)
@@ -142,34 +142,23 @@ func intTo(key string, i int64) interface{} {
 
 var (
 	types = map[string]string{
-		"originText":        "text",
-		"userNeoAddress":    "neo",
-		"wrapperNeoAddress": "neo",
-		"userEthAddress":    "eth",
-		"amount":            "amount",
-		"lockTimestamp":     "time",
-		"unLockTimestamp":   "time",
-		"refundTimestamp":   "time",
-		"overtimeBlocks":    "int",
-		"txIdIn":            "hash",
-		"txIdOut":           "hash",
-		"txIdRefund":        "hash",
+		"fromAddress":    "neo",
+		"toAddress":      "neo",
+		"txid":           "hash",
+		"userEthAddress": "eth",
+		"amount":         "amount",
+		"timestamp":      "amount",
+		"blockHeight":    "amount",
+		"type":           "int",
 	}
 	fields = []string{
-		"originText",
-		"userNeoAddress",
-		"wrapperNeoAddress",
+		"fromAddress",
+		"toAddress",
+		"txid",
 		"userEthAddress",
-		"txIdIn",
-		"txIdOut",
-		"txIdRefund",
 		"amount",
-		"lockTimestamp",
-		"unLockTimestamp",
-		"refundTimestamp",
+		"timestamp",
 		"blockHeight",
-		"overtimeBlocks",
 		"type",
-		"state",
 	}
 )

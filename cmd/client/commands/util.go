@@ -8,8 +8,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
 func hubWaitingForWithdrawEthTimeout(rHash string) bool {
@@ -41,28 +39,6 @@ func hubWaitingForDepositNeoTimeout(rHash string) bool {
 		}
 		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
 		if state["neoTimeout"].(bool) {
-			return true
-		}
-	}
-	log.Fatal("timeout")
-	return false
-}
-
-func hubWaitingForLockerState(rHash string, lockerState types.LockerState) bool {
-	cTicker := time.NewTicker(30 * time.Second)
-	for i := 0; i < 100; i++ {
-		<-cTicker.C
-		state, err := getLockerState(rHash)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		log.Printf("rHash [%s] state is [%s] \n", rHash, state["stateStr"])
-		if state["fail"].(bool) {
-			log.Printf("rHash [%s] fail: [%s] \n", rHash, state["remark"].(string))
-			return false
-		}
-		if state["stateStr"].(string) == types.LockerStateToString(lockerState) {
 			return true
 		}
 	}
@@ -117,7 +93,7 @@ func get(url string) (map[string]interface{}, error) {
 	return ret, nil
 }
 
-func post(paras string, url string) (interface{}, error) {
+func post(paras string, url string) (map[string]interface{}, error) {
 	jsonStr := []byte(paras)
 	ioBody := bytes.NewBuffer(jsonStr)
 	request, err := http.NewRequest("POST", url, ioBody)
@@ -145,12 +121,5 @@ func post(paras string, url string) (interface{}, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if r, ok := ret["value"]; ok != false {
-		return r, nil
-	} else {
-		if e, ok := ret["error"]; ok != false {
-			return false, fmt.Errorf("%s", e)
-		}
-		return nil, fmt.Errorf("response has no result")
-	}
+	return ret, nil
 }

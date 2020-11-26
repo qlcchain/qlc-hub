@@ -11,255 +11,9 @@
     "application/json"
   ],
   "paths": {
-    "/debug/deleteLockerInfo": {
+    "/deposit/getEthOwnerSign": {
       "post": {
-        "operationId": "DebugAPI_DeleteLockerInfo",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoBoolean"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoDeleteLockerInfoRequest"
-            }
-          }
-        ],
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/hashTimer": {
-      "get": {
-        "operationId": "DebugAPI_HashTimer",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoHashTimerResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/interruptLocker": {
-      "get": {
-        "operationId": "DebugAPI_InterruptLocker",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoBoolean"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "rHash",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "state",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "interrupt",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
-            "format": "boolean"
-          }
-        ],
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/lockerInfosByDeletedState": {
-      "get": {
-        "operationId": "DebugAPI_LockerInfosByDeletedState",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoLockerStatesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/lockerInfosByState": {
-      "get": {
-        "operationId": "DebugAPI_LockerInfosByState",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoLockerStatesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/lockerInfosCount": {
-      "get": {
-        "operationId": "DebugAPI_LockerInfosCount",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protolockerInfosStatResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/debug/signData": {
-      "get": {
-        "operationId": "DebugAPI_SignData",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoSignResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "DebugAPI"
-        ]
-      }
-    },
-    "/deposit/fetch": {
-      "post": {
-        "operationId": "DepositAPI_Fetch",
+        "operationId": "DepositAPI_GetEthOwnerSign",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -280,7 +34,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoFetchRequest"
+              "$ref": "#/definitions/protoEthOwnerSignRequest"
             }
           }
         ],
@@ -289,9 +43,9 @@
         ]
       }
     },
-    "/deposit/lock": {
+    "/deposit/neoTransactionConfirmed": {
       "post": {
-        "operationId": "DepositAPI_Lock",
+        "operationId": "DepositAPI_NeoTransactionConfirmed",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -312,7 +66,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoDepositLockRequest"
+              "$ref": "#/definitions/protoHash"
             }
           }
         ],
@@ -321,45 +75,14 @@
         ]
       }
     },
-    "/event/state": {
-      "get": {
-        "operationId": "EventAPI_Event",
-        "responses": {
-          "200": {
-            "description": "A successful response.(streaming responses)",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/protoEventResponse"
-                },
-                "error": {
-                  "$ref": "#/definitions/runtimeStreamError"
-                }
-              },
-              "title": "Stream result of protoEventResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "EventAPI"
-        ]
-      }
-    },
-    "/info/lockerInfo": {
-      "get": {
-        "operationId": "InfoAPI_LockerInfo",
+    "/deposit/packNeoTransaction": {
+      "post": {
+        "operationId": "DepositAPI_PackNeoTransaction",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoLockerStateResponse"
+              "$ref": "#/definitions/protoPackNeoTxResponse"
             }
           },
           "default": {
@@ -371,25 +94,27 @@
         },
         "parameters": [
           {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoPackNeoTxRequest"
+            }
           }
         ],
         "tags": [
-          "InfoAPI"
+          "DepositAPI"
         ]
       }
     },
-    "/info/lockerInfos": {
-      "get": {
-        "operationId": "InfoAPI_LockerInfos",
+    "/deposit/sendNeoTransaction": {
+      "post": {
+        "operationId": "DepositAPI_SendNeoTransaction",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoLockerStatesResponse"
+              "$ref": "#/definitions/protoBoolean"
             }
           },
           "default": {
@@ -401,110 +126,16 @@
         },
         "parameters": [
           {
-            "name": "count",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoSendNeoTxnRequest"
+            }
           }
         ],
         "tags": [
-          "InfoAPI"
-        ]
-      }
-    },
-    "/info/lockerInfosByErc20Addr": {
-      "get": {
-        "operationId": "InfoAPI_LockerInfosByErc20Addr",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoLockerStatesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "InfoAPI"
-        ]
-      }
-    },
-    "/info/lockerInfosByNep5Addr": {
-      "get": {
-        "operationId": "InfoAPI_LockerInfosByNep5Addr",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoLockerStatesResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "count",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "tags": [
-          "InfoAPI"
+          "DepositAPI"
         ]
       }
     },
@@ -525,9 +156,75 @@
             }
           }
         },
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/swapAmountByState": {
+      "get": {
+        "operationId": "InfoAPI_SwapAmountByState",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoMap"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/swapCountByState": {
+      "get": {
+        "operationId": "InfoAPI_SwapCountByState",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoMap"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/swapInfoByTxHash": {
+      "get": {
+        "operationId": "InfoAPI_SwapInfoByTxHash",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoSwapInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
         "parameters": [
           {
-            "name": "value",
+            "name": "hash",
             "in": "query",
             "required": false,
             "type": "string"
@@ -538,14 +235,14 @@
         ]
       }
     },
-    "/withdraw/claim": {
-      "post": {
-        "operationId": "WithdrawAPI_Claim",
+    "/info/swapInfoList": {
+      "get": {
+        "operationId": "InfoAPI_SwapInfoList",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoString"
+              "$ref": "#/definitions/protoSwapInfos"
             }
           },
           "default": {
@@ -557,27 +254,121 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/protoClaimRequest"
-            }
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
-          "WithdrawAPI"
+          "InfoAPI"
         ]
       }
     },
-    "/withdraw/lock": {
-      "post": {
-        "operationId": "WithdrawAPI_Lock",
+    "/info/swapInfosByAddress": {
+      "get": {
+        "operationId": "InfoAPI_SwapInfosByAddress",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoBoolean"
+              "$ref": "#/definitions/protoSwapInfos"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/swapInfosByState": {
+      "get": {
+        "operationId": "InfoAPI_SwapInfosByState",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoSwapInfos"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/withdraw/EthTransactionConfirmed": {
+      "post": {
+        "operationId": "WithdrawAPI_EthTransactionConfirmed",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoString"
             }
           },
           "default": {
@@ -593,7 +384,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoString"
+              "$ref": "#/definitions/protoHash"
             }
           }
         ],
@@ -613,213 +404,57 @@
         }
       }
     },
-    "protoClaimRequest": {
+    "protoEthOwnerSignRequest": {
       "type": "object",
       "properties": {
-        "rOrigin": {
-          "type": "string"
-        },
-        "userNep5Addr": {
+        "neoTxHash": {
           "type": "string"
         }
       }
     },
-    "protoDeleteLockerInfoRequest": {
+    "protoHash": {
       "type": "object",
       "properties": {
-        "rHash": {
-          "type": "string"
-        },
-        "confirmedHeight": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "maxCount": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "gasTimes": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
-    "protoDepositLockRequest": {
-      "type": "object",
-      "properties": {
-        "nep5TxHash": {
-          "type": "string"
-        },
-        "rHash": {
-          "type": "string"
-        },
-        "addr": {
+        "hash": {
           "type": "string"
         }
       }
     },
-    "protoEventResponse": {
+    "protoMap": {
       "type": "object",
       "properties": {
-        "state": {
+        "count": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "protoPackNeoTxRequest": {
+      "type": "object",
+      "properties": {
+        "amount": {
           "type": "string",
           "format": "int64"
         },
-        "stateStr": {
+        "nep5SenderAddr": {
           "type": "string"
         },
-        "rHash": {
+        "erc20ReceiverAddr": {
           "type": "string"
-        },
+        }
+      }
+    },
+    "protoPackNeoTxResponse": {
+      "type": "object",
+      "properties": {
         "txHash": {
           "type": "string"
-        }
-      }
-    },
-    "protoFetchRequest": {
-      "type": "object",
-      "properties": {
-        "rOrigin": {
+        },
+        "unsignedData": {
           "type": "string"
-        },
-        "userNep5Addr": {
-          "type": "string"
-        }
-      }
-    },
-    "protoHashTimerResponse": {
-      "type": "object",
-      "properties": {
-        "rHash": {
-          "type": "string"
-        },
-        "rOrigin": {
-          "type": "string"
-        },
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "userAddr": {
-          "type": "string"
-        },
-        "lockedHeight": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "unlockedHeight": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "protoLockerStateResponse": {
-      "type": "object",
-      "properties": {
-        "state": {
-          "type": "string",
-          "format": "int64"
-        },
-        "stateStr": {
-          "type": "string"
-        },
-        "rHash": {
-          "type": "string"
-        },
-        "rOrigin": {
-          "type": "string"
-        },
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "lockedNeoHash": {
-          "type": "string"
-        },
-        "lockedNeoHeight": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "lockedEthHash": {
-          "type": "string"
-        },
-        "lockedEthHeight": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "unlockedNeoHash": {
-          "type": "string"
-        },
-        "unlockedNeoHeight": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "unlockedEthHash": {
-          "type": "string"
-        },
-        "unlockedEthHeight": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "neoTimerInterval": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "ethTimerInterval": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "startTime": {
-          "type": "string"
-        },
-        "lastModifyTime": {
-          "type": "string"
-        },
-        "neoUserAddr": {
-          "type": "string"
-        },
-        "ethUserAddr": {
-          "type": "string"
-        },
-        "gasPrice": {
-          "type": "string",
-          "format": "int64"
-        },
-        "neoTimeout": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "ethTimeout": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "fail": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "remark": {
-          "type": "string"
-        },
-        "interruption": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "deleted": {
-          "type": "string"
-        },
-        "deletedTime": {
-          "type": "string"
-        }
-      }
-    },
-    "protoLockerStatesResponse": {
-      "type": "object",
-      "properties": {
-        "lockers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protoLockerStateResponse"
-          }
         }
       }
     },
@@ -829,26 +464,20 @@
         "ethContract": {
           "type": "string"
         },
-        "ethAddress": {
+        "ethOwner": {
+          "type": "string"
+        },
+        "ethUrl": {
           "type": "string"
         },
         "neoContract": {
           "type": "string"
         },
-        "neoAddress": {
+        "neoOwner": {
           "type": "string"
         },
-        "ethBalance": {
-          "type": "number",
-          "format": "float"
-        },
-        "neoBalance": {
-          "type": "number",
-          "format": "float"
-        },
-        "withdrawLimit": {
-          "type": "boolean",
-          "format": "boolean"
+        "neoUrl": {
+          "type": "string"
         },
         "minDepositAmount": {
           "type": "string",
@@ -857,27 +486,23 @@
         "minWithdrawAmount": {
           "type": "string",
           "format": "int64"
-        },
-        "averageGas": {
-          "type": "string",
-          "format": "int64"
-        },
-        "suggestGas": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
-    "protoSignResponse": {
+    "protoSendNeoTxnRequest": {
       "type": "object",
       "properties": {
-        "sign": {
-          "type": "string",
-          "format": "byte"
+        "signature": {
+          "type": "string"
         },
-        "verifyData": {
-          "type": "string",
-          "format": "byte"
+        "txHash": {
+          "type": "string"
+        },
+        "publicKey": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
         }
       }
     },
@@ -886,6 +511,51 @@
       "properties": {
         "value": {
           "type": "string"
+        }
+      }
+    },
+    "protoSwapInfo": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "stateStr": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ethTxHash": {
+          "type": "string"
+        },
+        "neoTxHash": {
+          "type": "string"
+        },
+        "ethUserAddr": {
+          "type": "string"
+        },
+        "neoUserAddr": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "lastModifyTime": {
+          "type": "string"
+        }
+      }
+    },
+    "protoSwapInfos": {
+      "type": "object",
+      "properties": {
+        "infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protoSwapInfo"
+          }
         }
       }
     },
@@ -901,30 +571,6 @@
         }
       }
     },
-    "protolockerInfosStat": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "string",
-          "format": "int64"
-        },
-        "amount": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
-    "protolockerInfosStatResponse": {
-      "type": "object",
-      "properties": {
-        "result": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/protolockerInfosStat"
-          }
-        }
-      }
-    },
     "runtimeError": {
       "type": "object",
       "properties": {
@@ -936,31 +582,6 @@
           "format": "int32"
         },
         "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    },
-    "runtimeStreamError": {
-      "type": "object",
-      "properties": {
-        "grpc_code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "http_code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "http_status": {
           "type": "string"
         },
         "details": {
