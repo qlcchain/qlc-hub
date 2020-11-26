@@ -8,10 +8,13 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func NewDB(url string) (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(url), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(url), &gorm.Config{
+		Logger: logger.Discard,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -41,11 +44,15 @@ func Paginate(page, pageSize int) func(db *gorm.DB) *gorm.DB {
 
 func InsertSwapInfo(db *gorm.DB, record *types.SwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
+	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
+	record.NeoTxHash = util.AddHashPrefix(record.NeoTxHash)
 	return db.Create(record).Error
 }
 
 func UpdateSwapInfo(db *gorm.DB, record *types.SwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
+	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
+	record.NeoTxHash = util.AddHashPrefix(record.NeoTxHash)
 	return db.Save(record).Error
 }
 
@@ -97,7 +104,6 @@ func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, action typ
 			return nil, err
 		}
 	} else {
-		fmt.Println("====== ", len(addr))
 		if err := db.Where("neo_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
 			return result, nil
 		} else {

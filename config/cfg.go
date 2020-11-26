@@ -34,16 +34,16 @@ type Config struct {
 }
 
 type NEOCfg struct {
-	EndPoint         string `json:"endpoint" short:"n" long:"neoUrl" description:"NEO RPC endpoint" validate:"nonzero"`
-	Contract         string `json:"contract" long:"neoContract" description:"NEO staking contract address" validate:"nonzero"`
-	SignerAddress    string `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" validate:"nonzero"`
-	ConfirmedHeight  int    `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"0" validate:""`
-	DepositInterval  int64  `json:"neoDepositInterval" long:"neoDepositInterval" description:"Lock timeout interval height of deposit" default:"40" validate:"nonzero"`
-	WithdrawInterval int64  `json:"neoWithdrawInterval" long:"neoWithdrawInterval" description:"Lock timeout interval height of withdraw" default:"20" validate:"nonzero"`
+	EndPoints        []string `json:"neoUrls"  long:"neoUrls" description:"NEO RPC endpoint" validate:"min=1"`
+	Contract         string   `json:"contract" long:"neoContract" description:"NEO staking contract address" validate:"nonzero"`
+	SignerAddress    string   `json:"signerAddress" long:"neoSignerAddress" description:"NEO address to sign tx" validate:"nonzero"`
+	ConfirmedHeight  int      `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"1" validate:""`
+	DepositInterval  int64    `json:"neoDepositInterval" long:"neoDepositInterval" description:"Lock timeout interval height of deposit" default:"40" validate:"nonzero"`
+	WithdrawInterval int64    `json:"neoWithdrawInterval" long:"neoWithdrawInterval" description:"Lock timeout interval height of withdraw" default:"20" validate:"nonzero"`
 }
 
 type EthCfg struct {
-	EndPoint        string `json:"endpoint" short:"e" long:"ethereumUrl" description:"Ethereum RPC endpoint" validate:"nonzero"`
+	EndPoint        string `json:"endpoint" short:"e" long:"ethUrl" description:"Ethereum RPC endpoint" validate:"nonzero"`
 	Contract        string `json:"contract" long:"ethContract" description:"ethereum staking contract address"  validate:"nonzero"`
 	OwnerAddress    string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
 	ConfirmedHeight int64  `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"0" validate:""`

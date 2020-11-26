@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	url             = "http://seed3.ngd.network:20332"
-	contractAddress = "cedfd8f78bf46d28ac07b8e40b911199bd51951f"
+	url             = []string{"http://seed5.ngd.network:20332"}
+	contractAddress = "bfcbb52d61bc6d3ef2c8cf43f595f4bf5cac66c5"
 	contractLE, _   = util.Uint160DecodeStringLE(contractAddress)
 
 	//userWif            = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
@@ -48,20 +48,6 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 	t.Log(u.ToIndentString(r2))
 }
 
-func TestTransaction_RHashFromApplicationLog(t *testing.T) {
-	t.Skip()
-	c, err := NewTransaction(url, contractAddress, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	r3, d, err := c.lockerEventFromApplicationLog("4cee074f7e2aee185c68d7e3c42035b86a9f3df103396ee8da45cf469bf8a984")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(r3, d)
-}
-
 func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
 	t.Skip()
 	c, err := NewTransaction(url, contractAddress, nil)
@@ -84,20 +70,6 @@ func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
 	fmt.Println(r)
 }
 
-func TestTransaction_QlcBalance(t *testing.T) {
-	t.Skip()
-	c, err := NewTransaction(url, contractAddress, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	addr := "Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W"
-	r, err := c.Balance(addr, "b9d7ea3062e6aeeb3e8ad9548220c4ba1361d263")
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println(r)
-}
-
 func TestNewTransaction_PublicKey(t *testing.T) {
 	account, err := wallet.NewAccountFromWIF("L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR")
 	if err != nil {
@@ -114,4 +86,14 @@ func TestNewTransaction_PublicKey(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Println(hex.EncodeToString(pubk.Bytes()))
+}
+
+func TestTransaction_ValidateAddress(t *testing.T) {
+	c, err := NewTransaction(url, contractAddress, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.ValidateAddress("ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"); err != nil {
+		t.Fatal(err)
+	}
 }

@@ -67,7 +67,7 @@ func local_request_DepositAPI_PackNeoTransaction_0(ctx context.Context, marshale
 }
 
 func request_DepositAPI_SendNeoTransaction_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq NeoTransactionRequest
+	var protoReq SendNeoTxnRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -84,7 +84,7 @@ func request_DepositAPI_SendNeoTransaction_0(ctx context.Context, marshaler runt
 }
 
 func local_request_DepositAPI_SendNeoTransaction_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq NeoTransactionRequest
+	var protoReq SendNeoTxnRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -96,6 +96,40 @@ func local_request_DepositAPI_SendNeoTransaction_0(ctx context.Context, marshale
 	}
 
 	msg, err := server.SendNeoTransaction(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_DepositAPI_NeoTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.NeoTransactionConfirmed(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DepositAPI_NeoTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.NeoTransactionConfirmed(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -130,6 +164,40 @@ func local_request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler r
 	}
 
 	msg, err := server.GetEthOwnerSign(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.EthTransactionConfirmed(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.EthTransactionConfirmed(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -229,7 +297,7 @@ var (
 )
 
 func request_InfoAPI_SwapInfoByTxHash_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq String
+	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -245,7 +313,7 @@ func request_InfoAPI_SwapInfoByTxHash_0(ctx context.Context, marshaler runtime.M
 }
 
 func local_request_InfoAPI_SwapInfoByTxHash_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq String
+	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -377,6 +445,26 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
+	mux.Handle("POST", pattern_DepositAPI_NeoTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DepositAPI_NeoTransactionConfirmed_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DepositAPI_NeoTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_DepositAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -394,6 +482,34 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		}
 
 		forward_DepositAPI_GetEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+// RegisterWithdrawAPIHandlerServer registers the http handlers for service WithdrawAPI to "mux".
+// UnaryRPC     :call WithdrawAPIServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+func RegisterWithdrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WithdrawAPIServer) error {
+
+	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_WithdrawAPI_EthTransactionConfirmed_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_WithdrawAPI_EthTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -626,6 +742,26 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
+	mux.Handle("POST", pattern_DepositAPI_NeoTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DepositAPI_NeoTransactionConfirmed_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DepositAPI_NeoTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("POST", pattern_DepositAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -654,6 +790,8 @@ var (
 
 	pattern_DepositAPI_SendNeoTransaction_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "sendNeoTransaction"}, "", runtime.AssumeColonVerbOpt(true)))
 
+	pattern_DepositAPI_NeoTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "neoTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
+
 	pattern_DepositAPI_GetEthOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "getEthOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
@@ -662,7 +800,78 @@ var (
 
 	forward_DepositAPI_SendNeoTransaction_0 = runtime.ForwardResponseMessage
 
+	forward_DepositAPI_NeoTransactionConfirmed_0 = runtime.ForwardResponseMessage
+
 	forward_DepositAPI_GetEthOwnerSign_0 = runtime.ForwardResponseMessage
+)
+
+// RegisterWithdrawAPIHandlerFromEndpoint is same as RegisterWithdrawAPIHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterWithdrawAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.Dial(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+			return
+		}
+		go func() {
+			<-ctx.Done()
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+		}()
+	}()
+
+	return RegisterWithdrawAPIHandler(ctx, mux, conn)
+}
+
+// RegisterWithdrawAPIHandler registers the http handlers for service WithdrawAPI to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterWithdrawAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterWithdrawAPIHandlerClient(ctx, mux, NewWithdrawAPIClient(conn))
+}
+
+// RegisterWithdrawAPIHandlerClient registers the http handlers for service WithdrawAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "WithdrawAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "WithdrawAPIClient"
+// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
+// "WithdrawAPIClient" to call the correct interceptors.
+func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WithdrawAPIClient) error {
+
+	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_WithdrawAPI_EthTransactionConfirmed_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_WithdrawAPI_EthTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+var (
+	pattern_WithdrawAPI_EthTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "EthTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
+)
+
+var (
+	forward_WithdrawAPI_EthTransactionConfirmed_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterInfoAPIHandlerFromEndpoint is same as RegisterInfoAPIHandler but

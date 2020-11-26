@@ -65,20 +65,12 @@ func (t *Transaction) Mint(signerAccount string, amount *big.Int, neoHash string
 	return tx.Hash().Hex(), nil
 }
 
-func (t *Transaction) Burn(signerAccount string, amount *big.Int, neoHash string, signature string) (string, error) {
+func (t *Transaction) Burn(signerAccount string, nep5Addr string, amount *big.Int) (string, error) {
 	instance, opts, err := t.getTransactor(signerAccount)
 	if err != nil {
 		return "", err
 	}
-	nHashBytes, err := util.HexStringToBytes32(neoHash)
-	if err != nil {
-		return "", err
-	}
-	signBytes, err := hex.DecodeString(signature)
-	if err != nil {
-		return "", err
-	}
-	tx, err := instance.Mint(opts, amount, nHashBytes, signBytes)
+	tx, err := instance.Burn(opts, nep5Addr, amount)
 	if err != nil {
 		return "", err
 	}

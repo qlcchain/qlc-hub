@@ -3,9 +3,9 @@ package eth
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -33,7 +33,7 @@ func NewTransaction(client *ethclient.Client, contract string) *Transaction {
 	}
 }
 
-func (t *Transaction) TxVerifyAndConfirmed(txHash common.Hash, txHeight uint64, interval int64) error {
+func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint64, interval int64) error {
 	cTicker := time.NewTicker(5 * time.Second)
 	cTimer := time.NewTimer(300 * time.Second)
 	for {
@@ -114,23 +114,20 @@ func (t *Transaction) Client() *ethclient.Client {
 	return t.client
 }
 
-func (t *Transaction) SyncLog(txHash string) (int64, error) {
+func (t *Transaction) SyncBurnLog(txHash string) (*big.Int, common.Address, string, error) {
 	receipt, err := t.client.TransactionReceipt(context.Background(), common.HexToHash(txHash))
 	if err != nil {
-		return 0, fmt.Errorf("1, %s", err)
+		return nil, common.Address{}, "", fmt.Errorf("TransactionReceipt, %s [%s]", err, txHash)
 	}
 	filterer, err := NewQLCChainFilterer(t.contract, t.client)
 	if err != nil {
-		return 0, fmt.Errorf("11, %s", err)
+		return nil, common.Address{}, "", fmt.Errorf("NewQLCChainFilterer, %s [%s]", err, txHash)
 	}
 	for _, log := range receipt.Logs {
-		event, err := filterer.ParseMint(*log)
-
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println(event.Amount.String(), event.User.String(), hex.EncodeToString(event.Nep5Hash[:]))
+		event, err := filterer.ParseBurn(*log)
+		if err == nil && event != nil {
+			return event.Amount, event.User, event.Nep5Addr, nil
 		}
 	}
-	return 0, nil
+	return nil, common.Address{}, "", fmt.Errorf("burn log not found, [%s]", txHash)
 }

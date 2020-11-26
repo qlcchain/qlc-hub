@@ -6,8 +6,9 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
 message PackNeoTxRequest {
-    int64   amount             = 1;
-    string  erc20ReceiveAddr   = 2;
+    int64   amount              = 1;
+    string  nep5SenderAddr      = 2;
+    string  erc20ReceiverAddr   = 3;
 }
 
 message PackNeoTxResponse {
@@ -15,7 +16,7 @@ message PackNeoTxResponse {
     string  unsignedData     = 2;
 }
 
-message NeoTransactionRequest {
+message SendNeoTxnRequest {
     string  signature         = 1;
     string  txHash            = 2;
     string  publicKey         = 3;
@@ -23,9 +24,7 @@ message NeoTransactionRequest {
 }
 
 message EthOwnerSignRequest {
-    int64   amount           = 1;
-    string  receiveAddr      = 2;
-    string  neoTxHash       = 3;
+    string  neoTxHash       = 1;
 }
 
 service DepositAPI {
@@ -36,9 +35,16 @@ service DepositAPI {
         };
     }
 
-    rpc SendNeoTransaction(NeoTransactionRequest) returns (String){
+    rpc SendNeoTransaction(SendNeoTxnRequest) returns (Boolean){
         option (google.api.http) = {
           post: "/deposit/sendNeoTransaction"
+          body: "*"
+        };
+    }
+
+    rpc NeoTransactionConfirmed(Hash) returns (Boolean){
+        option (google.api.http) = {
+          post: "/deposit/neoTransactionConfirmed"
           body: "*"
         };
     }
@@ -52,17 +58,23 @@ service DepositAPI {
 }
 
 service WithdrawAPI {
-
+    rpc EthTransactionConfirmed(Hash) returns (String){
+        option (google.api.http) = {
+          post: "/withdraw/EthTransactionConfirmed"
+          body: "*"
+        };
+    }
 }
 
 message PingResponse {
    string ethContract   = 1;
    string ethOwner      = 2;
-   string neoContract   = 3;
-   string neoOwner      = 4;
-   string uniqueId      = 5;
-   int64  minDepositAmount  = 6;
-   int64  minWithdrawAmount = 7;
+   string ethUrl        = 3;
+   string neoContract   = 4;
+   string neoOwner      = 5;
+   string neoUrl        = 6;
+   int64  minDepositAmount  = 7;
+   int64  minWithdrawAmount = 8;
 }
 
 message Offset {
@@ -72,8 +84,8 @@ message Offset {
 
 message AddrAndOffset {
     string  address      = 1;
-    int32   page         = 2;
-    int32   pageSize     = 3;
+    int32   page         = 3;
+    int32   pageSize     = 4;
 }
 
 message StateAndOffset {
@@ -117,7 +129,7 @@ service InfoAPI {
        };
    }
 
-   rpc SwapInfoByTxHash(String) returns (SwapInfo){
+   rpc SwapInfoByTxHash(Hash) returns (SwapInfo){
        option (google.api.http) = {
          get: "/info/swapInfoByTxHash"
        };
@@ -149,6 +161,10 @@ message Boolean {
 
 message String {
     string value = 1;
+}
+
+message Hash {
+    string hash = 1;
 }
 
 message Map {

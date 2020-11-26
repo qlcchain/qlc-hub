@@ -16,15 +16,15 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
-func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
-	t.Skip()
-	ethTransaction, fn := getTransaction(t)
-	defer fn()
-
-	if err := ethTransaction.TxVerifyAndConfirmed("0xa3d90416aa98920602ddabdf9f5c3d69e13817aa121e6633f540e6475cf7b0b1", 0, 0); err != nil {
-		t.Fatal(err)
-	}
-}
+//func TestTransaction_TxVerifyAndConfirmed(t *testing.T) {
+//	t.Skip()
+//	ethTransaction, fn := getTransaction(t)
+//	defer fn()
+//
+//	if err := ethTransaction.WaitTxVerifyAndConfirmed("0xa3d90416aa98920602ddabdf9f5c3d69e13817aa121e6633f540e6475cf7b0b1", 0, 0); err != nil {
+//		t.Fatal(err)
+//	}
+//}
 
 func TestNewTransaction(t *testing.T) {
 	ethTransaction, fn := getTransaction(t)
@@ -113,6 +113,7 @@ func TestTransaction_Sign2(t *testing.T) {
 //}
 
 func TestTransaction_SyncLog(t *testing.T) {
+	t.Skip()
 	eClient, err := ethclient.Dial("wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57")
 	if err != nil {
 		t.Fatal(err)
@@ -120,8 +121,7 @@ func TestTransaction_SyncLog(t *testing.T) {
 	contract := "0x0bA64B339281D4F57DF8B535D61c6ceA71CCc956"
 	client := NewTransaction(eClient, contract)
 	hash := "0x98219592dfacebe8988a14a61a13294b1b01fe27dcf31704e29979ca1ec5739e"
-	if _, err := client.SyncLog(hash); err != nil {
+	if _, _, _, err := client.SyncBurnLog(hash); err != nil {
 		t.Fatal(err)
 	}
-
 }

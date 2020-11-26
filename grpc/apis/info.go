@@ -38,7 +38,16 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e
 }
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
-	panic("implement me")
+	return &pb.PingResponse{
+		EthContract:       i.cfg.EthCfg.Contract,
+		EthOwner:          i.cfg.EthCfg.OwnerAddress,
+		EthUrl:            i.cfg.EthCfg.EndPoint,
+		NeoContract:       i.cfg.NEOCfg.Contract,
+		NeoOwner:          i.cfg.NEOCfg.SignerAddress,
+		NeoUrl:            i.neo.ClientEndpoint(),
+		MinDepositAmount:  i.cfg.MinDepositAmount,
+		MinWithdrawAmount: i.cfg.MinWithdrawAmount,
+	}, nil
 }
 
 func (i *InfoAPI) SwapInfoList(ctx context.Context, offset *pb.Offset) (*pb.SwapInfos, error) {
@@ -78,8 +87,8 @@ func (i *InfoAPI) SwapInfosByAddress(ctx context.Context, offset *pb.AddrAndOffs
 	}
 }
 
-func (i *InfoAPI) SwapInfoByTxHash(ctx context.Context, s *pb.String) (*pb.SwapInfo, error) {
-	hash := s.GetValue()
+func (i *InfoAPI) SwapInfoByTxHash(ctx context.Context, h *pb.Hash) (*pb.SwapInfo, error) {
+	hash := h.GetHash()
 	if !(len(hash) == 66 || len(hash) == 64) {
 		return nil, fmt.Errorf("invalid hash: %s", hash)
 	}

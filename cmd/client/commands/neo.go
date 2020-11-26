@@ -1,13 +1,11 @@
 package commands
 
 import (
-	"encoding/hex"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/abiosoft/ishell"
-	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 func addNeoCmd(shell *ishell.Shell) {
@@ -68,33 +66,30 @@ func waitingForNeoBlocksConfirmed(n uint32) {
 }
 
 func nNeo2Eth() string {
+	amount := 22000000
+	tx, err := neoTrasaction.CreateLockTransaction(neoUserAddr, ethUserAddress, neoUserWif, amount)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("lock tx: ", tx)
+	return tx
+}
+
+func nNeo2EthByHub() string {
 	log.Println("====neo2eth====")
-	privateKey := neoUserAccount.PrivateKey()
-	publicKey := hex.EncodeToString(privateKey.PublicKey().Bytes())
-
-	amount := 220000000
-	rOrigin, rHash := hubUtil.Sha256Hash()
-	log.Println("hash: ", rOrigin, "==>", rHash)
-	rawTx, data, err := neoTrasaction.UnsignedLockTransaction(neoUserAddr, neoAssetAddr, rHash, amount)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("rawTx, ", rawTx)
-	log.Println("unsigned data: ", data)
-
-	dataBytes, err := hex.DecodeString(data)
-	if err != nil {
-		log.Fatal(err)
-	}
-	sign := privateKey.Sign(dataBytes)
-	tx, err := neoTrasaction.SendLockTransaction(rawTx, hex.EncodeToString(sign), publicKey, neoUserAddr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("send tx: ", tx)
-	return rHash
+	return ""
 }
 
 func nEth2Neo() string {
-	return ""
+	amount := 20000000
+
+	neoUserAddr := "AJ5huRnZJj3DZSxnJuZhAMLW1wfc8oMztj"
+	ethUserAddress = "0x2e1ac6242bb084029a9eb29dfb083757d27fced4"
+	ethTxid := "0x51a9de5d8bc002325c0d616ef172ba5c1786580c7837e47606620a920e2eea06"
+	tx, err := neoTrasaction.CreateUnLockTransaction(ethTxid, neoUserAddr, ethUserAddress, amount, neoOwnerAddress)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println("unlock tx: ", tx)
+	return tx
 }

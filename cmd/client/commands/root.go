@@ -20,18 +20,19 @@ var (
 	hubUrl string
 
 	// neo setting
-	neoUrl            = "http://seed3.ngd.network:20332"
-	neoContract       = "cedfd8f78bf46d28ac07b8e40b911199bd51951f"
+	neoUrl            = []string{"http://seed5.ngd.network:20332"}
+	neoContract       = "bfcbb52d61bc6d3ef2c8cf43f595f4bf5cac66c5"
 	neoContractLE     util.Uint160
-	neoAssetAddr      = "Ac2EMY7wCV9Hn9LR1wMWbjgGCqtVofmd6W"
-	neoUserAccount, _ = wallet.NewAccountFromWIF("L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR")
+	neoOwnerAddress   = "ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ"
+	neoUserWif        = "L2Dse3swNDZkwq2fkP5ctDMWB7x4kbvpkhzMJQ7oY9J2WBCATokR"
+	neoUserAccount, _ = wallet.NewAccountFromWIF(neoUserWif)
 	neoUserAddr       = neoUserAccount.Address
 	//neoUserAddr        = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
 	neoConfirmedHeight int
 
 	// eth setting
 	ethUrl             = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
-	ethContract        = "0x0bA64B339281D4F57DF8B535D61c6ceA71CCc956"
+	ethContract        = "0x9d3358268B7Cf500766218f152986A5f4Ff4d9CC"
 	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
 	ethUserPrivate     = "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
 	ethUserAddress     = "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
@@ -79,8 +80,8 @@ func initParams(osArgs []string) {
 	if neoTrasaction, err = neo.NewTransaction(neoUrl, neoContract, singerClient); err != nil {
 		log.Fatal(err)
 	}
-	if err := neoTrasaction.Client().Ping(); err != nil {
-		log.Fatal(err)
+	if c := neoTrasaction.Client(); c == nil {
+		log.Fatal("invalid neo endpoints")
 	}
 
 	if eClient, err := ethclient.Dial(ethUrl); err != nil {
@@ -93,8 +94,10 @@ func initParams(osArgs []string) {
 	log.Println("hub endpoint: ", hubUrl)
 	log.Println("neo contract: ", neoContract)
 	log.Println("neo endpoint: ", neoUrl)
+	log.Println("neo user address: ", neoUserAddr)
 	log.Println("eth contract: ", ethContract)
 	log.Println("eth endpoint: ", ethUrl)
+	log.Println("eth user address: ", ethUserAddress)
 }
 
 func Execute(osArgs []string) {

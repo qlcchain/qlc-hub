@@ -115,13 +115,14 @@ func (g *Server) checkBaseInfo() error {
 	g.eth = eTransaction
 	g.logger.Info("eth client connected successfully")
 
-	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoint, g.cfg.NEOCfg.Contract, signer)
+	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoints, g.cfg.NEOCfg.Contract, signer)
 	if err != nil {
 		return fmt.Errorf("neo transaction: %s", err)
 	}
-	if err := nTransaction.Client().Ping(); err != nil {
+	if c := nTransaction.Client(); c == nil {
 		return fmt.Errorf("neo node connect timeout: %s", err)
 	}
+
 	g.neo = nTransaction
 	g.logger.Info("neo client connected successfully")
 
@@ -200,6 +201,9 @@ func (g *Server) registerApi() error {
 
 func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
 	if err := pb.RegisterDepositAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := pb.RegisterWithdrawAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := pb.RegisterInfoAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {

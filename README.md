@@ -18,7 +18,6 @@ Application Options:
       --neoContract=         NEO staking contract address
       --neoAssetId=          qlc token asset id
       --neoSignerAddress=    NEO address to sign tx
-      --neoAssetsAddress=    NEO address to keep assets
       --neoConfirmedHeight=  Neo transaction Confirmed Height (default: 0)
       --neoDepositInterval=  Lock timeout interval height of deposit (default: 40)
       --neoWithdrawInterval= Lock timeout interval height of withdraw (default: 20)
