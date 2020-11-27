@@ -77,7 +77,7 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 	neoTxHash := request.GetTxHash()
 	signature := request.GetSignature()
 	publicKey := request.GetPublicKey()
-	address := request.GetAddress()
+	address := request.GetNep5SenderAddr()
 	if neoTxHash == "" || signature == "" || publicKey == "" || address == "" {
 		d.logger.Error("transaction invalid params")
 		return nil, errors.New("invalid params")
@@ -121,7 +121,7 @@ func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string) error {
 	if err != nil {
 		return fmt.Errorf("decode hash: %s", err)
 	}
-	neoInfo, err := d.neo.QuerySwapInfo(hash.StringBE())
+	neoInfo, err := d.neo.QueryLockedInfo(hash.StringBE())
 	if err != nil {
 		return err
 	}
@@ -164,13 +164,17 @@ func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.Ha
 	}, nil
 }
 
-func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.EthOwnerSignRequest) (*proto.String, error) {
+func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (*proto.String, error) {
 	d.logger.Infof("call deposit GetEthOwnerSign: %s", request.String())
-	neoTxHash := request.GetNeoTxHash()
+	neoTxHash := request.GetHash()
+	if neoTxHash == "" {
+		d.logger.Error("transaction invalid params")
+		return nil, errors.New("invalid params")
+	}
 
 	swapInfo, err := db.GetSwapInfoByTxHash(d.store, neoTxHash, types.NEO)
 	if err != nil {
-		d.logger.Errorf("neo not locked, neo tx[%s]", neoTxHash)
+		d.logger.Errorf("neo not locked, neo[%s]", neoTxHash)
 		return nil, fmt.Errorf("neo not locked")
 	}
 	if swapInfo.State == types.DepositDone {

@@ -135,7 +135,7 @@ func local_request_DepositAPI_NeoTransactionConfirmed_0(ctx context.Context, mar
 }
 
 func request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq EthOwnerSignRequest
+	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -152,7 +152,7 @@ func request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime
 }
 
 func local_request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq EthOwnerSignRequest
+	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -396,6 +396,42 @@ func local_request_InfoAPI_SwapAmountByState_0(ctx context.Context, marshaler ru
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.SwapAmountByState(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_DebugAPI_SignData_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_DebugAPI_SignData_0(ctx context.Context, marshaler runtime.Marshaler, client DebugAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq String
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DebugAPI_SignData_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.SignData(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DebugAPI_SignData_0(ctx context.Context, marshaler runtime.Marshaler, server DebugAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq String
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DebugAPI_SignData_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.SignData(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -658,6 +694,34 @@ func RegisterInfoAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 		}
 
 		forward_InfoAPI_SwapAmountByState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+// RegisterDebugAPIHandlerServer registers the http handlers for service DebugAPI to "mux".
+// UnaryRPC     :call DebugAPIServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+func RegisterDebugAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DebugAPIServer) error {
+
+	mux.Handle("GET", pattern_DebugAPI_SignData_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DebugAPI_SignData_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_SignData_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1085,4 +1149,73 @@ var (
 	forward_InfoAPI_SwapCountByState_0 = runtime.ForwardResponseMessage
 
 	forward_InfoAPI_SwapAmountByState_0 = runtime.ForwardResponseMessage
+)
+
+// RegisterDebugAPIHandlerFromEndpoint is same as RegisterDebugAPIHandler but
+// automatically dials to "endpoint" and closes the connection when "ctx" gets done.
+func RegisterDebugAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+	conn, err := grpc.Dial(endpoint, opts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+			return
+		}
+		go func() {
+			<-ctx.Done()
+			if cerr := conn.Close(); cerr != nil {
+				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+			}
+		}()
+	}()
+
+	return RegisterDebugAPIHandler(ctx, mux, conn)
+}
+
+// RegisterDebugAPIHandler registers the http handlers for service DebugAPI to "mux".
+// The handlers forward requests to the grpc endpoint over "conn".
+func RegisterDebugAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterDebugAPIHandlerClient(ctx, mux, NewDebugAPIClient(conn))
+}
+
+// RegisterDebugAPIHandlerClient registers the http handlers for service DebugAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "DebugAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "DebugAPIClient"
+// doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
+// "DebugAPIClient" to call the correct interceptors.
+func RegisterDebugAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client DebugAPIClient) error {
+
+	mux.Handle("GET", pattern_DebugAPI_SignData_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DebugAPI_SignData_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DebugAPI_SignData_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
+var (
+	pattern_DebugAPI_SignData_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"debug", "signData"}, "", runtime.AssumeColonVerbOpt(true)))
+)
+
+var (
+	forward_DebugAPI_SignData_0 = runtime.ForwardResponseMessage
 )

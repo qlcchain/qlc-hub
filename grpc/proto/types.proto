@@ -20,11 +20,7 @@ message SendNeoTxnRequest {
     string  signature         = 1;
     string  txHash            = 2;
     string  publicKey         = 3;
-    string  address           = 4;
-}
-
-message EthOwnerSignRequest {
-    string  neoTxHash       = 1;
+    string  nep5SenderAddr    = 4;
 }
 
 service DepositAPI {
@@ -49,7 +45,7 @@ service DepositAPI {
         };
     }
 
-    rpc GetEthOwnerSign(EthOwnerSignRequest) returns (String){
+    rpc GetEthOwnerSign(Hash) returns (String){
         option (google.api.http) = {
           post: "/deposit/getEthOwnerSign"
           body: "*"
@@ -152,6 +148,19 @@ service InfoAPI {
         get: "/info/swapAmountByState"
       };
    }
+}
+
+message SignDataResponse {
+    bytes sign = 1;
+    bytes verifyData = 2;
+}
+
+service DebugAPI {
+    rpc SignData(String) returns (SignDataResponse){
+        option (google.api.http) = {
+          get: "/debug/signData"
+        };
+    }
 }
 
 

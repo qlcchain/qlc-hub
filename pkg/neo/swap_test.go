@@ -41,7 +41,7 @@ func TestTransaction_QuerySwapInfo(t *testing.T) {
 	fmt.Println(u.StringLE())
 	fmt.Println(u.StringBE())
 
-	s, err := c.QuerySwapInfo(u.StringBE())
+	s, err := c.QueryLockedInfo(u.StringBE())
 	if err != nil {
 		t.Fatal(err)
 	}

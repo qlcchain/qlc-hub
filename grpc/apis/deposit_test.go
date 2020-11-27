@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
@@ -45,4 +46,11 @@ func signData(amount *big.Int, userAddr, priKey string, nHash string) (string, e
 	} else {
 		return "", fmt.Errorf("invalid signature 'v' value: %s", hex.EncodeToString(sig))
 	}
+}
+
+func TestNewDepositAPI_Time(t *testing.T) {
+	start := time.Now().Unix()
+	time.Sleep(5345 * time.Millisecond)
+	end := time.Now().Unix()
+	fmt.Println(end - start)
 }

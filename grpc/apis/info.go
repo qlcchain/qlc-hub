@@ -27,7 +27,7 @@ type InfoAPI struct {
 }
 
 func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *eth.Transaction, s *gorm.DB) *InfoAPI {
-	return &InfoAPI{
+	api := &InfoAPI{
 		ctx:    ctx,
 		cfg:    cfg,
 		neo:    neo,
@@ -35,6 +35,8 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e
 		store:  s,
 		logger: log.NewLogger("api/info"),
 	}
+	go api.correctSwapState()
+	return api
 }
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
@@ -43,7 +45,7 @@ func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingRespons
 		EthOwner:          i.cfg.EthCfg.OwnerAddress,
 		EthUrl:            i.cfg.EthCfg.EndPoint,
 		NeoContract:       i.cfg.NEOCfg.Contract,
-		NeoOwner:          i.cfg.NEOCfg.SignerAddress,
+		NeoOwner:          i.cfg.NEOCfg.OwnerAddress,
 		NeoUrl:            i.neo.ClientEndpoint(),
 		MinDepositAmount:  i.cfg.MinDepositAmount,
 		MinWithdrawAmount: i.cfg.MinWithdrawAmount,
@@ -102,6 +104,39 @@ func (i *InfoAPI) SwapInfoByTxHash(ctx context.Context, h *pb.Hash) (*pb.SwapInf
 		}
 	} else {
 		return toSwapInfo(info), nil
+	}
+}
+
+func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
+	vTicker := time.NewTicker(5 * time.Minute)
+	for {
+		select {
+		case <-vTicker.C:
+			infos, err := db.GetSwapInfos(i.store, 0, 0)
+			if err != nil {
+				i.logger.Error(err)
+				continue
+			}
+			for _, info := range infos {
+				if info.State == types.WithDrawPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					lockedInfo, err := i.neo.QueryLockedInfo(info.EthTxHash)
+					if err == nil && lockedInfo.Amount == info.Amount {
+						info.State = types.WithDrawDone
+						info.NeoTxHash = lockedInfo.Txid
+						db.UpdateSwapInfo(i.store, info)
+						i.logger.Infof("correct withdraw swap state: eth[%s]", info.EthTxHash)
+					}
+				}
+				if info.State == types.DepositPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					amount, err := i.eth.GetLockedAmountByNeoTxHash(info.NeoTxHash)
+					if err == nil && amount.Int64() == info.Amount {
+						info.State = types.DepositDone //can not get tx hash in eth contract
+						db.UpdateSwapInfo(i.store, info)
+						i.logger.Infof("correct deposit swap state: neo[%s]", info.NeoTxHash)
+					}
+				}
+			}
+		}
 	}
 }
 

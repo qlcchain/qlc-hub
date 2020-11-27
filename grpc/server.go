@@ -196,6 +196,7 @@ func (g *Server) registerApi() error {
 	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.eth, g.signer, g.store))
 	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
+	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.neo, g.store))
 	return nil
 }
 
@@ -209,22 +210,26 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 	if err := pb.RegisterInfoAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
+	if err := pb.RegisterDebugAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
+		return err
+	}
 	return nil
 }
 
 func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 	authorizer := jwt.DefaultAuthorizer(manager, map[string][]string{
-		"/proto.DepositAPI/Lock":                    jwt.Both,
-		"/proto.DepositAPI/Fetch":                   jwt.Both,
-		"/proto.WithdrawAPI/Lock":                   jwt.Both,
-		"/proto.WithdrawAPI/Claim":                  jwt.Both,
-		"/proto.EventAPI/Event":                     jwt.Both,
-		"/proto.InfoAPI/Ping":                       jwt.Both,
-		"/proto.DebugAPI/HashTimer":                 jwt.Both,
-		"/proto.DebugAPI/LockerInfosCount":          jwt.Both,
-		"/proto.DebugAPI/InterruptLocker":           jwt.Admin,
-		"/proto.DebugAPI/DeleteLockerInfo":          jwt.Admin,
-		"/proto.DebugAPI/LockerInfosByDeletedState": jwt.Admin,
+		"/proto.DepositAPI/PackNeoTransaction":       jwt.Both,
+		"/proto.DepositAPI/SendNeoTransaction":       jwt.Both,
+		"/proto.DepositAPI/NeoTransactionConfirmed":  jwt.Both,
+		"/proto.DepositAPI/GetEthOwnerSign":          jwt.Both,
+		"/proto.WithdrawAPI/EthTransactionConfirmed": jwt.Both,
+		"/proto.InfoAPI/Ping":                        jwt.Both,
+		"/proto.InfoAPI/SwapInfoList":                jwt.Both,
+		"/proto.InfoAPI/SwapInfosByAddress":          jwt.Both,
+		"/proto.InfoAPI/SwapInfoByTxHash":            jwt.Both,
+		"/proto.InfoAPI/SwapInfosByState":            jwt.Both,
+		"/proto.InfoAPI/SwapCountByState":            jwt.Both,
+		"/proto.InfoAPI/SwapAmountByState":           jwt.Both,
 	})
 	return authorizer
 }

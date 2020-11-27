@@ -74,10 +74,8 @@ func hNeo2EthByNeoTx() {
 
 	// GetEthOwnerSign
 	ethParas := fmt.Sprintf(`{
-		"amount": %d,
-		"receiveAddr": "%s",
-		"neoTxHash":"%s"
-	}`, amount, ethUserAddress, neoTxHash)
+		"hash":"%s"
+	}`, neoTxHash)
 	r, err = post(ethParas, fmt.Sprintf("%s/deposit/getEthOwnerSign", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
@@ -123,7 +121,7 @@ func hNeo2Eth() {
 	sendParas := fmt.Sprintf(`{
 		"signature": "%s",
 		"publicKey": "%s",
-		"address":"%s",
+		"nep5SenderAddr":"%s",
 		"txHash":"%s"
 	}`, hex.EncodeToString(sign), hex.EncodeToString(neoUserAccount.PrivateKey().PublicKey().Bytes()), neoUserAddr, neoTxHash)
 	r, err = post(sendParas, fmt.Sprintf("%s/deposit/sendNeoTransaction", hubUrl))
@@ -138,10 +136,8 @@ func hNeo2Eth() {
 
 	// GetEthOwnerSign
 	ethParas := fmt.Sprintf(`{
-		"amount": %d,
-		"receiveAddr": "%s",
-		"neoTxHash":"%s"
-	}`, amount, ethUserAddress, neoTxHash)
+		"hash":"%s"
+	}`, neoTxHash)
 	r, err = post(ethParas, fmt.Sprintf("%s/deposit/getEthOwnerSign", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
