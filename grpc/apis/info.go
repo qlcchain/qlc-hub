@@ -106,39 +106,6 @@ func (i *InfoAPI) SwapInfoByTxHash(ctx context.Context, h *pb.Hash) (*pb.SwapInf
 	}
 }
 
-func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
-	vTicker := time.NewTicker(5 * time.Minute)
-	for {
-		select {
-		case <-vTicker.C:
-			infos, err := db.GetSwapInfos(i.store, 0, 0)
-			if err != nil {
-				i.logger.Error(err)
-				continue
-			}
-			for _, info := range infos {
-				if info.State == types.WithDrawPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
-					lockedInfo, err := i.neo.QueryLockedInfo(info.EthTxHash)
-					if err == nil && lockedInfo.Amount == info.Amount {
-						info.State = types.WithDrawDone
-						info.NeoTxHash = lockedInfo.Txid
-						db.UpdateSwapInfo(i.store, info)
-						i.logger.Infof("correct withdraw swap state: eth[%s]", info.EthTxHash)
-					}
-				}
-				if info.State == types.DepositPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
-					amount, err := i.eth.GetLockedAmountByNeoTxHash(info.NeoTxHash)
-					if err == nil && amount.Int64() == info.Amount {
-						info.State = types.DepositDone //can not get tx hash in eth contract
-						db.UpdateSwapInfo(i.store, info)
-						i.logger.Infof("correct deposit swap state: neo[%s]", info.NeoTxHash)
-					}
-				}
-			}
-		}
-	}
-}
-
 func (i *InfoAPI) SwapInfosByState(ctx context.Context, offset *pb.StateAndOffset) (*pb.SwapInfos, error) {
 	if types.StringToSwapState(offset.GetState()) == types.Invalid {
 		return nil, fmt.Errorf("invalid state: %s", offset.GetState())
@@ -283,5 +250,39 @@ func toSwapInfo(info *types.SwapInfo) *pb.SwapInfo {
 		NeoUserAddr:    info.NeoUserAddr,
 		StartTime:      time.Unix(info.StartTime, 0).Format(time.RFC3339),
 		LastModifyTime: time.Unix(info.LastModifyTime, 0).Format(time.RFC3339),
+	}
+}
+
+func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
+	vTicker := time.NewTicker(5 * time.Minute)
+	for {
+		select {
+		case <-vTicker.C:
+			infos, err := db.GetSwapInfos(i.store, 0, 0)
+			if err != nil {
+				i.logger.Error(err)
+				continue
+			}
+			for _, info := range infos {
+				if info.State == types.WithDrawPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					lockedInfo, err := i.neo.QueryLockedInfo(info.EthTxHash)
+					if err == nil && lockedInfo.Amount == info.Amount {
+						info.State = types.WithDrawDone
+						info.NeoTxHash = lockedInfo.Txid
+						db.UpdateSwapInfo(i.store, info)
+						i.logger.Infof("correct withdraw swap state: eth[%s]", info.EthTxHash)
+					}
+				}
+				if info.State == types.DepositPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					amount, err := i.eth.GetLockedAmountByNeoTxHash(info.NeoTxHash)
+					fmt.Println(err)
+					if err == nil && amount.Int64() == info.Amount {
+						info.State = types.DepositDone //can not get tx hash in eth contract
+						db.UpdateSwapInfo(i.store, info)
+						i.logger.Infof("correct deposit swap state: neo[%s]", info.NeoTxHash)
+					}
+				}
+			}
+		}
 	}
 }

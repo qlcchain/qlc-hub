@@ -139,7 +139,6 @@ func (w *WithdrawAPI) toConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uin
 	if _, err := w.neo.WaitTxVerifyAndConfirmed(neoTx, w.cfg.NEOCfg.ConfirmedHeight); err != nil {
 		return fmt.Errorf("tx confirmed: %s", err)
 	}
-
 	if _, err := w.neo.QueryLockedInfo(ethTxHash.String()); err != nil {
 		return fmt.Errorf("cannot get swap info: %s", err)
 	}

@@ -49,7 +49,7 @@ func hNeo2EthByNeoTxCmd(parentCmd *ishell.Cmd) {
 }
 
 func hNeo2EthByNeoTx() {
-	amount := 50000000
+	amount := 500000000
 
 	//ethUserAddress = "0x2e1ac6242bb084029a9eb29dfb083757d27fced4"
 	fmt.Println(ethUserAddress)

@@ -83,7 +83,7 @@ func (t *Transaction) GetLockedAmountByNeoTxHash(neoHash string) (*big.Int, erro
 	if err != nil {
 		return nil, err
 	}
-	nHashBytes, err := util.HexStringToBytes32(neoHash)
+	nHashBytes, err := util.HexStringToBytes32(util.RemoveHexPrefix(neoHash))
 	if err != nil {
 		return nil, err
 	}
