@@ -340,7 +340,7 @@ func (w witnessWrapper) getScriptHash() *util.Uint160 {
 	return w.ScriptHash
 }
 
-type SwapInfo struct {
+type LockedInfo struct {
 	FromAddress    string `json:"fromAddress"`
 	ToAddress      string `json:"toAddress"`
 	Txid           string `json:"txid"`
@@ -351,12 +351,12 @@ type SwapInfo struct {
 	Typ            int    `json:"typ"`
 }
 
-func (n *Transaction) QuerySwapInfo(hash string) (*SwapInfo, error) {
+func (n *Transaction) QueryLockedInfo(hash string) (*LockedInfo, error) {
 	data, err := n.QuerySwapData(hubUtil.RemoveHexPrefix(hash))
 	if err != nil {
-		return nil, fmt.Errorf("swap key: %s, %s", err, hash)
+		return nil, fmt.Errorf("%s, %s", err, hash)
 	}
-	info := new(SwapInfo)
+	info := new(LockedInfo)
 	tt, err := json.Marshal(data)
 	if err != nil {
 		return nil, err

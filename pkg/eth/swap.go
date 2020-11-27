@@ -41,7 +41,7 @@ func (t *Transaction) getTransactOpts(signerAddr string) (*bind.TransactOpts, er
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(0)      // in wei
 	auth.GasLimit = uint64(8000000) // in units
-	auth.GasPrice = suggestPrice
+	auth.GasPrice = big.NewInt(0).Mul(suggestPrice, big.NewInt(10))
 	return auth, nil
 }
 
@@ -75,4 +75,16 @@ func (t *Transaction) Burn(signerAccount string, nep5Addr string, amount *big.In
 		return "", err
 	}
 	return tx.Hash().Hex(), nil
+}
+
+func (t *Transaction) GetLockedAmountByNeoTxHash(neoHash string) (*big.Int, error) {
+	instance, err := NewQLCChainCaller(t.contract, t.client)
+	if err != nil {
+		return nil, err
+	}
+	nHashBytes, err := util.HexStringToBytes32(neoHash)
+	if err != nil {
+		return nil, err
+	}
+	return instance.LockedAmount(&bind.CallOpts{}, nHashBytes)
 }

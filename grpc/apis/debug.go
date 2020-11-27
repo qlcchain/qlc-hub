@@ -32,6 +32,13 @@ func NewDebugAPI(ctx context.Context, cfg *config.Config, eth *eth.Transaction, 
 	}
 }
 
-func (d *DebugAPI) SignData(ctx context.Context, s *pb.String) (*pb.SignResponse, error) {
-	return d.neo.SignData(d.cfg.NEOCfg.SignerAddress, s.GetValue())
+func (d *DebugAPI) SignData(ctx context.Context, s *pb.String) (*pb.SignDataResponse, error) {
+	r, err := d.neo.SignData(d.cfg.NEOCfg.OwnerAddress, s.GetValue())
+	if err != nil {
+		return nil, err
+	}
+	return &pb.SignDataResponse{
+		Sign:       r.Sign,
+		VerifyData: r.VerifyData,
+	}, nil
 }

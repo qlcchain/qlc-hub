@@ -41,7 +41,7 @@ func TestNeoTransaction_QuerySwapInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(u.ToIndentString(r))
-	r2, err := c.QuerySwapInfo(rHash)
+	r2, err := c.QueryLockedInfo(rHash)
 	if err != nil {
 		t.Fatal(err)
 	}

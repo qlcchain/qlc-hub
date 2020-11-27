@@ -11,6 +11,36 @@
     "application/json"
   ],
   "paths": {
+    "/debug/signData": {
+      "get": {
+        "operationId": "DebugAPI_SignData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoSignDataResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "value",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DebugAPI"
+        ]
+      }
+    },
     "/deposit/getEthOwnerSign": {
       "post": {
         "operationId": "DepositAPI_GetEthOwnerSign",
@@ -34,7 +64,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoEthOwnerSignRequest"
+              "$ref": "#/definitions/protoHash"
             }
           }
         ],
@@ -404,14 +434,6 @@
         }
       }
     },
-    "protoEthOwnerSignRequest": {
-      "type": "object",
-      "properties": {
-        "neoTxHash": {
-          "type": "string"
-        }
-      }
-    },
     "protoHash": {
       "type": "object",
       "properties": {
@@ -501,8 +523,21 @@
         "publicKey": {
           "type": "string"
         },
-        "address": {
+        "nep5SenderAddr": {
           "type": "string"
+        }
+      }
+    },
+    "protoSignDataResponse": {
+      "type": "object",
+      "properties": {
+        "sign": {
+          "type": "string",
+          "format": "byte"
+        },
+        "verifyData": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

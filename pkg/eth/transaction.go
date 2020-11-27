@@ -84,7 +84,7 @@ func (t *Transaction) HasConfirmedBlocksHeight(startHeight int64, interval int64
 	if err != nil {
 		return false, 0
 	}
-	return bestHeight-startHeight > interval, bestHeight
+	return bestHeight-startHeight >= interval, bestHeight
 }
 
 func (t *Transaction) EthBalance(addr string) (int64, error) {
