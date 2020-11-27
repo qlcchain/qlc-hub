@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -82,9 +83,17 @@ func (t *Transaction) GetLockedAmountByNeoTxHash(neoHash string) (*big.Int, erro
 	if err != nil {
 		return nil, err
 	}
-	nHashBytes, err := util.HexStringToBytes32(neoHash)
+	nHashBytes, err := util.HexStringToBytes32(util.RemoveHexPrefix(neoHash))
 	if err != nil {
 		return nil, err
 	}
 	return instance.LockedAmount(&bind.CallOpts{}, nHashBytes)
+}
+
+func (t *Transaction) BalanceOf(address string) (*big.Int, error) {
+	instance, err := NewQLCChainCaller(t.contract, t.client)
+	if err != nil {
+		return nil, err
+	}
+	return instance.BalanceOf(&bind.CallOpts{}, common.HexToAddress(address))
 }

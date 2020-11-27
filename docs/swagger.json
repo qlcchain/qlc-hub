@@ -191,6 +191,36 @@
         ]
       }
     },
+    "/info/swapAmountByAddress": {
+      "get": {
+        "operationId": "InfoAPI_SwapAmountByAddress",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoAmountByAddressResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
     "/info/swapAmountByState": {
       "get": {
         "operationId": "InfoAPI_SwapAmountByState",
@@ -391,7 +421,7 @@
         ]
       }
     },
-    "/withdraw/EthTransactionConfirmed": {
+    "/withdraw/ethTransactionConfirmed": {
       "post": {
         "operationId": "WithdrawAPI_EthTransactionConfirmed",
         "responses": {
@@ -425,6 +455,34 @@
     }
   },
   "definitions": {
+    "protoAmountByAddressResponse": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "string",
+          "format": "int64"
+        },
+        "pledgeCount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "pledgeAmount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "withdrawCount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "withdrawAmount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "protoBoolean": {
       "type": "object",
       "properties": {
@@ -500,14 +558,6 @@
         },
         "neoUrl": {
           "type": "string"
-        },
-        "minDepositAmount": {
-          "type": "string",
-          "format": "int64"
-        },
-        "minWithdrawAmount": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },

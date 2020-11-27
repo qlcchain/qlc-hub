@@ -32,7 +32,7 @@ func hEth2NeoPendingCmd(parentCmd *ishell.Cmd) {
 }
 
 func hEth2Neo() {
-	amount := 10000000
+	amount := 100000000
 	ethTx, err := ethTransaction.Burn(ethUserPrivate, neoUserAddr, big.NewInt(int64(amount)))
 	if err != nil {
 		log.Fatal(err)
@@ -51,7 +51,7 @@ func hEth2NeoPending() {
 	sendParas := fmt.Sprintf(`{
 		"hash": "%s",
 	}`, hash)
-	r, err := post(sendParas, fmt.Sprintf("%s/withdraw/sendEthTransaction", hubUrl))
+	r, err := post(sendParas, fmt.Sprintf("%s/withdraw/ethTransactionConfirmed", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}

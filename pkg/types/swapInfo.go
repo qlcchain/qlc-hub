@@ -1,6 +1,10 @@
 package types
 
-import "gorm.io/gorm"
+import (
+	"encoding/json"
+
+	"gorm.io/gorm"
+)
 
 type SwapInfo struct {
 	gorm.Model
@@ -13,6 +17,11 @@ type SwapInfo struct {
 	StartTime      int64     `msg:"startTime" json:"startTime"`
 	LastModifyTime int64     `msg:"lastModifyTime" json:"lastModifyTime"`
 	//Interruption   bool      `msg:"interruption" json:"interruption"`
+}
+
+func (s *SwapInfo) String() string {
+	bs, _ := json.Marshal(s)
+	return string(bs)
 }
 
 //

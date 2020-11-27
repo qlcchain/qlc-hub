@@ -2,6 +2,7 @@ package apis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -41,14 +42,12 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		EthContract:       i.cfg.EthCfg.Contract,
-		EthOwner:          i.cfg.EthCfg.OwnerAddress,
-		EthUrl:            i.cfg.EthCfg.EndPoint,
-		NeoContract:       i.cfg.NEOCfg.Contract,
-		NeoOwner:          i.cfg.NEOCfg.OwnerAddress,
-		NeoUrl:            i.neo.ClientEndpoint(),
-		MinDepositAmount:  i.cfg.MinDepositAmount,
-		MinWithdrawAmount: i.cfg.MinWithdrawAmount,
+		EthContract: i.cfg.EthCfg.Contract,
+		EthOwner:    i.cfg.EthCfg.OwnerAddress,
+		EthUrl:      i.cfg.EthCfg.EndPoint,
+		NeoContract: i.cfg.NEOCfg.Contract,
+		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
+		NeoUrl:      i.neo.ClientEndpoint(),
 	}, nil
 }
 
@@ -107,39 +106,6 @@ func (i *InfoAPI) SwapInfoByTxHash(ctx context.Context, h *pb.Hash) (*pb.SwapInf
 	}
 }
 
-func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
-	vTicker := time.NewTicker(5 * time.Minute)
-	for {
-		select {
-		case <-vTicker.C:
-			infos, err := db.GetSwapInfos(i.store, 0, 0)
-			if err != nil {
-				i.logger.Error(err)
-				continue
-			}
-			for _, info := range infos {
-				if info.State == types.WithDrawPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
-					lockedInfo, err := i.neo.QueryLockedInfo(info.EthTxHash)
-					if err == nil && lockedInfo.Amount == info.Amount {
-						info.State = types.WithDrawDone
-						info.NeoTxHash = lockedInfo.Txid
-						db.UpdateSwapInfo(i.store, info)
-						i.logger.Infof("correct withdraw swap state: eth[%s]", info.EthTxHash)
-					}
-				}
-				if info.State == types.DepositPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
-					amount, err := i.eth.GetLockedAmountByNeoTxHash(info.NeoTxHash)
-					if err == nil && amount.Int64() == info.Amount {
-						info.State = types.DepositDone //can not get tx hash in eth contract
-						db.UpdateSwapInfo(i.store, info)
-						i.logger.Infof("correct deposit swap state: neo[%s]", info.NeoTxHash)
-					}
-				}
-			}
-		}
-	}
-}
-
 func (i *InfoAPI) SwapInfosByState(ctx context.Context, offset *pb.StateAndOffset) (*pb.SwapInfos, error) {
 	if types.StringToSwapState(offset.GetState()) == types.Invalid {
 		return nil, fmt.Errorf("invalid state: %s", offset.GetState())
@@ -195,6 +161,74 @@ func (i *InfoAPI) SwapAmountByState(ctx context.Context, empty *empty.Empty) (*p
 	}, nil
 }
 
+func (i *InfoAPI) SwapAmountByAddress(ctx context.Context, address *pb.Address) (*pb.AmountByAddressResponse, error) {
+	addr := address.GetAddress()
+	if addr == "" {
+		return nil, errors.New("invalid params")
+	}
+
+	if err := i.neo.ValidateAddress(addr); err == nil {
+		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, types.NEO)
+		if err != nil {
+			return nil, fmt.Errorf("get swapInfos: %s", err)
+		}
+		return i.swapAmountByAddress(infos, addr, false)
+	} else {
+		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, types.ETH)
+		if err != nil {
+			return nil, fmt.Errorf("get swapInfos: %s", err)
+		}
+		return i.swapAmountByAddress(infos, addr, true)
+	}
+}
+
+func (i *InfoAPI) swapAmountByAddress(infos []*types.SwapInfo, addr string, isEthAddr bool) (*pb.AmountByAddressResponse, error) {
+	pledgeCount := 0
+	var pledgeAmount int64 = 0
+	withdrawCount := 0
+	var withdrawAmount int64 = 0
+	for _, info := range infos {
+		if isEthAddr {
+			if info.EthUserAddr == addr {
+				if info.State == types.DepositDone {
+					pledgeCount = pledgeCount + 1
+					pledgeAmount = pledgeAmount + info.Amount
+				}
+				if info.State == types.WithDrawDone {
+					withdrawCount = withdrawCount + 1
+					withdrawAmount = withdrawAmount + info.Amount
+				}
+			}
+		} else {
+			if info.NeoUserAddr == addr {
+				if info.State == types.DepositDone {
+					pledgeCount = pledgeCount + 1
+					pledgeAmount = pledgeAmount + info.Amount
+				}
+				if info.State == types.WithDrawDone {
+					withdrawCount = withdrawCount + 1
+					withdrawAmount = withdrawAmount + info.Amount
+				}
+			}
+		}
+	}
+	var balance int64 = 0
+	if isEthAddr {
+		b, err := i.eth.BalanceOf(addr)
+		if err == nil && b != nil {
+			balance = b.Int64()
+		}
+	}
+	return &pb.AmountByAddressResponse{
+		Address:        addr,
+		Balance:        balance,
+		PledgeCount:    int64(pledgeCount),
+		PledgeAmount:   pledgeAmount,
+		WithdrawCount:  int64(withdrawCount),
+		WithdrawAmount: withdrawAmount,
+	}, nil
+}
+
 func toSwapInfos(infos []*types.SwapInfo) *pb.SwapInfos {
 	r := make([]*pb.SwapInfo, 0)
 	for _, info := range infos {
@@ -216,5 +250,39 @@ func toSwapInfo(info *types.SwapInfo) *pb.SwapInfo {
 		NeoUserAddr:    info.NeoUserAddr,
 		StartTime:      time.Unix(info.StartTime, 0).Format(time.RFC3339),
 		LastModifyTime: time.Unix(info.LastModifyTime, 0).Format(time.RFC3339),
+	}
+}
+
+func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
+	vTicker := time.NewTicker(5 * time.Minute)
+	for {
+		select {
+		case <-vTicker.C:
+			infos, err := db.GetSwapInfos(i.store, 0, 0)
+			if err != nil {
+				i.logger.Error(err)
+				continue
+			}
+			for _, info := range infos {
+				if info.State == types.WithDrawPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					lockedInfo, err := i.neo.QueryLockedInfo(info.EthTxHash)
+					if err == nil && lockedInfo.Amount == info.Amount {
+						info.State = types.WithDrawDone
+						info.NeoTxHash = lockedInfo.Txid
+						db.UpdateSwapInfo(i.store, info)
+						i.logger.Infof("correct withdraw swap state: eth[%s]", info.EthTxHash)
+					}
+				}
+				if info.State == types.DepositPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					amount, err := i.eth.GetLockedAmountByNeoTxHash(info.NeoTxHash)
+					fmt.Println(err)
+					if err == nil && amount.Int64() == info.Amount {
+						info.State = types.DepositDone //can not get tx hash in eth contract
+						db.UpdateSwapInfo(i.store, info)
+						i.logger.Infof("correct deposit swap state: neo[%s]", info.NeoTxHash)
+					}
+				}
+			}
+		}
 	}
 }

@@ -16,10 +16,10 @@ func TestTransaction_CreateLockTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 	userAddr := "AJ5huRnZJj3DZSxnJuZhAMLW1wfc8oMztj"
-	erc20Addr := "0x2e1ac6242bb084029a9eb29dfb083757d27fced4"
-	//erc20Addr := "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
+	//erc20Addr := "0x2e1ac6242bb084029a9eb29dfb083757d27fced4"
+	erc20Addr := "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
 	wif := "KyiLMuwnkwjNyuQJMmKvmFENCvC4rXAs9BdRSz9HTDmDFt93LRHt"
-	amount := 55000000
+	amount := 550000000
 	tx, err := c.CreateLockTransaction(userAddr, erc20Addr, wif, amount)
 	if err != nil {
 		t.Fatal(err)
