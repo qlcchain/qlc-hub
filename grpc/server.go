@@ -230,6 +230,7 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.InfoAPI/SwapInfosByState":            jwt.Both,
 		"/proto.InfoAPI/SwapCountByState":            jwt.Both,
 		"/proto.InfoAPI/SwapAmountByState":           jwt.Both,
+		"/proto.InfoAPI/SwapAmountByAddress":         jwt.Both,
 	})
 	return authorizer
 }

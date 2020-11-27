@@ -2,6 +2,7 @@ package apis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -41,14 +42,12 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		EthContract:       i.cfg.EthCfg.Contract,
-		EthOwner:          i.cfg.EthCfg.OwnerAddress,
-		EthUrl:            i.cfg.EthCfg.EndPoint,
-		NeoContract:       i.cfg.NEOCfg.Contract,
-		NeoOwner:          i.cfg.NEOCfg.OwnerAddress,
-		NeoUrl:            i.neo.ClientEndpoint(),
-		MinDepositAmount:  i.cfg.MinDepositAmount,
-		MinWithdrawAmount: i.cfg.MinWithdrawAmount,
+		EthContract: i.cfg.EthCfg.Contract,
+		EthOwner:    i.cfg.EthCfg.OwnerAddress,
+		EthUrl:      i.cfg.EthCfg.EndPoint,
+		NeoContract: i.cfg.NEOCfg.Contract,
+		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
+		NeoUrl:      i.neo.ClientEndpoint(),
 	}, nil
 }
 
@@ -192,6 +191,74 @@ func (i *InfoAPI) SwapAmountByState(ctx context.Context, empty *empty.Empty) (*p
 	}
 	return &pb.Map{
 		Count: amount,
+	}, nil
+}
+
+func (i *InfoAPI) SwapAmountByAddress(ctx context.Context, address *pb.Address) (*pb.AmountByAddressResponse, error) {
+	addr := address.GetAddress()
+	if addr == "" {
+		return nil, errors.New("invalid params")
+	}
+
+	if err := i.neo.ValidateAddress(addr); err == nil {
+		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, types.NEO)
+		if err != nil {
+			return nil, fmt.Errorf("get swapInfos: %s", err)
+		}
+		return i.swapAmountByAddress(infos, addr, false)
+	} else {
+		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, types.ETH)
+		if err != nil {
+			return nil, fmt.Errorf("get swapInfos: %s", err)
+		}
+		return i.swapAmountByAddress(infos, addr, true)
+	}
+}
+
+func (i *InfoAPI) swapAmountByAddress(infos []*types.SwapInfo, addr string, isEthAddr bool) (*pb.AmountByAddressResponse, error) {
+	pledgeCount := 0
+	var pledgeAmount int64 = 0
+	withdrawCount := 0
+	var withdrawAmount int64 = 0
+	for _, info := range infos {
+		if isEthAddr {
+			if info.EthUserAddr == addr {
+				if info.State == types.DepositDone {
+					pledgeCount = pledgeCount + 1
+					pledgeAmount = pledgeAmount + info.Amount
+				}
+				if info.State == types.WithDrawDone {
+					withdrawCount = withdrawCount + 1
+					withdrawAmount = withdrawAmount + info.Amount
+				}
+			}
+		} else {
+			if info.NeoUserAddr == addr {
+				if info.State == types.DepositDone {
+					pledgeCount = pledgeCount + 1
+					pledgeAmount = pledgeAmount + info.Amount
+				}
+				if info.State == types.WithDrawDone {
+					withdrawCount = withdrawCount + 1
+					withdrawAmount = withdrawAmount + info.Amount
+				}
+			}
+		}
+	}
+	var balance int64 = 0
+	if isEthAddr {
+		b, err := i.eth.BalanceOf(addr)
+		if err == nil && b != nil {
+			balance = b.Int64()
+		}
+	}
+	return &pb.AmountByAddressResponse{
+		Address:        addr,
+		Balance:        balance,
+		PledgeCount:    int64(pledgeCount),
+		PledgeAmount:   pledgeAmount,
+		WithdrawCount:  int64(withdrawCount),
+		WithdrawAmount: withdrawAmount,
 	}, nil
 }
 

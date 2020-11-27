@@ -32,7 +32,7 @@ var (
 
 	// eth setting
 	ethUrl             = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
-	ethContract        = "0x9d3358268B7Cf500766218f152986A5f4Ff4d9CC"
+	ethContract        = "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
 	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
 	ethUserPrivate     = "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
 	ethUserAddress     = "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
@@ -66,18 +66,12 @@ func initParams(osArgs []string) {
 
 	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight
 	ethConfirmedHeight = int(cfg.EthCfg.ConfirmedHeight)
-
-	cfg.SignerEndPoint = "http://127.0.0.1:19747"
 	var err error
-	if singerClient, err = signer.NewSigner(cfg); err != nil {
-		log.Fatal(err)
-	}
-
 	if neoContractLE, err = util.Uint160DecodeStringLE(neoContract); err != nil {
 		log.Fatal(err)
 	}
 
-	if neoTrasaction, err = neo.NewTransaction(neoUrl, neoContract, singerClient); err != nil {
+	if neoTrasaction, err = neo.NewTransaction(neoUrl, neoContract, nil); err != nil {
 		log.Fatal(err)
 	}
 	if c := neoTrasaction.Client(); c == nil {

@@ -351,6 +351,11 @@ type LockedInfo struct {
 	Typ            int    `json:"typ"`
 }
 
+func (l *LockedInfo) String() string {
+	bs, _ := json.Marshal(l)
+	return string(bs)
+}
+
 func (n *Transaction) QueryLockedInfo(hash string) (*LockedInfo, error) {
 	data, err := n.QuerySwapData(hubUtil.RemoveHexPrefix(hash))
 	if err != nil {

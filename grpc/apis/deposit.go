@@ -122,10 +122,10 @@ func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string) error {
 		return fmt.Errorf("decode hash: %s", err)
 	}
 	neoInfo, err := d.neo.QueryLockedInfo(hash.StringBE())
-	if err != nil {
+	if err != nil || neoInfo == nil {
 		return err
 	}
-	d.logger.Infof("neo transaction verify successfully. neo[%s]", neoTxHash)
+	d.logger.Infof("get locked info: %s. neo[%s]", neoInfo.String(), neoTxHash)
 
 	swapInfo := &types.SwapInfo{
 		State:       types.DepositPending,

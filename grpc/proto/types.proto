@@ -56,7 +56,7 @@ service DepositAPI {
 service WithdrawAPI {
     rpc EthTransactionConfirmed(Hash) returns (String){
         option (google.api.http) = {
-          post: "/withdraw/EthTransactionConfirmed"
+          post: "/withdraw/ethTransactionConfirmed"
           body: "*"
         };
     }
@@ -69,8 +69,6 @@ message PingResponse {
    string neoContract   = 4;
    string neoOwner      = 5;
    string neoUrl        = 6;
-   int64  minDepositAmount  = 7;
-   int64  minWithdrawAmount = 8;
 }
 
 message Offset {
@@ -148,6 +146,21 @@ service InfoAPI {
         get: "/info/swapAmountByState"
       };
    }
+
+   rpc SwapAmountByAddress(Address) returns (AmountByAddressResponse){
+      option (google.api.http) = {
+        get: "/info/swapAmountByAddress"
+      };
+   }
+}
+
+message AmountByAddressResponse {
+    string address        = 1;
+    int64  balance        = 2;
+    int64  pledgeCount    = 3;
+    int64  pledgeAmount   = 4;
+    int64  withdrawCount  = 5;
+    int64  withdrawAmount = 6;
 }
 
 message SignDataResponse {
@@ -174,6 +187,10 @@ message String {
 
 message Hash {
     string hash = 1;
+}
+
+message Address {
+    string address = 1;
 }
 
 message Map {

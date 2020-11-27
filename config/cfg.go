@@ -18,19 +18,17 @@ const (
 )
 
 type Config struct {
-	Verbose           bool            `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
-	LogLevel          string          `json:"logLevel" short:"l" long:"level" description:"log level" default:"info"` //info,warn,debug.
-	SignerToken       string          `json:"signerToken"  long:"signerToken" description:"singer JWT token" validate:"nonzero"`
-	SignerEndPoint    string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" validate:"nonzero"`
-	NEOCfg            *NEOCfg         `json:"neo" validate:"nonnil"`
-	EthCfg            *EthCfg         `json:"ethereum" validate:"nonnil"`
-	RPCCfg            *RPCCfg         `json:"rpc" validate:"nonnil"`
-	DateDir           string          `json:"dateDir" validate:"nonnil"`
-	MinDepositAmount  int64           `json:"minDepositAmount" long:"minDepositAmount" description:"minimal amount to deposit" default:"100000000" validate:"nonzero"`
-	MinWithdrawAmount int64           `json:"minWithdrawAmount" long:"minWithdrawAmount" description:"minimal amount to withdraw" default:"100000000" validate:"nonzero"`
-	Key               string          `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
-	KeyDuration       string          `json:"duration" long:"duration" default:"0s" validate:"nonzero"`
-	JwtManager        *jwt.JWTManager `json:"-"`
+	Verbose        bool            `json:"verbose" short:"V" long:"verbose" description:"show verbose debug information"`
+	LogLevel       string          `json:"logLevel" short:"l" long:"level" description:"log level" default:"info"` //info,warn,debug.
+	SignerToken    string          `json:"signerToken"  long:"signerToken" description:"singer JWT token" validate:"nonzero"`
+	SignerEndPoint string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" validate:"nonzero"`
+	NEOCfg         *NEOCfg         `json:"neo" validate:"nonnil"`
+	EthCfg         *EthCfg         `json:"ethereum" validate:"nonnil"`
+	RPCCfg         *RPCCfg         `json:"rpc" validate:"nonnil"`
+	DateDir        string          `json:"dateDir" validate:"nonnil"`
+	Key            string          `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
+	KeyDuration    string          `json:"duration" long:"duration" default:"0s" validate:"nonzero"`
+	JwtManager     *jwt.JWTManager `json:"-"`
 }
 
 type NEOCfg struct {
