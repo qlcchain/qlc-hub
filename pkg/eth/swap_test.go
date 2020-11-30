@@ -13,9 +13,9 @@ func TestTransaction_SwapInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	contract := "0x9d3358268b7cf500766218f152986a5f4ff4d9cc"
+	contract := "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
 	transaction := NewTransaction(eClient, contract)
-	neoHash := "94ae1b3068375fe9529c9a3dd9bfb750573b8574b39d84b74c69202274b38f79"
+	neoHash := "0x300a5a08d55ac129896a680b9ec78aa89d23b8f54bda0550868a5c991f519f2c"
 	r, err := transaction.GetLockedAmountByNeoTxHash(neoHash)
 	if err != nil {
 		t.Fatal(err)

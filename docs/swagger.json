@@ -428,7 +428,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/protoString"
+              "$ref": "#/definitions/protoBoolean"
             }
           },
           "default": {
@@ -558,6 +558,10 @@
         },
         "neoUrl": {
           "type": "string"
+        },
+        "totalBalance": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

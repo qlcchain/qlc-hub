@@ -78,6 +78,7 @@ func (t *Transaction) Burn(signerAccount string, nep5Addr string, amount *big.In
 	return tx.Hash().Hex(), nil
 }
 
+// if key not found, return is 0
 func (t *Transaction) GetLockedAmountByNeoTxHash(neoHash string) (*big.Int, error) {
 	instance, err := NewQLCChainCaller(t.contract, t.client)
 	if err != nil {
@@ -96,4 +97,16 @@ func (t *Transaction) BalanceOf(address string) (*big.Int, error) {
 		return nil, err
 	}
 	return instance.BalanceOf(&bind.CallOpts{}, common.HexToAddress(address))
+}
+
+func (t *Transaction) TotalSupply() int64 {
+	instance, err := NewQLCChainCaller(t.contract, t.client)
+	if err != nil {
+		return 0
+	}
+	r, err := instance.TotalSupply(&bind.CallOpts{})
+	if err != nil {
+		return 0
+	}
+	return r.Int64()
 }

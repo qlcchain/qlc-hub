@@ -136,6 +136,7 @@ func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string) error {
 		NeoUserAddr: neoInfo.FromAddress,
 		StartTime:   time.Now().Unix(),
 	}
+	d.logger.Infof("add state to %s, neo[%s]", types.SwapStateToString(types.DepositPending), neoTxHash)
 	return db.InsertSwapInfo(d.store, swapInfo)
 }
 
@@ -174,7 +175,7 @@ func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (
 
 	swapInfo, err := db.GetSwapInfoByTxHash(d.store, neoTxHash, types.NEO)
 	if err != nil {
-		d.logger.Errorf("neo not locked, neo[%s]", neoTxHash)
+		d.logger.Infof("neo not locked, %s, neo[%s]", err, neoTxHash)
 		return nil, fmt.Errorf("neo not locked")
 	}
 	if swapInfo.State == types.DepositDone {
