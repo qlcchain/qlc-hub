@@ -48,6 +48,7 @@ func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingRespons
 		NeoContract: i.cfg.NEOCfg.Contract,
 		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
 		NeoUrl:      i.neo.ClientEndpoint(),
+		TotalSupply: i.eth.TotalSupply(),
 	}, nil
 }
 
@@ -275,7 +276,6 @@ func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
 				}
 				if info.State == types.DepositPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
 					amount, err := i.eth.GetLockedAmountByNeoTxHash(info.NeoTxHash)
-					fmt.Println(err)
 					if err == nil && amount.Int64() == info.Amount {
 						info.State = types.DepositDone //can not get tx hash in eth contract
 						db.UpdateSwapInfo(i.store, info)

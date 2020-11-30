@@ -54,7 +54,7 @@ service DepositAPI {
 }
 
 service WithdrawAPI {
-    rpc EthTransactionConfirmed(Hash) returns (String){
+    rpc EthTransactionConfirmed(Hash) returns (Boolean){
         option (google.api.http) = {
           post: "/withdraw/ethTransactionConfirmed"
           body: "*"
@@ -63,12 +63,13 @@ service WithdrawAPI {
 }
 
 message PingResponse {
-   string ethContract   = 1;
-   string ethOwner      = 2;
-   string ethUrl        = 3;
-   string neoContract   = 4;
-   string neoOwner      = 5;
-   string neoUrl        = 6;
+   string neoContract   = 1;
+   string neoOwner      = 2;
+   string neoUrl        = 3;
+   string ethContract   = 4;
+   string ethOwner      = 5;
+   string ethUrl        = 6;
+   int64  totalSupply   = 7;
 }
 
 message Offset {

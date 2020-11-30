@@ -47,17 +47,17 @@ func hEth2Neo() {
 }
 
 func hEth2NeoPending() {
-	hash := "0xd9703f6eb3f9f79b97c48f6c5bfcfa445e5d24242dc3b0b8ee54e6ad994b7f41"
+	hash := "0x037260513ec5d8cca4b619d81852608a9a5dcb0e865cb11efcdf2029919738df"
 	sendParas := fmt.Sprintf(`{
-		"hash": "%s",
+		"hash": "%s"
 	}`, hash)
 	r, err := post(sendParas, fmt.Sprintf("%s/withdraw/ethTransactionConfirmed", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}
-	fmt.Println("withdraw send eth tx done: ", r["value"].(string))
+	fmt.Println("withdraw send eth tx done: ", r["value"].(bool))
 
-	if !waitForSwapState(r["value"].(string), types.SwapStateToString(types.WithDrawDone)) {
+	if !waitForSwapState(hash, types.SwapStateToString(types.WithDrawDone)) {
 		log.Fatal("fail")
 	}
 
