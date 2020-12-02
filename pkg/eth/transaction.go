@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -22,14 +23,16 @@ type Transaction struct {
 	contract   common.Address
 	averageGas int64
 	ctx        context.Context
+	pendingTx  *sync.Map
 	logger     *zap.SugaredLogger
 }
 
 func NewTransaction(client *ethclient.Client, contract string) *Transaction {
 	return &Transaction{
-		client:   client,
-		contract: common.HexToAddress(contract),
-		logger:   log.NewLogger("eth/transaction"),
+		client:    client,
+		contract:  common.HexToAddress(contract),
+		pendingTx: new(sync.Map),
+		logger:    log.NewLogger("eth/transaction"),
 	}
 }
 

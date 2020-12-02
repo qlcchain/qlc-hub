@@ -71,6 +71,7 @@ func (n *Transaction) createUnsignedTransaction(param TransactionParam) (string,
 	if data == nil {
 		return "", "", errors.New("failed to get transaction's signed part")
 	}
+
 	n.pendingTx.Store(tx.Hash().StringLE(), tx)
 	return tx.Hash().StringLE(), hex.EncodeToString(data), nil
 }
@@ -392,4 +393,8 @@ func (n *Transaction) QuerySwapData(h string) (map[string]interface{}, error) {
 	}
 	n.logger.Debug(hubUtil.ToString(r.Stack))
 	return StackToSwapInfo(r.Stack)
+}
+
+func (n *Transaction) SwapEnd(hash string) {
+	n.pendingTx.Delete(hash)
 }

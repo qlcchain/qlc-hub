@@ -15,6 +15,7 @@ require (
 	github.com/mr-tron/base58 v1.2.0
 	github.com/nspcc-dev/neo-go v0.77.0
 	github.com/qlcchain/go-qlc v1.4.1 // indirect
+	github.com/rs/cors v1.7.0
 	github.com/tinylib/msgp v1.1.4
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

@@ -169,6 +169,66 @@
         ]
       }
     },
+    "/info/checkEthTransaction": {
+      "get": {
+        "operationId": "InfoAPI_CheckEthTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
+    "/info/checkNeoTransaction": {
+      "get": {
+        "operationId": "InfoAPI_CheckNeoTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
     "/info/ping": {
       "get": {
         "operationId": "InfoAPI_Ping",
@@ -541,15 +601,6 @@
     "protoPingResponse": {
       "type": "object",
       "properties": {
-        "ethContract": {
-          "type": "string"
-        },
-        "ethOwner": {
-          "type": "string"
-        },
-        "ethUrl": {
-          "type": "string"
-        },
         "neoContract": {
           "type": "string"
         },
@@ -559,7 +610,16 @@
         "neoUrl": {
           "type": "string"
         },
-        "totalBalance": {
+        "ethContract": {
+          "type": "string"
+        },
+        "ethOwner": {
+          "type": "string"
+        },
+        "ethUrl": {
+          "type": "string"
+        },
+        "totalSupply": {
           "type": "string",
           "format": "int64"
         }

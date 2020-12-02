@@ -14,8 +14,8 @@ import (
 func TestDepostAPI_SignData(t *testing.T) {
 	amount := big.NewInt(290000000)
 	userAddr := "0xf6933949c4096670562a5e3a21b8c29c2aaca505"
-	neoTx := "0x0a67ecacbd4e39f3be838ee56199fb9eaad8ce3c727fcd6300a6009cc79f259e"
-	priKey := ""
+	neoTx := "0x9e4ef4b8d72a4bd12851bba7aee6886afa5bfd83f57386705c8e3afae0683ead"
+	priKey := "67652fa52357b65255ac38d0ef8997b5608527a7c1d911ecefb8bc184d74e92e"
 	s, err := signData(amount, userAddr, priKey, neoTx)
 	fmt.Println("sig2, ", s, err)
 }
