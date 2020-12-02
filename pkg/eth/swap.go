@@ -110,3 +110,18 @@ func (t *Transaction) TotalSupply() int64 {
 	}
 	return r.Int64()
 }
+
+func (t *Transaction) AddTransaction(hash string) {
+	t.pendingTx.Store(hash, 0)
+}
+
+func (t *Transaction) HasTransaction(hash string) bool {
+	if _, ok := t.pendingTx.Load(hash); ok {
+		return true
+	}
+	return false
+}
+
+func (t *Transaction) DeleteTransaction(hash string) {
+	t.pendingTx.Delete(hash)
+}

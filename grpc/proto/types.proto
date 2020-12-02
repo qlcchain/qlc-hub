@@ -112,6 +112,18 @@ service InfoAPI {
         };
     }
 
+    rpc CheckEthTransaction(Hash) returns (Boolean){
+        option (google.api.http) = {
+          get: "/info/checkEthTransaction"
+        };
+    }
+
+    rpc CheckNeoTransaction(Hash) returns (Boolean){
+        option (google.api.http) = {
+          get: "/info/checkNeoTransaction"
+        };
+    }
+
    rpc SwapInfoList(Offset) returns (SwapInfos){
        option (google.api.http) = {
          get: "/info/swapInfoList"

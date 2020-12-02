@@ -97,7 +97,7 @@ func (w *WithdrawAPI) lister() {
 					w.logger.Infof("withdraw event, user:%s, amount:%s, nep5Addr:%s. eth[%s,%d]",
 						user.String(), amount.String(), nep5Addr, txHash.String(), txHeight)
 
-					if err := w.toConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr); err != nil {
+					if err := w.toWaitConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr); err != nil {
 						w.logger.Errorf("withdraw event: %s, eth[%s]", err, txHash.String())
 						continue
 					}
@@ -110,7 +110,7 @@ func (w *WithdrawAPI) lister() {
 	}
 }
 
-func (w *WithdrawAPI) toConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string) error {
+func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string) error {
 	if txHeight != 0 {
 		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.ConfirmedHeight); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
@@ -195,7 +195,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 		}
 		w.logger.Infof("got burn log: user:%s, neoAddr:%s, amount:%d. [%s]", user.String(), nep5Addr, amount.Int64(), hash)
 		go func() {
-			if err := w.toConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
+			if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
 				w.logger.Error(err)
 				return
 			}
