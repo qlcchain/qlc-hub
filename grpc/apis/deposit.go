@@ -104,6 +104,7 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 			d.logger.Errorf("%s, neo[%s]", err, neoTxHash)
 			return
 		}
+		d.neo.SwapEnd(neoTxHash)
 	}()
 	return &pb.Boolean{
 		Value: true,

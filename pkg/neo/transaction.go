@@ -20,6 +20,7 @@ import (
 type Transaction struct {
 	signer       *signer.SignerClient
 	urls         []string
+	url          string
 	client       *client.Client
 	contractLE   util.Uint160
 	contractAddr string
@@ -39,6 +40,7 @@ func NewTransaction(urls []string, contractAddr string, signer *signer.SignerCli
 	return &Transaction{
 		signer:       signer,
 		urls:         urls,
+		url:          urls[0],
 		client:       c,
 		contractLE:   contract,
 		contractAddr: contractAddr,
@@ -78,15 +80,16 @@ func (n *Transaction) WaitTxVerifyAndConfirmed(txHash string, interval int) (uin
 	if err != nil {
 		return 0, fmt.Errorf("tx verify decode hash: %s, %s", err, txHash)
 	}
+	client := n.Client()
 
 	var txHeight uint32
-	if txHeight, err = n.client.GetTransactionHeight(hash); err != nil {
+	if txHeight, err = client.GetTransactionHeight(hash); err != nil {
 		cTicker := time.NewTicker(3 * time.Second)
 		cTimer := time.NewTimer(300 * time.Second) //tx on chain may need time
 		for {
 			select {
 			case <-cTicker.C:
-				txHeight, err = n.client.GetTransactionHeight(hash)
+				txHeight, err = client.GetTransactionHeight(hash)
 				if err != nil {
 					n.logger.Debugf("get neo tx [%s] height err: %s", txHash, err)
 				} else {
@@ -155,40 +158,26 @@ func (n *Transaction) Client() *client.Client {
 		return n.client
 	} else {
 		n.logger.Errorf("ping neo client: %s, %s ", err, n.urls[0])
-		for _, url := range n.urls[1:] {
-			c, err := client.New(context.Background(), url, client.Options{})
-			if err == nil {
-				if err := c.Ping(); err == nil {
-					n.client = c
-					return c
+		for _, url := range n.urls {
+			if url != n.url {
+				c, err := client.New(context.Background(), url, client.Options{})
+				if err == nil {
+					if err := c.Ping(); err == nil {
+						n.client = c
+						n.url = url
+						return c
+					} else {
+						n.logger.Errorf("ping neo client: %s, %s", err, url)
+					}
 				} else {
-					n.logger.Errorf("ping neo client: %s, %s", err, url)
+					n.logger.Errorf("new neo client: %s, %s", err, url)
 				}
-			} else {
-				n.logger.Errorf("new neo client: %s, %s", err, url)
 			}
 		}
 	}
-	return nil
+	return n.client
 }
 
 func (n *Transaction) ClientEndpoint() string {
-	if err := n.client.Ping(); err == nil {
-		return n.urls[0]
-	} else {
-		n.logger.Errorf("ping neo client: %s ", err)
-		for _, url := range n.urls[1:] {
-			c, err := client.New(context.Background(), url, client.Options{})
-			if err == nil {
-				if err := c.Ping(); err == nil {
-					return url
-				} else {
-					n.logger.Errorf("ping neo client: %s, %s", err, url)
-				}
-			} else {
-				n.logger.Errorf("new neo client: %s, %s", err, url)
-			}
-		}
-	}
-	return ""
+	return n.url
 }

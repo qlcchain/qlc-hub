@@ -20,6 +20,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"github.com/rs/cors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -159,9 +160,11 @@ func (g *Server) newGateway(grpcAddress, gwAddress string) error {
 	if err != nil {
 		return err
 	}
+	handler := newCorsHandler(gwmux, g.cfg.RPCCfg.CORSAllowedOrigins)
+
 	g.srv = &http.Server{
 		Addr:    address,
-		Handler: gwmux,
+		Handler: handler,
 	}
 
 	g.srv.RegisterOnShutdown(func() {
@@ -231,6 +234,21 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.InfoAPI/SwapCountByState":            jwt.Both,
 		"/proto.InfoAPI/SwapAmountByState":           jwt.Both,
 		"/proto.InfoAPI/SwapAmountByAddress":         jwt.Both,
+		"/proto.InfoAPI/CheckNeoTransaction":         jwt.Both,
+		"/proto.InfoAPI/CheckEthTransaction":         jwt.Both,
 	})
 	return authorizer
+}
+
+func newCorsHandler(srv http.Handler, allowedOrigins []string) http.Handler {
+	if len(allowedOrigins) == 0 {
+		return srv
+	}
+	c := cors.New(cors.Options{
+		AllowedOrigins: allowedOrigins,
+		AllowedMethods: []string{http.MethodPost, http.MethodGet},
+		MaxAge:         600,
+		AllowedHeaders: []string{"*"},
+	})
+	return c.Handler(srv)
 }

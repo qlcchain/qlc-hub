@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/db"
@@ -14,6 +16,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -285,4 +288,35 @@ func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
 			}
 		}
 	}
+}
+
+func (i *InfoAPI) CheckNeoTransaction(ctx context.Context, Hash *pb.Hash) (*pb.Boolean, error) {
+	neoTxHash := Hash.GetHash()
+	if neoTxHash == "" {
+		return nil, errors.New("invalid params")
+	}
+	if err := i.neo.TxVerifyAndConfirmed(neoTxHash, i.cfg.NEOCfg.ConfirmedHeight); err != nil {
+		return toBoolean(false), err
+	}
+
+	hash, err := util.Uint256DecodeStringLE(hubUtil.RemoveHexPrefix(neoTxHash))
+	if err != nil {
+		return toBoolean(false), err
+	}
+	neoInfo, err := i.neo.QueryLockedInfo(hash.StringBE())
+	if err != nil || neoInfo == nil {
+		return toBoolean(false), err
+	}
+	return toBoolean(true), nil
+}
+
+func (i *InfoAPI) CheckEthTransaction(ctx context.Context, Hash *pb.Hash) (*pb.Boolean, error) {
+	tx, p, err := i.eth.Client().TransactionByHash(context.Background(), common.HexToHash(Hash.GetHash()))
+	if err != nil {
+		return toBoolean(false), err
+	}
+	if tx != nil && !p { // if tx not found , p is false
+		return toBoolean(true), nil
+	}
+	return toBoolean(false), errors.New("tx not found")
 }

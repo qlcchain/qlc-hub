@@ -125,3 +125,25 @@ func TestTransaction_SyncLog(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestTransaction_Transaction(t *testing.T) {
+	t.Skip()
+	eClient, err := ethclient.Dial("wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57")
+	if err != nil {
+		t.Fatal(err)
+	}
+	contract := "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
+	signAccount := "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
+	client := NewTransaction(eClient, contract)
+	instance, opts, err := client.getTransactor(signAccount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	recipient := common.HexToAddress("0x255eEcd17E11C5d2FFD5818da31d04B5c1721D7C")
+	amount := big.NewInt(20000000000)
+	tx, err := instance.Transfer(opts, recipient, amount)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(tx.Hash().Hex())
+}
