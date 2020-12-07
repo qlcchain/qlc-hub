@@ -93,7 +93,8 @@ func (w *WithdrawAPI) lister() {
 				nep5Addr := event.Nep5Addr
 				txHash := vLog.TxHash
 				txHeight := vLog.BlockNumber
-				if err := w.neo.ValidateAddress(nep5Addr); err == nil {
+				neoClient := w.neo.Client()
+				if err := neoClient.ValidateAddress(nep5Addr); err == nil {
 					w.logger.Infof("withdraw event, user:%s, amount:%s, nep5Addr:%s. eth[%s,%d]",
 						user.String(), amount.String(), nep5Addr, txHash.String(), txHeight)
 
@@ -103,7 +104,7 @@ func (w *WithdrawAPI) lister() {
 					}
 					w.logger.Infof("withdraw successfully. eth[%s]", txHash.String())
 				} else {
-					w.logger.Errorf("withdraw event, invalid nep5 address: %s,  %s, eth tx[%s]", err, nep5Addr, txHash.String())
+					w.logger.Errorf("withdraw event, invalid nep5 address: %s, %s, eth tx[%s]", err, nep5Addr, txHash.String())
 				}
 			}
 		}
