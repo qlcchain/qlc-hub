@@ -3,6 +3,7 @@ package apis
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -182,29 +183,63 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 		return nil, fmt.Errorf("invalid hash, %s", h)
 	}
 
-	if _, err := db.GetSwapInfoByTxHash(w.store, hash, types.ETH); err == nil {
-		w.logger.Errorf("withdraw repeatedly, eth[%s]", hash)
-		return nil, fmt.Errorf("withdraw repeatedly, tx[%s]", hash)
-	}
-
-	tx, p, err := w.eth.Client().TransactionByHash(context.Background(), common.HexToHash(hash))
-	if tx != nil && !p && err == nil { // if tx not found , p is false
-		amount, user, nep5Addr, err := w.eth.SyncBurnLog(hash)
-		if err != nil {
-			w.logger.Error(err)
-			return nil, err
+	swapInfo, err := db.GetSwapInfoByTxHash(w.store, hash, types.ETH)
+	if err == nil && swapInfo != nil {
+		if swapInfo.State == types.WithDrawDone {
+			w.logger.Errorf("withdraw repeatedly, eth[%s]", hash)
+			return nil, fmt.Errorf("withdraw repeatedly, tx[%s]", hash)
 		}
-		w.logger.Infof("got burn log: user:%s, neoAddr:%s, amount:%d. [%s]", user.String(), nep5Addr, amount.Int64(), hash)
-		go func() {
-			if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
-				w.logger.Error(err)
-				return
-			}
-			w.logger.Infof("withdraw successfully. eth[%s]", hash)
-		}()
-		return toBoolean(true), nil
+		if swapInfo.State == types.WithDrawPending && time.Now().Unix()-swapInfo.LastModifyTime > 10*60 {
+			go func() {
+				neoTx, err := w.neo.CreateUnLockTransaction(swapInfo.EthTxHash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), w.cfg.NEOCfg.OwnerAddress)
+				if err != nil {
+					w.logger.Errorf("create tx: %s", err)
+					return
+				}
+
+				w.logger.Infof("neo tx created: %s. eth[%s]", neoTx, swapInfo.EthTxHash)
+				if _, err := w.neo.WaitTxVerifyAndConfirmed(neoTx, w.cfg.NEOCfg.ConfirmedHeight); err != nil {
+					w.logger.Errorf("tx confirmed: %s", err)
+					return
+				}
+				if _, err := w.neo.QueryLockedInfo(swapInfo.EthTxHash); err != nil {
+					w.logger.Errorf("cannot get swap info: %s", err)
+					return
+				}
+				w.logger.Infof("neo tx confirmed: %s, eth[%s]", neoTx, swapInfo.EthTxHash)
+				swapInfo.NeoTxHash = neoTx
+				swapInfo.State = types.WithDrawDone
+				w.logger.Infof("update state to %s, neo[%s]", types.SwapStateToString(types.WithDrawDone), swapInfo.EthTxHash)
+				if err := db.UpdateSwapInfo(w.store, swapInfo); err != nil {
+					w.logger.Error(err)
+					return
+				}
+				w.logger.Infof("withdraw successfully. eth[%s]", hash)
+			}()
+			return toBoolean(true), nil
+		}
+		w.logger.Errorf("invalid state %s", swapInfo.String())
+		return toBoolean(false), errors.New("invalid state")
 	} else {
-		w.logger.Errorf("tx not confirmed, %s, %v,%v, eth[%s]", err, tx != nil, !p, hash)
-		return toBoolean(false), fmt.Errorf("tx not confirmed")
+		tx, p, err := w.eth.Client().TransactionByHash(context.Background(), common.HexToHash(hash))
+		if tx != nil && !p && err == nil { // if tx not found , p is false
+			amount, user, nep5Addr, err := w.eth.SyncBurnLog(hash)
+			if err != nil {
+				w.logger.Error(err)
+				return nil, err
+			}
+			w.logger.Infof("got burn log: user:%s, neoAddr:%s, amount:%d. [%s]", user.String(), nep5Addr, amount.Int64(), hash)
+			go func() {
+				if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
+					w.logger.Error(err)
+					return
+				}
+				w.logger.Infof("withdraw successfully. eth[%s]", hash)
+			}()
+			return toBoolean(true), nil
+		} else {
+			w.logger.Errorf("tx not confirmed, %s, %v,%v, eth[%s]", err, tx != nil, !p, hash)
+			return toBoolean(false), fmt.Errorf("tx not confirmed")
+		}
 	}
 }
