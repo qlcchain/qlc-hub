@@ -12,6 +12,7 @@ const (
 	WithDrawPending
 	WithDrawDone
 
+	WithDrawFail
 	Invalid
 )
 
@@ -25,6 +26,8 @@ func SwapStateToString(t SwapState) string {
 		return "WithDrawPending"
 	case WithDrawDone:
 		return "WithDrawDone"
+	case WithDrawFail:
+		return "WithDrawFail"
 	default:
 		return "Invalid"
 	}
@@ -40,6 +43,8 @@ func StringToSwapState(t string) SwapState {
 		return WithDrawPending
 	case "WithDrawDone":
 		return WithDrawDone
+	case "WithDrawFail":
+		return WithDrawFail
 	default:
 		return Invalid
 	}

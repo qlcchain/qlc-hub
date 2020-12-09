@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
+	"github.com/bluele/gcache"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
@@ -18,6 +20,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"github.com/qlcchain/qlc-hub/pkg/util"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -103,7 +106,7 @@ func (w *WithdrawAPI) lister() {
 						w.logger.Errorf("withdraw event: %s, eth[%s]", err, txHash.String())
 						continue
 					}
-					w.logger.Infof("withdraw successfully. eth[%s]", txHash.String())
+					w.logger.Infof("withdraw successfully, eth[%s]", txHash.String())
 				} else {
 					w.logger.Errorf("withdraw event, invalid nep5 address: %s, %s, eth tx[%s]", err, nep5Addr, txHash.String())
 				}
@@ -113,6 +116,13 @@ func (w *WithdrawAPI) lister() {
 }
 
 func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string) error {
+	lock(util.AddHashPrefix(ethTxHash.String()), w.logger)
+	defer unlock(util.AddHashPrefix(ethTxHash.String()), w.logger)
+
+	if _, err := db.GetSwapInfoByTxHash(w.store, ethTxHash.String(), types.ETH); err == nil {
+		w.logger.Errorf("confirmed eth tx repeatedly, %s", ethTxHash.String())
+		return errors.New("confirmed eth tx repeatedly")
+	}
 	if txHeight != 0 {
 		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.ConfirmedHeight); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
@@ -136,6 +146,9 @@ func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight
 
 	neoTx, err := w.neo.CreateUnLockTransaction(ethTxHash.String(), nep5Addr, user.String(), int(amount.Int64()), w.cfg.NEOCfg.OwnerAddress)
 	if err != nil {
+		swapInfo.State = types.WithDrawFail
+		db.UpdateSwapInfo(w.store, swapInfo)
+		w.logger.Errorf("create neo tx: %s, neo[%s]", err, ethTxHash.String())
 		return fmt.Errorf("create tx: %s", err)
 	}
 
@@ -189,7 +202,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 			w.logger.Errorf("withdraw repeatedly, eth[%s]", hash)
 			return nil, fmt.Errorf("withdraw repeatedly, tx[%s]", hash)
 		}
-		if swapInfo.State == types.WithDrawPending && time.Now().Unix()-swapInfo.LastModifyTime > 10*60 {
+		if swapInfo.State == types.WithDrawFail { // neo tx send fail
 			go func() {
 				neoTx, err := w.neo.CreateUnLockTransaction(swapInfo.EthTxHash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), w.cfg.NEOCfg.OwnerAddress)
 				if err != nil {
@@ -214,12 +227,11 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 					w.logger.Error(err)
 					return
 				}
-				w.logger.Infof("withdraw successfully. eth[%s]", hash)
+				w.logger.Infof("withdraw successfully, eth[%s]", hash)
 			}()
 			return toBoolean(true), nil
 		}
-		w.logger.Errorf("invalid state %s", swapInfo.String())
-		return toBoolean(false), errors.New("invalid state")
+		return toBoolean(true), nil
 	} else {
 		tx, p, err := w.eth.Client().TransactionByHash(context.Background(), common.HexToHash(hash))
 		if tx != nil && !p && err == nil { // if tx not found , p is false
@@ -234,12 +246,47 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 					w.logger.Error(err)
 					return
 				}
-				w.logger.Infof("withdraw successfully. eth[%s]", hash)
+				w.logger.Infof("withdraw successfully eth[%s]", hash)
 			}()
 			return toBoolean(true), nil
 		} else {
 			w.logger.Errorf("tx not confirmed, %s, %v,%v, eth[%s]", err, tx != nil, !p, hash)
 			return toBoolean(false), fmt.Errorf("tx not confirmed")
+		}
+	}
+}
+
+var (
+	maxRHashSize = 10240
+	timeout      = 24 * time.Hour
+)
+
+var glock = gcache.New(maxRHashSize).Expiration(timeout).LRU().Build()
+
+func lock(rHash string, logger *zap.SugaredLogger) {
+	if v, err := glock.Get(rHash); err != nil {
+		mutex := &sync.Mutex{}
+		if err := glock.Set(rHash, mutex); err != nil {
+			logger.Errorf("set lock fail: %s [%s]", err, rHash)
+		}
+		mutex.Lock()
+	} else {
+		if l, ok := v.(*sync.Mutex); ok {
+			l.Lock()
+		} else {
+			logger.Errorf("invalid lock type [%s]", rHash)
+		}
+	}
+}
+
+func unlock(rHash string, logger *zap.SugaredLogger) {
+	if v, err := glock.Get(rHash); err != nil {
+		logger.Errorf("can not get lock: %s [%s]", err, rHash)
+	} else {
+		if l, ok := v.(*sync.Mutex); ok {
+			l.Unlock()
+		} else {
+			logger.Errorf("invalid lock type [%s]", rHash)
 		}
 	}
 }
