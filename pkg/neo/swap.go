@@ -1,6 +1,7 @@
 package neo
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -15,6 +16,7 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
 	"github.com/nspcc-dev/neo-go/pkg/encoding/address"
 	"github.com/nspcc-dev/neo-go/pkg/io"
+	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
 	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
@@ -94,13 +96,10 @@ func (n *Transaction) SendLockTransaction(txHash, signature, publicKey, address 
 		InvocationScript:   append([]byte{byte(opcode.PUSHBYTES64)}, signatureBytes...),
 		VerificationScript: verificationScript,
 	})
-	c := n.Client()
-	if c == nil {
-		return "", errors.New("invalid neo endpoints")
-	}
-	err = c.SendRawTransaction(tx)
+
+	err = n.sendRawTransaction(tx)
 	if err != nil {
-		return "", fmt.Errorf("failed sendning tx: %s", err)
+		return "", fmt.Errorf("failed sending tx: %s", err)
 	}
 	return tx.Hash().StringLE(), nil
 }
@@ -178,10 +177,8 @@ func (n *Transaction) createTransaction(param TransactionParam, wif string) (str
 		return "", fmt.Errorf("failed to sign tx, %s", err)
 	}
 	txHash := tx.Hash()
-	err = n.client.SendRawTransaction(tx)
-
-	if err != nil {
-		return "", fmt.Errorf("failed sendning tx: %s", err)
+	if err := n.sendRawTransaction(tx); err != nil {
+		return "", fmt.Errorf("create tx: %s", err)
 	}
 
 	//n.logger.Debugf("transaction successfully: %s", re.StringLE())
@@ -290,16 +287,37 @@ func (n *Transaction) createTransactionAppendWitness(param TransactionParam) (st
 	n.logger.Debug("tx hex: ", hex.EncodeToString(tx.Bytes()))
 	n.logger.Debug("tx detail: ", hubUtil.ToIndentString(tx))
 
-	c := n.Client()
-	if c == nil {
-		return "", errors.New("invalid neo endpoints")
-	}
-
-	if err := c.SendRawTransaction(tx); err != nil {
+	if err := n.sendRawTransaction(tx); err != nil {
 		return "", fmt.Errorf("sendRawTransaction: %s", err)
 	}
 	//n.logger.Debugf("transaction successfully: %s", tx.Hash().StringLE())
 	return tx.Hash().StringLE(), nil
+}
+
+func (n *Transaction) sendRawTransaction(rawTX *transaction.Transaction) error {
+	c := n.Client()
+	if c == nil {
+		return errors.New("invalid neo endpoints")
+	}
+	var err error
+	if err = c.SendRawTransaction(rawTX); err != nil {
+		for _, url := range n.urls {
+			if url != n.url {
+				if uc, err := client.New(context.Background(), url, client.Options{}); err == nil {
+					if err := uc.SendRawTransaction(rawTX); err == nil {
+						n.client = uc
+						n.url = url
+						return nil
+					} else {
+						n.logger.Infof("send neo tx fail: %s", url)
+					}
+				}
+			}
+		}
+		return fmt.Errorf("sendRawTransaction: %s", err)
+	} else {
+		return nil
+	}
 }
 
 func (n *Transaction) SignTx(tx *transaction.Transaction, address string) error {

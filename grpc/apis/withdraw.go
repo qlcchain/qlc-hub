@@ -162,7 +162,7 @@ func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight
 	w.logger.Infof("neo tx confirmed: %s, eth[%s]", neoTx, ethTxHash.String())
 	swapInfo.NeoTxHash = neoTx
 	swapInfo.State = types.WithDrawDone
-	w.logger.Infof("update state to %s, neo[%s]", types.SwapStateToString(types.WithDrawDone), ethTxHash.String())
+	w.logger.Infof("update state to %s, eth[%s]", types.SwapStateToString(types.WithDrawDone), ethTxHash.String())
 	return db.UpdateSwapInfo(w.store, swapInfo)
 }
 
@@ -210,7 +210,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 					return
 				}
 
-				w.logger.Infof("neo tx created: %s. eth[%s]", neoTx, swapInfo.EthTxHash)
+				w.logger.Infof("neo tx created, %s. eth[%s]", neoTx, swapInfo.EthTxHash)
 				if _, err := w.neo.WaitTxVerifyAndConfirmed(neoTx, w.cfg.NEOCfg.ConfirmedHeight); err != nil {
 					w.logger.Errorf("tx confirmed: %s", err)
 					return
@@ -222,7 +222,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 				w.logger.Infof("neo tx confirmed: %s, eth[%s]", neoTx, swapInfo.EthTxHash)
 				swapInfo.NeoTxHash = neoTx
 				swapInfo.State = types.WithDrawDone
-				w.logger.Infof("update state to %s, neo[%s]", types.SwapStateToString(types.WithDrawDone), swapInfo.EthTxHash)
+				w.logger.Infof("update state to %s, eth[%s]", types.SwapStateToString(types.WithDrawDone), swapInfo.EthTxHash)
 				if err := db.UpdateSwapInfo(w.store, swapInfo); err != nil {
 					w.logger.Error(err)
 					return

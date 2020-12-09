@@ -9,6 +9,7 @@ import (
 
 	"github.com/nspcc-dev/neo-go/pkg/rpc/client"
 	"github.com/nspcc-dev/neo-go/pkg/rpc/request"
+	"github.com/nspcc-dev/neo-go/pkg/smartcontract"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/log"
@@ -72,6 +73,9 @@ func (n *Transaction) TxVerifyAndConfirmed(txHash string, interval int) error {
 	if b, current := n.hasBlocksConfirmed(txHeight, int64(interval)); !b {
 		return fmt.Errorf("confirmed neo transaction fail, %s,  %d/%d", txHash, txHeight, current)
 	}
+	if err := n.lockerEventFromApplicationLog(txHash); err != nil { // check if failed
+		return err
+	}
 	return nil
 }
 
@@ -112,7 +116,11 @@ HeightConfirmed:
 		select {
 		case <-nTicker.C:
 			if b, _ := n.hasBlocksConfirmed(txHeight, int64(interval)); b {
-				return txHeight, nil
+				if err := n.lockerEventFromApplicationLog(txHash); err != nil { // check if failed
+					return 0, err
+				} else {
+					return txHeight, nil
+				}
 			}
 		case <-nTimer.C:
 			return 0, fmt.Errorf("neo tx confirmed timeout: %s", txHash)
@@ -180,4 +188,23 @@ func (n *Transaction) Client() *client.Client {
 
 func (n *Transaction) ClientEndpoint() string {
 	return n.url
+}
+
+func (n *Transaction) lockerEventFromApplicationLog(hash string) error {
+	if h, err := util.Uint256DecodeStringLE(hash); err == nil {
+		if l, err := n.client.GetApplicationLog(h); err == nil {
+			//data, _ := json.MarshalIndent(l, "", "\t")
+			//fmt.Println(string(data))
+			for _, executions := range l.Executions {
+				for _, events := range executions.Events {
+					if events.Item.Type == smartcontract.ArrayType {
+						return nil
+					}
+				}
+			}
+		} else {
+			return fmt.Errorf("get applicationLog: %s, %s", err, hash)
+		}
+	}
+	return fmt.Errorf("can not find lock event, txHash: %s", hash)
 }

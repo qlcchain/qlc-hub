@@ -8,7 +8,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/db"
@@ -16,7 +15,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/types"
-	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -299,14 +297,14 @@ func (i *InfoAPI) CheckNeoTransaction(ctx context.Context, Hash *pb.Hash) (*pb.B
 		return toBoolean(false), err
 	}
 
-	hash, err := util.Uint256DecodeStringLE(hubUtil.RemoveHexPrefix(neoTxHash))
-	if err != nil {
-		return toBoolean(false), err
-	}
-	neoInfo, err := i.neo.QueryLockedInfo(hash.StringBE())
-	if err != nil || neoInfo == nil {
-		return toBoolean(false), err
-	}
+	//hash, err := util.Uint256DecodeStringLE(hubUtil.RemoveHexPrefix(neoTxHash))
+	//if err != nil {
+	//	return toBoolean(false), err
+	//}
+	//neoInfo, err := i.neo.QueryLockedInfo(hash.StringBE())
+	//if err != nil || neoInfo == nil {
+	//	return toBoolean(false), err
+	//}
 	return toBoolean(true), nil
 }
 
