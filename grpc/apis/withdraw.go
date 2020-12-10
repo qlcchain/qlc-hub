@@ -73,12 +73,13 @@ func (w *WithdrawAPI) lister() {
 				w.logger.Error("SubscribeFilterLogs: ", err)
 			}
 		case vLog := <-logs:
+			txHash := vLog.TxHash
+			txHeight := vLog.BlockNumber
+			w.logger.Infof("eth event: %s, %d", txHash.String(), txHeight)
 			if event, err := filterer.ParseMint(vLog); event != nil && err == nil {
 				user := event.User
 				amount := event.Amount
 				nep5Hash := event.Nep5Hash
-				txHash := vLog.TxHash
-				txHeight := vLog.BlockNumber
 				neoHash := hex.EncodeToString(nep5Hash[:])
 
 				if _, err := db.GetSwapInfoByTxHash(w.store, neoHash, types.NEO); err == nil {
@@ -95,12 +96,10 @@ func (w *WithdrawAPI) lister() {
 				user := event.User
 				amount := event.Amount
 				nep5Addr := event.Nep5Addr
-				txHash := vLog.TxHash
-				txHeight := vLog.BlockNumber
 				neoClient := w.neo.Client()
 				if err := neoClient.ValidateAddress(nep5Addr); err == nil {
-					w.logger.Infof("withdraw event, user:%s, amount:%s, nep5Addr:%s. eth[%s,%d]",
-						user.String(), amount.String(), nep5Addr, txHash.String(), txHeight)
+					w.logger.Infof("withdraw event, user:%s, amount:%s, nep5Addr:%s. eth[%s]",
+						user.String(), amount.String(), nep5Addr, txHash.String())
 
 					if err := w.toWaitConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr); err != nil {
 						w.logger.Errorf("withdraw event: %s, eth[%s]", err, txHash.String())

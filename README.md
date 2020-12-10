@@ -10,32 +10,22 @@ Usage:
   ghub [OPTIONS]
 
 Application Options:
-  -V, --verbose              show verbose debug information
-  -l, --level=               log level (default: warn)
-      --signerToken=         singer JWT token
-      --signerEndPoint=      singer endpoint
-  -n, --neoUrl=              NEO RPC endpoint
-      --neoContract=         NEO staking contract address
-      --neoAssetId=          qlc token asset id
-      --neoSignerAddress=    NEO address to sign tx
-      --neoConfirmedHeight=  Neo transaction Confirmed Height (default: 0)
-      --neoDepositInterval=  Lock timeout interval height of deposit (default: 40)
-      --neoWithdrawInterval= Lock timeout interval height of withdraw (default: 20)
-  -e, --ethereumUrl=         Ethereum RPC endpoint
-      --ethereumContract=    ethereum staking contract address
-      --ethOwnerAddress=     Ethereum owner address
-      --ethConfirmedHeight=  Eth transaction Confirmed Height (default: 0)
-      --ethDepositHeight=    Lock timeout Height of deposit (default: 20)
-      --ethWithdrawHeight=   Lock timeout Height of withdraw (default: 40)
-      --gasEndPoint=         endpoint to get gas price
-      --listenAddress=       RPC server listen address (default: tcp://0.0.0.0:19745)
-      --grpcAddress=         GRPC server listen address (default: tcp://0.0.0.0:19746)
-      --allowedOrigins=      AllowedOrigins of CORS (default: *)
-      --minDepositAmount=    minimal amount to deposit (default: 100000000)
-      --minWithdrawAmount=   minimal amount to withdraw (default: 100000000)
-      --withdrawFrequency=   time interval to every withdraw (minute) (default: 10)
-      --stateInterval=       time interval to check locker state (default: 2)
-  -K, --key=                 private key
+  -V, --verbose             show verbose debug information
+  -l, --level=              log level (default: info)
+      --signerToken=        singer JWT token
+      --signerEndPoint=     singer endpoint
+      --neoUrls=            NEO RPC endpoint
+      --neoContract=        NEO staking contract address
+      --neoOwnerAddress=    NEO address to sign tx
+      --neoConfirmedHeight= Neo transaction Confirmed Height (default: 1)
+  -e, --ethUrl=             Ethereum RPC endpoint
+      --ethContract=        ethereum staking contract address
+      --ethOwnerAddress=    Ethereum owner address
+      --ethConfirmedHeight= Eth transaction Confirmed Height (default: 3)
+      --listenAddress=      RPC server listen address (default: tcp://0.0.0.0:19745)
+      --grpcAddress=        GRPC server listen address (default: tcp://0.0.0.0:19746)
+      --allowedOrigins=     AllowedOrigins of CORS (default: *)
+  -K, --key=                private key
       --duration=
 
 Help Options:
