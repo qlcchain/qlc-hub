@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -243,4 +244,52 @@ func toBoolean(b bool) *pb.Boolean {
 
 func toString(b string) *pb.String {
 	return &pb.String{Value: b}
+}
+
+func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
+	hash := h.GetHash()
+	confirmed, err := d.eth.HasBlockConfirmed(common.HexToHash(hash), d.cfg.EthCfg.ConfirmedHeight)
+	if err != nil || !confirmed {
+		return toBoolean(false), fmt.Errorf("block not confirmed")
+	}
+	amount, address, neoTx, err := d.eth.SyncMintLog(hash)
+	if err != nil {
+		d.logger.Errorf("mint log: %s", err)
+		return toBoolean(false), err
+	}
+
+	swapInfo, err := db.GetSwapInfoByTxHash(d.store, neoTx, types.NEO)
+	if err != nil {
+		return toBoolean(false), err
+	}
+
+	if amount.Int64() != swapInfo.Amount || strings.ToLower(address.String()) != strings.ToLower(swapInfo.EthUserAddr) {
+		d.logger.Errorf("swap info not match: %s, amount %d, address %s", swapInfo.String(), amount.Int64(), address.String())
+		return toBoolean(false), err
+	}
+
+	if swapInfo.State == types.DepositDone {
+		if swapInfo.EthTxHash == "" {
+			swapInfo.EthTxHash = hash
+			if err := db.UpdateSwapInfo(d.store, swapInfo); err != nil {
+				return toBoolean(false), err
+			}
+			d.logger.Infof("set deposit swap info eth hash to %s", hash)
+			return toBoolean(true), nil
+		} else {
+			return toBoolean(true), nil
+		}
+	}
+	if swapInfo.State == types.DepositPending {
+		swapInfo.State = types.DepositDone
+		swapInfo.EthTxHash = hash
+		if err := db.UpdateSwapInfo(d.store, swapInfo); err != nil {
+			d.logger.Error(err)
+			return toBoolean(false), err
+		}
+		d.logger.Infof("update state to %s, set eth to %s, neo[%s]", types.SwapStateToString(types.DepositDone),
+			hash, swapInfo.NeoTxHash)
+		return toBoolean(true), nil
+	}
+	return toBoolean(false), errors.New("invalid state")
 }

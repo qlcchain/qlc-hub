@@ -41,6 +41,38 @@
         ]
       }
     },
+    "/deposit/ethTransactionConfirmed": {
+      "post": {
+        "operationId": "DepositAPI_EthTransactionConfirmed",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          }
+        ],
+        "tags": [
+          "DepositAPI"
+        ]
+      }
+    },
     "/deposit/getEthOwnerSign": {
       "post": {
         "operationId": "DepositAPI_GetEthOwnerSign",

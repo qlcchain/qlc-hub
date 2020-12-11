@@ -234,7 +234,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 	} else {
 		confirmed, err := w.eth.HasBlockConfirmed(common.HexToHash(hash), w.cfg.EthCfg.ConfirmedHeight)
 		if err != nil || !confirmed {
-			w.logger.Infof("block not confirmed %s", err)
+			w.logger.Infof("block not confirmed: %s, %s", err, hash)
 			return nil, err
 		}
 
@@ -261,7 +261,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 
 var (
 	maxRHashSize = 10240
-	timeout      = 24 * time.Hour
+	timeout      = 48 * time.Hour
 )
 
 var glock = gcache.New(maxRHashSize).Expiration(timeout).LRU().Build()

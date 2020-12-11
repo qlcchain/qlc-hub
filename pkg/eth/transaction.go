@@ -155,20 +155,21 @@ func (t *Transaction) SyncBurnLog(txHash string) (*big.Int, common.Address, stri
 	return nil, common.Address{}, "", fmt.Errorf("burn log not found, [%s]", txHash)
 }
 
-func (t *Transaction) SyncMintLog(txHash string) (*big.Int, common.Address, error) {
+func (t *Transaction) SyncMintLog(txHash string) (*big.Int, common.Address, string, error) {
 	receipt, err := t.client.TransactionReceipt(context.Background(), common.HexToHash(txHash))
 	if err != nil {
-		return nil, common.Address{}, fmt.Errorf("TransactionReceipt, %s [%s]", err, txHash)
+		return nil, common.Address{}, "", fmt.Errorf("TransactionReceipt, %s [%s]", err, txHash)
 	}
 	filterer, err := NewQLCChainFilterer(t.contract, t.client)
 	if err != nil {
-		return nil, common.Address{}, fmt.Errorf("NewQLCChainFilterer, %s [%s]", err, txHash)
+		return nil, common.Address{}, "", fmt.Errorf("NewQLCChainFilterer, %s [%s]", err, txHash)
 	}
 	for _, log := range receipt.Logs {
 		event, err := filterer.ParseMint(*log)
 		if err == nil && event != nil {
-			return event.Amount, event.User, nil
+			hash := common.BytesToHash(event.Nep5Hash[:])
+			return event.Amount, event.User, hash.String(), nil
 		}
 	}
-	return nil, common.Address{}, fmt.Errorf("burn log not found, [%s]", txHash)
+	return nil, common.Address{}, "", fmt.Errorf("burn log not found, [%s]", txHash)
 }

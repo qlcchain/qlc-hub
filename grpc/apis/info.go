@@ -256,7 +256,7 @@ func toSwapInfo(info *types.SwapInfo) *pb.SwapInfo {
 }
 
 func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
-	vTicker := time.NewTicker(5 * time.Minute)
+	vTicker := time.NewTicker(10 * time.Minute)
 	for {
 		select {
 		case <-vTicker.C:
@@ -315,10 +315,14 @@ func (i *InfoAPI) CheckEthTransaction(ctx context.Context, Hash *pb.Hash) (*pb.B
 		return nil, fmt.Errorf("block not confirmed")
 	}
 	if _, _, _, err := i.eth.SyncBurnLog(Hash.GetHash()); err != nil {
-		if _, _, err := i.eth.SyncMintLog(Hash.GetHash()); err != nil {
+		if _, _, neoTx, err := i.eth.SyncMintLog(Hash.GetHash()); err != nil {
 			return toBoolean(false), fmt.Errorf("no sync log, %s", err)
 		} else {
-			return toBoolean(true), nil
+			if _, err := db.GetSwapInfoByTxHash(i.store, neoTx, types.NEO); err != nil {
+				return toBoolean(false), err
+			} else {
+				return toBoolean(true), nil
+			}
 		}
 	} else {
 		return toBoolean(true), nil
