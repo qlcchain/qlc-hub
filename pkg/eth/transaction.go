@@ -90,7 +90,6 @@ func (t *Transaction) HasBlockConfirmed(txHash common.Hash, interval int64) (boo
 		return false, fmt.Errorf("tx receipt: %s", err)
 	}
 	blockNumber := recepit.BlockNumber
-	fmt.Println("=== ", blockNumber)
 	confirmed, _ := t.HasConfirmedBlocksByHeight(blockNumber.Int64(), interval)
 	if !confirmed {
 		return false, errors.New("block not confirmed")
