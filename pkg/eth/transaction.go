@@ -80,23 +80,24 @@ func (t *Transaction) GetBestBlockHeight() (int64, error) {
 }
 
 func (t *Transaction) HasBlockConfirmed(txHash common.Hash, interval int64) (bool, error) {
-	tx, p, err := t.client.TransactionByHash(context.Background(), txHash)
+	//tx, p, err := t.client.TransactionByHash(context.Background(), txHash)
+	//if err != nil {
+	//	return false, err
+	//}
+	//if tx != nil && !p { // if tx not found , p is false
+	recepit, err := t.client.TransactionReceipt(context.Background(), txHash)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("tx receipt: %s", err)
 	}
-	if tx != nil && !p { // if tx not found , p is false
-		recepit, err := t.client.TransactionReceipt(context.Background(), txHash)
-		if err != nil {
-			return false, err
-		}
-		blockNumber := recepit.BlockNumber
-		confirmed, _ := t.HasConfirmedBlocksByHeight(blockNumber.Int64(), interval)
-		if !confirmed {
-			return false, errors.New("block not confirmed")
-		}
-		return true, nil
+	blockNumber := recepit.BlockNumber
+	fmt.Println("=== ", blockNumber)
+	confirmed, _ := t.HasConfirmedBlocksByHeight(blockNumber.Int64(), interval)
+	if !confirmed {
+		return false, errors.New("block not confirmed")
 	}
-	return false, errors.New("tx not found")
+	return true, nil
+	//}
+	//return false, errors.New("tx not found")
 }
 
 func (t *Transaction) HasConfirmedBlocksByHeight(startHeight int64, interval int64) (bool, int64) {
