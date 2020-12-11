@@ -232,26 +232,30 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 		}
 		return toBoolean(true), nil
 	} else {
-		tx, p, err := w.eth.Client().TransactionByHash(context.Background(), common.HexToHash(hash))
-		if tx != nil && !p && err == nil { // if tx not found , p is false
-			amount, user, nep5Addr, err := w.eth.SyncBurnLog(hash)
-			if err != nil {
-				w.logger.Error(err)
-				return nil, err
-			}
-			w.logger.Infof("got burn log: user:%s, neoAddr:%s, amount:%d. [%s]", user.String(), nep5Addr, amount.Int64(), hash)
-			go func() {
-				if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
-					w.logger.Error(err)
-					return
-				}
-				w.logger.Infof("withdraw successfully eth[%s]", hash)
-			}()
-			return toBoolean(true), nil
-		} else {
-			w.logger.Errorf("tx not confirmed, %s, %v,%v, eth[%s]", err, tx != nil, !p, hash)
-			return toBoolean(false), fmt.Errorf("tx not confirmed")
+		confirmed, err := w.eth.HasBlockConfirmed(common.HexToHash(hash), w.cfg.EthCfg.ConfirmedHeight)
+		if err != nil || !confirmed {
+			w.logger.Infof("block not confirmed %s", err)
+			return nil, err
 		}
+
+		amount, user, nep5Addr, err := w.eth.SyncBurnLog(hash)
+		if err != nil {
+			w.logger.Error(err)
+			return nil, err
+		}
+		if err := w.neo.ValidateAddress(nep5Addr); err != nil {
+			w.logger.Error(err)
+			return nil, err
+		}
+		w.logger.Infof("got burn log: user:%s, neoAddr:%s, amount:%d. [%s]", user.String(), nep5Addr, amount.Int64(), hash)
+		go func() {
+			if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
+				w.logger.Error(err)
+				return
+			}
+			w.logger.Infof("withdraw successfully eth[%s]", hash)
+		}()
+		return toBoolean(true), nil
 	}
 }
 

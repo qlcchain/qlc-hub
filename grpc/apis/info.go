@@ -309,12 +309,18 @@ func (i *InfoAPI) CheckNeoTransaction(ctx context.Context, Hash *pb.Hash) (*pb.B
 }
 
 func (i *InfoAPI) CheckEthTransaction(ctx context.Context, Hash *pb.Hash) (*pb.Boolean, error) {
-	tx, p, err := i.eth.Client().TransactionByHash(context.Background(), common.HexToHash(Hash.GetHash()))
-	if err != nil {
-		return toBoolean(false), err
+	hash := common.HexToHash(Hash.GetHash())
+	confirmed, err := i.eth.HasBlockConfirmed(hash, i.cfg.EthCfg.ConfirmedHeight+1)
+	if err != nil || !confirmed {
+		return nil, fmt.Errorf("block not confirmed")
 	}
-	if tx != nil && !p { // if tx not found , p is false
+	if _, _, _, err := i.eth.SyncBurnLog(Hash.GetHash()); err != nil {
+		if _, _, err := i.eth.SyncMintLog(Hash.GetHash()); err != nil {
+			return toBoolean(false), fmt.Errorf("no sync log, %s", err)
+		} else {
+			return toBoolean(true), nil
+		}
+	} else {
 		return toBoolean(true), nil
 	}
-	return toBoolean(false), errors.New("tx not found")
 }

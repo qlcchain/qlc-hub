@@ -61,7 +61,7 @@ HeightConfirmed:
 	for {
 		select {
 		case <-vTicker.C:
-			b, _ := t.HasConfirmedBlocksHeight(int64(txHeight), interval)
+			b, _ := t.HasConfirmedBlocksByHeight(int64(txHeight), interval)
 			if b {
 				return nil
 			}
@@ -79,7 +79,27 @@ func (t *Transaction) GetBestBlockHeight() (int64, error) {
 	return block.Number().Int64(), nil
 }
 
-func (t *Transaction) HasConfirmedBlocksHeight(startHeight int64, interval int64) (bool, int64) {
+func (t *Transaction) HasBlockConfirmed(txHash common.Hash, interval int64) (bool, error) {
+	tx, p, err := t.client.TransactionByHash(context.Background(), txHash)
+	if err != nil {
+		return false, err
+	}
+	if tx != nil && !p { // if tx not found , p is false
+		recepit, err := t.client.TransactionReceipt(context.Background(), txHash)
+		if err != nil {
+			return false, err
+		}
+		blockNumber := recepit.BlockNumber
+		confirmed, _ := t.HasConfirmedBlocksByHeight(blockNumber.Int64(), interval)
+		if !confirmed {
+			return false, errors.New("block not confirmed")
+		}
+		return true, nil
+	}
+	return false, errors.New("tx not found")
+}
+
+func (t *Transaction) HasConfirmedBlocksByHeight(startHeight int64, interval int64) (bool, int64) {
 	if interval < 0 {
 		interval = 0
 	}
@@ -133,4 +153,22 @@ func (t *Transaction) SyncBurnLog(txHash string) (*big.Int, common.Address, stri
 		}
 	}
 	return nil, common.Address{}, "", fmt.Errorf("burn log not found, [%s]", txHash)
+}
+
+func (t *Transaction) SyncMintLog(txHash string) (*big.Int, common.Address, error) {
+	receipt, err := t.client.TransactionReceipt(context.Background(), common.HexToHash(txHash))
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("TransactionReceipt, %s [%s]", err, txHash)
+	}
+	filterer, err := NewQLCChainFilterer(t.contract, t.client)
+	if err != nil {
+		return nil, common.Address{}, fmt.Errorf("NewQLCChainFilterer, %s [%s]", err, txHash)
+	}
+	for _, log := range receipt.Logs {
+		event, err := filterer.ParseMint(*log)
+		if err == nil && event != nil {
+			return event.Amount, event.User, nil
+		}
+	}
+	return nil, common.Address{}, fmt.Errorf("burn log not found, [%s]", txHash)
 }
