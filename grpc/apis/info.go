@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -191,7 +192,7 @@ func (i *InfoAPI) swapAmountByAddress(infos []*types.SwapInfo, addr string, isEt
 	var withdrawAmount int64 = 0
 	for _, info := range infos {
 		if isEthAddr {
-			if info.EthUserAddr == addr {
+			if strings.ToLower(info.EthUserAddr) == strings.ToLower(addr) {
 				if info.State == types.DepositDone {
 					pledgeCount = pledgeCount + 1
 					pledgeAmount = pledgeAmount + info.Amount
@@ -223,7 +224,7 @@ func (i *InfoAPI) swapAmountByAddress(infos []*types.SwapInfo, addr string, isEt
 	}
 	return &pb.AmountByAddressResponse{
 		Address:        addr,
-		Balance:        balance,
+		Erc20Amount:    balance,
 		PledgeCount:    int64(pledgeCount),
 		PledgeAmount:   pledgeAmount,
 		WithdrawCount:  int64(withdrawCount),

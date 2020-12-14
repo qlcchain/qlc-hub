@@ -553,7 +553,7 @@
         "address": {
           "type": "string"
         },
-        "balance": {
+        "erc20Amount": {
           "type": "string",
           "format": "int64"
         },

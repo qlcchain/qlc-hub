@@ -176,7 +176,7 @@ service InfoAPI {
 
 message AmountByAddressResponse {
     string address        = 1;
-    int64  balance        = 2;
+    int64  erc20Amount    = 2;
     int64  pledgeCount    = 3;
     int64  pledgeAmount   = 4;
     int64  withdrawCount  = 5;
