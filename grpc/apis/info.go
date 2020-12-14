@@ -257,7 +257,7 @@ func toSwapInfo(info *types.SwapInfo) *pb.SwapInfo {
 }
 
 func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
-	vTicker := time.NewTicker(10 * time.Minute)
+	vTicker := time.NewTicker(3 * time.Minute)
 	for {
 		select {
 		case <-vTicker.C:
