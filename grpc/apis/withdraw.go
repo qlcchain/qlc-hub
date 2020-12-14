@@ -230,7 +230,12 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 			}()
 			return toBoolean(true), nil
 		}
-		return toBoolean(true), nil
+		if swapInfo.State == types.WithDrawPending {
+			w.logger.Infof("withdraw state is pending, eth[%s]", hash)
+			return toBoolean(true), nil
+		} else {
+			return nil, errors.New("invalid state")
+		}
 	} else {
 		confirmed, err := w.eth.HasBlockConfirmed(common.HexToHash(hash), w.cfg.EthCfg.ConfirmedHeight)
 		if err != nil || !confirmed {
