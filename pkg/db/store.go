@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/qlcchain/qlc-hub/pkg/types"
@@ -46,6 +47,7 @@ func InsertSwapInfo(db *gorm.DB, record *types.SwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
 	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
 	record.NeoTxHash = util.AddHashPrefix(record.NeoTxHash)
+	record.EthUserAddr = stringToLower(record.EthUserAddr)
 	return db.Create(record).Error
 }
 
@@ -53,6 +55,7 @@ func UpdateSwapInfo(db *gorm.DB, record *types.SwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
 	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
 	record.NeoTxHash = util.AddHashPrefix(record.NeoTxHash)
+	record.EthUserAddr = stringToLower(record.EthUserAddr)
 	return db.Save(record).Error
 }
 
@@ -95,6 +98,7 @@ func GetSwapInfosByState(db *gorm.DB, page, pageSize int, state types.SwapState)
 func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, action types.ChainType) ([]*types.SwapInfo, error) {
 	var result []*types.SwapInfo
 	if action == types.ETH {
+		addr = stringToLower(addr)
 		if len(addr) == 40 {
 			addr = fmt.Sprintf("0x%s", addr)
 		}
@@ -109,5 +113,13 @@ func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, action typ
 		} else {
 			return nil, err
 		}
+	}
+}
+
+func stringToLower(str string) string {
+	if str == "" {
+		return ""
+	} else {
+		return strings.ToLower(str)
 	}
 }
