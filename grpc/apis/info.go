@@ -313,7 +313,7 @@ func (i *InfoAPI) CheckEthTransaction(ctx context.Context, Hash *pb.Hash) (*pb.B
 	hash := common.HexToHash(Hash.GetHash())
 	confirmed, err := i.eth.HasBlockConfirmed(hash, i.cfg.EthCfg.ConfirmedHeight+1)
 	if err != nil || !confirmed {
-		return nil, fmt.Errorf("block not confirmed")
+		return nil, fmt.Errorf("block not confirmed, %s", err)
 	}
 	if _, _, _, err := i.eth.SyncBurnLog(Hash.GetHash()); err != nil {
 		if _, _, neoTx, err := i.eth.SyncMintLog(Hash.GetHash()); err != nil {
