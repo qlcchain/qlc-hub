@@ -118,7 +118,7 @@ func (w *WithdrawAPI) lister() {
 
 func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string) error {
 	if txHeight != 0 {
-		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.ConfirmedHeight); err != nil {
+		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.ConfirmedHeight+1); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 	}
@@ -178,7 +178,7 @@ func toConfirmDepositEthTx(txHash common.Hash, txHeight uint64, neoTxHash string
 	eth *eth.Transaction, confirmedHeight int64, store *gorm.DB, logger *zap.SugaredLogger) error {
 
 	if txHeight != 0 {
-		if err := eth.WaitTxVerifyAndConfirmed(txHash, txHeight, confirmedHeight); err != nil {
+		if err := eth.WaitTxVerifyAndConfirmed(txHash, txHeight, confirmedHeight+1); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 	}

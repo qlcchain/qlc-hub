@@ -319,7 +319,7 @@ func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.Bo
 	}
 
 	go func() {
-		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(hash), 0, d.cfg.EthCfg.ConfirmedHeight+1); err != nil {
+		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(hash), 0, d.cfg.EthCfg.ConfirmedHeight); err != nil {
 			d.logger.Errorf("tx confirmed: %s", err)
 			return
 		}
