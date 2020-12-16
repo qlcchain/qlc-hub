@@ -37,7 +37,7 @@ func NewTransaction(client *ethclient.Client, contract string) *Transaction {
 }
 
 func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint64, interval int64) error {
-	cTicker := time.NewTicker(5 * time.Second)
+	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(600 * time.Second)
 	for {
 		select {
@@ -48,9 +48,9 @@ func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint
 			}
 			if tx != nil && !p { // if tx not found , p is false
 				if txHeight == 0 {
-					recepit, err := t.client.TransactionReceipt(context.Background(), txHash)
+					bestHeight, err := t.GetBestBlockHeight()
 					if err == nil {
-						txHeight = recepit.BlockNumber.Uint64()
+						txHeight = uint64(bestHeight) - 1
 						goto HeightConfirmed
 					}
 				} else {

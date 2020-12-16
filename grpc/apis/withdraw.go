@@ -88,7 +88,7 @@ func (w *WithdrawAPI) lister() {
 						txHash.String(), user.String(), amount.String(), neoHash)
 					go func() {
 						if err := toConfirmDepositEthTx(txHash, txHeight, neoHash, user.String(), amount.Int64(),
-							w.eth, w.cfg.EthCfg.ConfirmedHeight, w.store, w.logger); err != nil {
+							w.eth, w.cfg.EthCfg.ConfirmedHeight, w.store, w.logger, true); err != nil {
 							w.logger.Errorf("withdraw event: %s, eth tx[%s]", err, txHash.String())
 						}
 					}()
@@ -104,7 +104,7 @@ func (w *WithdrawAPI) lister() {
 						user.String(), amount.String(), nep5Addr, txHash.String())
 
 					go func() {
-						if err := w.toWaitConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr); err != nil {
+						if err := w.toWaitConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr, true); err != nil {
 							w.logger.Errorf("withdraw event: %s, eth[%s]", err, txHash.String())
 						}
 					}()
@@ -116,23 +116,21 @@ func (w *WithdrawAPI) lister() {
 	}
 }
 
-func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string) error {
+func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string, isEvent bool) error {
 	if txHeight != 0 {
 		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.ConfirmedHeight+1); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 	}
-	w.logger.Infof("withdraw eth transaction confirmed, %s", ethTxHash.String())
 
 	lock(util.AddHashPrefix(ethTxHash.String()), w.logger)
 	defer unlock(util.AddHashPrefix(ethTxHash.String()), w.logger)
+	w.logger.Infof("withdraw eth transaction confirmed, %s, %t", ethTxHash.String(), isEvent)
 
 	if _, err := db.GetSwapInfoByTxHash(w.store, ethTxHash.String(), types.ETH); err == nil {
 		//w.logger.Errorf("confirmed eth tx repeatedly, %s", ethTxHash.String())
 		return nil
 	}
-
-	w.logger.Infof("withdraw eth tx confirmed. eth[%s]", ethTxHash.String())
 
 	swapInfo := &types.SwapInfo{
 		State:       types.WithDrawPending,
@@ -175,17 +173,17 @@ func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight
 }
 
 func toConfirmDepositEthTx(txHash common.Hash, txHeight uint64, neoTxHash string, ethUserAddr string, amount int64,
-	eth *eth.Transaction, confirmedHeight int64, store *gorm.DB, logger *zap.SugaredLogger) error {
+	eth *eth.Transaction, confirmedHeight int64, store *gorm.DB, logger *zap.SugaredLogger, isEvent bool) error {
 
 	if txHeight != 0 {
 		if err := eth.WaitTxVerifyAndConfirmed(txHash, txHeight, confirmedHeight+1); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 	}
-	logger.Infof("deposit eth tx confirmed, %s, neo[%s]", txHash.String(), neoTxHash)
 
 	lock(util.AddHashPrefix(txHash.String()), logger)
 	defer unlock(util.AddHashPrefix(txHash.String()), logger)
+	logger.Infof("deposit eth tx confirmed, %s, neo[%s], %t", txHash.String(), neoTxHash, isEvent)
 
 	swapInfo, err := db.GetSwapInfoByTxHash(store, neoTxHash, types.NEO)
 	if err != nil {
@@ -276,7 +274,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 		}
 		w.logger.Infof("got burn log: user:%s, neoAddr:%s, amount:%d. [%s]", user.String(), nep5Addr, amount.Int64(), hash)
 		go func() {
-			if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
+			if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr, false); err != nil {
 				w.logger.Error(err)
 				return
 			}
@@ -286,7 +284,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 }
 
 func (w *WithdrawAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
-	w.logger.Infof("call withdraw EthTransactionSet: %s", h.String())
+	w.logger.Infof("call withdraw EthTransactionSent: %s", h.String())
 	hash := h.GetHash()
 	if hash == "" {
 		return nil, fmt.Errorf("invalid hash, %s", h)
@@ -315,7 +313,7 @@ func (w *WithdrawAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.B
 			w.logger.Error(err)
 			return
 		}
-		if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
+		if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr, false); err != nil {
 			w.logger.Error(err)
 			return
 		}

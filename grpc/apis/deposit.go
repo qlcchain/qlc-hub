@@ -293,7 +293,7 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 	}
 	if swapInfo.State == types.DepositPending {
 		if err := toConfirmDepositEthTx(common.HexToHash(hash), 0, neoTx, address.String(), amount.Int64(),
-			d.eth, d.cfg.EthCfg.ConfirmedHeight, d.store, d.logger); err != nil {
+			d.eth, d.cfg.EthCfg.ConfirmedHeight, d.store, d.logger, false); err != nil {
 			d.logger.Errorf("deposit :%s, %s", err, hash)
 			return toBoolean(false), err
 		}
