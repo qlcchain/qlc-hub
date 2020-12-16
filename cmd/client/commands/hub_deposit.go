@@ -87,7 +87,17 @@ func hNeo2EthByNeoTx() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("deposit send eth tx done: ", ethTx)
+
+	sentParas := fmt.Sprintf(`{
+		"hash":"%s"
+	}`, ethTx)
+	r, err = post(sentParas, fmt.Sprintf("%s/deposit/ethTransactionSent", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+
 	if !waitForSwapState(neoTxHash, types.SwapStateToString(types.DepositDone)) {
 		log.Fatal("fail")
 	}
@@ -95,7 +105,7 @@ func hNeo2EthByNeoTx() {
 }
 
 func hNeo2Eth() {
-	amount := 5000000000
+	amount := 510000000
 
 	// PackNeoTransaction
 	unsignedParas := fmt.Sprintf(`{
@@ -150,6 +160,15 @@ func hNeo2Eth() {
 		log.Fatal(err)
 	}
 	fmt.Println("deposit send eth tx done: ", ethTx)
+
+	sentParas := fmt.Sprintf(`{
+		"hash":"%s"
+	}`, ethTx)
+	r, err = post(sentParas, fmt.Sprintf("%s/deposit/ethTransactionSent", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+
 	if !waitForSwapState(neoTxHash, types.SwapStateToString(types.DepositDone)) {
 		log.Fatal("fail")
 	}

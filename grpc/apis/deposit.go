@@ -40,7 +40,7 @@ type DepositAPI struct {
 }
 
 func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e *eth.Transaction, signer *signer.SignerClient, s *gorm.DB) *DepositAPI {
-	return &DepositAPI{
+	api := &DepositAPI{
 		cfg:    cfg,
 		neo:    neo,
 		eth:    e,
@@ -49,6 +49,8 @@ func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction
 		signer: signer,
 		logger: log.NewLogger("api/deposit"),
 	}
+	go api.correctSwapPending()
+	return api
 }
 
 func (d *DepositAPI) PackNeoTransaction(ctx context.Context, request *pb.PackNeoTxRequest) (*pb.PackNeoTxResponse, error) {
@@ -247,9 +249,14 @@ func toString(b string) *pb.String {
 }
 
 func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
+	d.logger.Infof("call deposit EthTransactionConfirmed: %s", h.String())
 	hash := h.GetHash()
+	if hash == "" {
+		return nil, errors.New("invalid hash")
+	}
 	confirmed, err := d.eth.HasBlockConfirmed(common.HexToHash(hash), d.cfg.EthCfg.ConfirmedHeight)
 	if err != nil || !confirmed {
+		d.logger.Errorf("block confirmed: %s, %s", err, confirmed)
 		return toBoolean(false), fmt.Errorf("block not confirmed")
 	}
 	amount, address, neoTx, err := d.eth.SyncMintLog(hash)
@@ -257,11 +264,15 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 		d.logger.Errorf("mint log: %s", err)
 		return toBoolean(false), err
 	}
-
 	swapInfo, err := db.GetSwapInfoByTxHash(d.store, neoTx, types.NEO)
 	if err != nil {
 		return toBoolean(false), err
 	}
+	if swapInfo.State == types.DepositDone && swapInfo.EthTxHash != "" {
+		return toBoolean(true), nil
+	}
+
+	d.logger.Infof("mint log: %d, %s, %s, neo[%s] ", amount.Uint64(), address.String(), neoTx, swapInfo.NeoTxHash)
 
 	if amount.Int64() != swapInfo.Amount || strings.ToLower(address.String()) != strings.ToLower(swapInfo.EthUserAddr) {
 		d.logger.Errorf("swap info not match: %s, amount %d, address %s", swapInfo.String(), amount.Int64(), address.String())
@@ -281,15 +292,72 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 		}
 	}
 	if swapInfo.State == types.DepositPending {
-		swapInfo.State = types.DepositDone
-		swapInfo.EthTxHash = hash
-		if err := db.UpdateSwapInfo(d.store, swapInfo); err != nil {
-			d.logger.Error(err)
+		if err := toConfirmDepositEthTx(common.HexToHash(hash), 0, neoTx, address.String(), amount.Int64(),
+			d.eth, d.cfg.EthCfg.ConfirmedHeight, d.store, d.logger); err != nil {
+			d.logger.Errorf("deposit :%s, %s", err, hash)
 			return toBoolean(false), err
 		}
-		d.logger.Infof("update state to %s, set eth to %s, neo[%s]", types.SwapStateToString(types.DepositDone),
-			hash, swapInfo.NeoTxHash)
 		return toBoolean(true), nil
 	}
 	return toBoolean(false), errors.New("invalid state")
+}
+
+func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
+	d.logger.Infof("call deposit EthTransactionSent: %s", h.String())
+	hash := h.GetHash()
+	if hash == "" {
+		return nil, fmt.Errorf("invalid hash, %s", h)
+	}
+	if _, err := db.GetSwapPendingByTxHash(d.store, hash); err != nil {
+		if err := db.InsertSwapPending(d.store, &types.SwapPending{
+			Typ:       types.Deposit,
+			EthTxHash: hash,
+		}); err != nil {
+			d.logger.Error(err)
+			return toBoolean(false), err
+		}
+	}
+
+	go func() {
+		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(hash), 0, d.cfg.EthCfg.ConfirmedHeight+1); err != nil {
+			d.logger.Errorf("tx confirmed: %s", err)
+			return
+		}
+		if _, err := d.EthTransactionConfirmed(ctx, h); err != nil {
+			d.logger.Errorf("tx confirmed: %s", err)
+			return
+		}
+	}()
+	return toBoolean(true), nil
+}
+
+func (d *DepositAPI) correctSwapPending() error {
+	vTicker := time.NewTicker(4 * time.Minute)
+	for {
+		select {
+		case <-vTicker.C:
+			infos, err := db.GetSwapPendings(d.store, 0, 0)
+			if err != nil {
+				d.logger.Error(err)
+				continue
+			}
+			for _, info := range infos {
+				if info.Typ == types.Deposit && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					swapInfo, err := db.GetSwapInfoByTxHash(d.store, info.EthTxHash, types.ETH)
+					if err == nil {
+						if swapInfo.State == types.DepositDone && swapInfo.EthTxHash != "" {
+							_ = db.DeleteSwapPending(d.store, info)
+						} else {
+							d.logger.Info("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
+							if _, err := d.EthTransactionSent(context.Background(), &pb.Hash{
+								Hash: info.EthTxHash,
+							}); err != nil {
+								d.logger.Error(err)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }

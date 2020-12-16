@@ -58,12 +58,26 @@ service DepositAPI {
           body: "*"
         };
     }
+
+    rpc EthTransactionSent(Hash) returns (Boolean){
+        option (google.api.http) = {
+          post: "/deposit/ethTransactionSent"
+          body: "*"
+        };
+    }
 }
 
 service WithdrawAPI {
     rpc EthTransactionConfirmed(Hash) returns (Boolean){
         option (google.api.http) = {
           post: "/withdraw/ethTransactionConfirmed"
+          body: "*"
+        };
+    }
+
+    rpc EthTransactionSent(Hash) returns (Boolean){
+        option (google.api.http) = {
+          post: "/withdraw/ethTransactionSent"
           body: "*"
         };
     }
@@ -111,6 +125,17 @@ message SwapInfo {
 message SwapInfos {
     repeated SwapInfo infos = 1;
 }
+
+message SwapPending {
+    int32  typ              = 1;
+	string ethTxHash        = 2;
+	string lastModifyTime   = 3;
+}
+
+message SwapPendings {
+    repeated SwapPending infos = 1;
+}
+
 
 service InfoAPI {
     rpc Ping(google.protobuf.Empty) returns (PingResponse){
@@ -170,6 +195,12 @@ service InfoAPI {
    rpc SwapAmountByAddress(Address) returns (AmountByAddressResponse){
       option (google.api.http) = {
         get: "/info/swapAmountByAddress"
+      };
+   }
+
+   rpc SwapUnconfirmeds(google.protobuf.Empty) returns (SwapPendings){
+      option (google.api.http) = {
+         get: "/info/swapUnconfirmeds"
       };
    }
 }

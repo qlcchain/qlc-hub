@@ -20,6 +20,7 @@ func NewDB(url string) (*gorm.DB, error) {
 		return nil, err
 	}
 	db.AutoMigrate(&types.SwapInfo{})
+	db.AutoMigrate(&types.SwapPending{})
 	return db, nil
 }
 
@@ -122,4 +123,33 @@ func stringToLower(str string) string {
 	} else {
 		return strings.ToLower(str)
 	}
+}
+
+func InsertSwapPending(db *gorm.DB, record *types.SwapPending) error {
+	record.LastModifyTime = time.Now().Unix()
+	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
+	return db.Create(record).Error
+}
+
+func GetSwapPendings(db *gorm.DB, page, pageSize int) ([]*types.SwapPending, error) {
+	var result []*types.SwapPending
+	if err := db.Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+		return result, nil
+	} else {
+		return nil, err
+	}
+}
+
+func GetSwapPendingByTxHash(db *gorm.DB, hash string) (*types.SwapPending, error) {
+	var result types.SwapPending
+	hash = util.AddHashPrefix(hash)
+	if err := db.Where("eth_tx_hash = ?", hash).First(&result).Error; err == nil {
+		return &result, nil
+	} else {
+		return nil, err
+	}
+}
+
+func DeleteSwapPending(db *gorm.DB, record *types.SwapPending) error {
+	return db.Delete(record).Error
 }

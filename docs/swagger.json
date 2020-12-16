@@ -73,6 +73,38 @@
         ]
       }
     },
+    "/deposit/ethTransactionSent": {
+      "post": {
+        "operationId": "DepositAPI_EthTransactionSent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          }
+        ],
+        "tags": [
+          "DepositAPI"
+        ]
+      }
+    },
     "/deposit/getEthOwnerSign": {
       "post": {
         "operationId": "DepositAPI_GetEthOwnerSign",
@@ -513,9 +545,63 @@
         ]
       }
     },
+    "/info/swapUnconfirmeds": {
+      "get": {
+        "operationId": "InfoAPI_SwapUnconfirmeds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoSwapPendings"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
     "/withdraw/ethTransactionConfirmed": {
       "post": {
         "operationId": "WithdrawAPI_EthTransactionConfirmed",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawAPI"
+        ]
+      }
+    },
+    "/withdraw/ethTransactionSent": {
+      "post": {
+        "operationId": "WithdrawAPI_EthTransactionSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -736,6 +822,32 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/protoSwapInfo"
+          }
+        }
+      }
+    },
+    "protoSwapPending": {
+      "type": "object",
+      "properties": {
+        "typ": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ethTxHash": {
+          "type": "string"
+        },
+        "lastModifyTime": {
+          "type": "string"
+        }
+      }
+    },
+    "protoSwapPendings": {
+      "type": "object",
+      "properties": {
+        "infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protoSwapPending"
           }
         }
       }

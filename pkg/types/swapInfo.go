@@ -36,3 +36,10 @@ func (s *SwapInfo) String() string {
 //	}
 //	return nil
 //}
+
+type SwapPending struct {
+	gorm.Model
+	Typ            SwapType `msg:"typ" json:"typ"`
+	EthTxHash      string   `msg:"ethTxHash" json:"ethTxHash"`
+	LastModifyTime int64    `msg:"lastModifyTime" json:"lastModifyTime"`
+}

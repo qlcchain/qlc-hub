@@ -44,6 +44,7 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 		logger: log.NewLogger("api/withdraw"),
 	}
 	go api.lister()
+	go api.correctSwapPending()
 	return api
 }
 
@@ -85,11 +86,12 @@ func (w *WithdrawAPI) lister() {
 				if _, err := db.GetSwapInfoByTxHash(w.store, neoHash, types.NEO); err == nil {
 					w.logger.Infof("deposit event, hash:%s, user:%s, amount:%s. neo[%s]",
 						txHash.String(), user.String(), amount.String(), neoHash)
-					if err := w.toConfirmDepositEthTx(txHash, txHeight, neoHash, user.String(), amount.Int64()); err != nil {
-						w.logger.Errorf("withdraw event: %s, eth tx[%s]", err, txHash.String())
-						continue
-					}
-					w.logger.Infof("deposit successfully. neo[%s]", neoHash)
+					go func() {
+						if err := toConfirmDepositEthTx(txHash, txHeight, neoHash, user.String(), amount.Int64(),
+							w.eth, w.cfg.EthCfg.ConfirmedHeight, w.store, w.logger); err != nil {
+							w.logger.Errorf("withdraw event: %s, eth tx[%s]", err, txHash.String())
+						}
+					}()
 				}
 			}
 			if event, err := filterer.ParseBurn(vLog); event != nil && err == nil {
@@ -101,11 +103,11 @@ func (w *WithdrawAPI) lister() {
 					w.logger.Infof("withdraw event, user:%s, amount:%s, nep5Addr:%s. eth[%s]",
 						user.String(), amount.String(), nep5Addr, txHash.String())
 
-					if err := w.toWaitConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr); err != nil {
-						w.logger.Errorf("withdraw event: %s, eth[%s]", err, txHash.String())
-						continue
-					}
-					w.logger.Infof("withdraw successfully, eth[%s]", txHash.String())
+					go func() {
+						if err := w.toWaitConfirmWithdrawEthTx(txHash, txHeight, user, amount, nep5Addr); err != nil {
+							w.logger.Errorf("withdraw event: %s, eth[%s]", err, txHash.String())
+						}
+					}()
 				} else {
 					w.logger.Errorf("withdraw event, invalid nep5 address: %s, %s, eth tx[%s]", err, nep5Addr, txHash.String())
 				}
@@ -115,18 +117,21 @@ func (w *WithdrawAPI) lister() {
 }
 
 func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string) error {
-	lock(util.AddHashPrefix(ethTxHash.String()), w.logger)
-	defer unlock(util.AddHashPrefix(ethTxHash.String()), w.logger)
-
-	if _, err := db.GetSwapInfoByTxHash(w.store, ethTxHash.String(), types.ETH); err == nil {
-		w.logger.Errorf("confirmed eth tx repeatedly, %s", ethTxHash.String())
-		return errors.New("confirmed eth tx repeatedly")
-	}
 	if txHeight != 0 {
 		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.ConfirmedHeight); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 	}
+	w.logger.Infof("withdraw eth transaction confirmed, %s", ethTxHash.String())
+
+	lock(util.AddHashPrefix(ethTxHash.String()), w.logger)
+	defer unlock(util.AddHashPrefix(ethTxHash.String()), w.logger)
+
+	if _, err := db.GetSwapInfoByTxHash(w.store, ethTxHash.String(), types.ETH); err == nil {
+		//w.logger.Errorf("confirmed eth tx repeatedly, %s", ethTxHash.String())
+		return nil
+	}
+
 	w.logger.Infof("withdraw eth tx confirmed. eth[%s]", ethTxHash.String())
 
 	swapInfo := &types.SwapInfo{
@@ -162,29 +167,46 @@ func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight
 	swapInfo.NeoTxHash = neoTx
 	swapInfo.State = types.WithDrawDone
 	w.logger.Infof("update state to %s, eth[%s]", types.SwapStateToString(types.WithDrawDone), ethTxHash.String())
-	return db.UpdateSwapInfo(w.store, swapInfo)
+	if err := db.UpdateSwapInfo(w.store, swapInfo); err != nil {
+		return err
+	}
+	w.logger.Infof("withdraw successfully, eth[%s]", ethTxHash.String())
+	return nil
 }
 
-func (w *WithdrawAPI) toConfirmDepositEthTx(txHash common.Hash, txHeight uint64, neoTxHash string, ethUserAddr string, amount int64) error {
-	if err := w.eth.WaitTxVerifyAndConfirmed(txHash, txHeight, w.cfg.EthCfg.ConfirmedHeight); err != nil {
-		return fmt.Errorf("tx confirmed: %s", err)
-	}
-	w.logger.Infof("deposit eth tx confirmed, %s, neo[%s]", txHash.String(), neoTxHash)
+func toConfirmDepositEthTx(txHash common.Hash, txHeight uint64, neoTxHash string, ethUserAddr string, amount int64,
+	eth *eth.Transaction, confirmedHeight int64, store *gorm.DB, logger *zap.SugaredLogger) error {
 
-	swapInfo, err := db.GetSwapInfoByTxHash(w.store, neoTxHash, types.NEO)
+	if txHeight != 0 {
+		if err := eth.WaitTxVerifyAndConfirmed(txHash, txHeight, confirmedHeight); err != nil {
+			return fmt.Errorf("tx confirmed: %s", err)
+		}
+	}
+	logger.Infof("deposit eth tx confirmed, %s, neo[%s]", txHash.String(), neoTxHash)
+
+	lock(util.AddHashPrefix(txHash.String()), logger)
+	defer unlock(util.AddHashPrefix(txHash.String()), logger)
+
+	swapInfo, err := db.GetSwapInfoByTxHash(store, neoTxHash, types.NEO)
 	if err != nil {
-		w.logger.Error(err)
+		logger.Error(err)
 		return fmt.Errorf("get swapInfo: %s", err)
 	}
+
+	if swapInfo.State == types.DepositDone && swapInfo.EthTxHash != "" {
+		return nil
+	}
+
 	swapInfo.State = types.DepositDone
 	swapInfo.EthTxHash = txHash.String()
 	swapInfo.EthUserAddr = ethUserAddr
 	swapInfo.Amount = amount
-	if err := db.UpdateSwapInfo(w.store, swapInfo); err != nil {
-		w.logger.Error(err)
+	if err := db.UpdateSwapInfo(store, swapInfo); err != nil {
+		logger.Error(err)
 		return fmt.Errorf("set swapInfo: %s", err)
 	}
-	w.logger.Infof("update state to %s, neo[%s]", types.SwapStateToString(types.DepositDone), neoTxHash)
+	logger.Infof("update state to %s, neo[%s]", types.SwapStateToString(types.DepositDone), neoTxHash)
+	logger.Infof("deposit successfully. neo[%s]", neoTxHash)
 	return nil
 }
 
@@ -258,10 +280,47 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 				w.logger.Error(err)
 				return
 			}
-			w.logger.Infof("withdraw successfully eth[%s]", hash)
 		}()
 		return toBoolean(true), nil
 	}
+}
+
+func (w *WithdrawAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
+	w.logger.Infof("call withdraw EthTransactionSet: %s", h.String())
+	hash := h.GetHash()
+	if hash == "" {
+		return nil, fmt.Errorf("invalid hash, %s", h)
+	}
+
+	if _, err := db.GetSwapPendingByTxHash(w.store, hash); err != nil {
+		if err := db.InsertSwapPending(w.store, &types.SwapPending{
+			Typ:       types.Withdraw,
+			EthTxHash: hash,
+		}); err != nil {
+			w.logger.Error(err)
+			return toBoolean(false), err
+		}
+	}
+
+	go func() {
+		if err := w.eth.WaitTxVerifyAndConfirmed(common.HexToHash(hash), 0, w.cfg.EthCfg.ConfirmedHeight); err != nil {
+			w.logger.Errorf("tx confirmed: %s", err)
+		}
+		amount, user, nep5Addr, err := w.eth.SyncBurnLog(hash)
+		if err != nil {
+			w.logger.Error(err)
+			return
+		}
+		if err := w.neo.ValidateAddress(nep5Addr); err != nil {
+			w.logger.Error(err)
+			return
+		}
+		if err := w.toWaitConfirmWithdrawEthTx(common.HexToHash(hash), 0, user, amount, nep5Addr); err != nil {
+			w.logger.Error(err)
+			return
+		}
+	}()
+	return toBoolean(true), nil
 }
 
 var (
@@ -295,6 +354,37 @@ func unlock(rHash string, logger *zap.SugaredLogger) {
 			l.Unlock()
 		} else {
 			logger.Errorf("invalid lock type [%s]", rHash)
+		}
+	}
+}
+
+func (w *WithdrawAPI) correctSwapPending() error {
+	vTicker := time.NewTicker(6 * time.Minute)
+	for {
+		select {
+		case <-vTicker.C:
+			infos, err := db.GetSwapPendings(w.store, 0, 0)
+			if err != nil {
+				w.logger.Error(err)
+				continue
+			}
+			for _, info := range infos {
+				if info.Typ == types.Withdraw && time.Now().Unix()-info.LastModifyTime > 60*10 {
+					swapInfo, err := db.GetSwapInfoByTxHash(w.store, info.EthTxHash, types.ETH)
+					if err == nil {
+						if swapInfo.State == types.WithDrawDone {
+							_ = db.DeleteSwapPending(w.store, info)
+						}
+					} else {
+						w.logger.Infof("continue withdraw, eth[%s]", info.EthTxHash)
+						if _, err := w.EthTransactionSent(context.Background(), &pb.Hash{
+							Hash: info.EthTxHash,
+						}); err != nil {
+							w.logger.Error(err)
+						}
+					}
+				}
+			}
 		}
 	}
 }

@@ -38,7 +38,7 @@ func NewTransaction(client *ethclient.Client, contract string) *Transaction {
 
 func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint64, interval int64) error {
 	cTicker := time.NewTicker(5 * time.Second)
-	cTimer := time.NewTimer(300 * time.Second)
+	cTimer := time.NewTimer(600 * time.Second)
 	for {
 		select {
 		case <-cTicker.C:
@@ -47,7 +47,15 @@ func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint
 				t.logger.Errorf("eth tx by hash: %s , txHash: %s", err, txHash.String())
 			}
 			if tx != nil && !p { // if tx not found , p is false
-				goto HeightConfirmed
+				if txHeight == 0 {
+					recepit, err := t.client.TransactionReceipt(context.Background(), txHash)
+					if err == nil {
+						txHeight = recepit.BlockNumber.Uint64()
+						goto HeightConfirmed
+					}
+				} else {
+					goto HeightConfirmed
+				}
 			}
 		case <-cTimer.C:
 			return fmt.Errorf("eth tx by hash timeout: %s", txHash)

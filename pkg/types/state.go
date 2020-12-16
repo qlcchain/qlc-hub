@@ -56,3 +56,10 @@ const (
 	ETH ChainType = iota
 	NEO
 )
+
+type SwapType byte
+
+const (
+	Deposit SwapType = iota
+	Withdraw
+)

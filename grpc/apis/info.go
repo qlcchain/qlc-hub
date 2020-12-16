@@ -329,3 +329,26 @@ func (i *InfoAPI) CheckEthTransaction(ctx context.Context, Hash *pb.Hash) (*pb.B
 		return toBoolean(true), nil
 	}
 }
+
+func (i *InfoAPI) SwapUnconfirmeds(ctx context.Context, empty *empty.Empty) (*pb.SwapPendings, error) {
+	infos, err := db.GetSwapPendings(i.store, 0, 0)
+	if err != nil {
+		return nil, fmt.Errorf("get swapInfos: %s", err)
+	}
+	return toSwapPendings(infos), nil
+}
+
+func toSwapPendings(infos []*types.SwapPending) *pb.SwapPendings {
+	r := make([]*pb.SwapPending, 0)
+	for _, info := range infos {
+		ri := &pb.SwapPending{
+			Typ:            int32(info.Typ),
+			EthTxHash:      info.EthTxHash,
+			LastModifyTime: time.Unix(info.LastModifyTime, 0).Format(time.RFC3339),
+		}
+		r = append(r, ri)
+	}
+	return &pb.SwapPendings{
+		Infos: r,
+	}
+}

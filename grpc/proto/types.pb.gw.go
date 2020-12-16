@@ -202,6 +202,40 @@ func local_request_DepositAPI_EthTransactionConfirmed_0(ctx context.Context, mar
 
 }
 
+func request_DepositAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.EthTransactionSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_DepositAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.EthTransactionSent(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
@@ -232,6 +266,40 @@ func local_request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, ma
 	}
 
 	msg, err := server.EthTransactionConfirmed(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_WithdrawAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.EthTransactionSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_WithdrawAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.EthTransactionSent(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -542,6 +610,24 @@ func local_request_InfoAPI_SwapAmountByAddress_0(ctx context.Context, marshaler 
 
 }
 
+func request_InfoAPI_SwapUnconfirmeds_0(ctx context.Context, marshaler runtime.Marshaler, client InfoAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.SwapUnconfirmeds(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_InfoAPI_SwapUnconfirmeds_0(ctx context.Context, marshaler runtime.Marshaler, server InfoAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.SwapUnconfirmeds(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 var (
 	filter_DebugAPI_SignData_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
@@ -683,6 +769,26 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
+	mux.Handle("POST", pattern_DepositAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_DepositAPI_EthTransactionSent_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DepositAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -708,6 +814,26 @@ func RegisterWithdrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		}
 
 		forward_WithdrawAPI_EthTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_WithdrawAPI_EthTransactionSent_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_WithdrawAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -919,6 +1045,26 @@ func RegisterInfoAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, se
 
 	})
 
+	mux.Handle("GET", pattern_InfoAPI_SwapUnconfirmeds_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_InfoAPI_SwapUnconfirmeds_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_InfoAPI_SwapUnconfirmeds_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -1088,6 +1234,26 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
+	mux.Handle("POST", pattern_DepositAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_DepositAPI_EthTransactionSent_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_DepositAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -1101,6 +1267,8 @@ var (
 	pattern_DepositAPI_GetEthOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "getEthOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_DepositAPI_EthTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "ethTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_DepositAPI_EthTransactionSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "ethTransactionSent"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
@@ -1113,6 +1281,8 @@ var (
 	forward_DepositAPI_GetEthOwnerSign_0 = runtime.ForwardResponseMessage
 
 	forward_DepositAPI_EthTransactionConfirmed_0 = runtime.ForwardResponseMessage
+
+	forward_DepositAPI_EthTransactionSent_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterWithdrawAPIHandlerFromEndpoint is same as RegisterWithdrawAPIHandler but
@@ -1173,15 +1343,39 @@ func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
+	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_WithdrawAPI_EthTransactionSent_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_WithdrawAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
 var (
 	pattern_WithdrawAPI_EthTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "ethTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_WithdrawAPI_EthTransactionSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "ethTransactionSent"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
 	forward_WithdrawAPI_EthTransactionConfirmed_0 = runtime.ForwardResponseMessage
+
+	forward_WithdrawAPI_EthTransactionSent_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterInfoAPIHandlerFromEndpoint is same as RegisterInfoAPIHandler but
@@ -1422,6 +1616,26 @@ func RegisterInfoAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, cl
 
 	})
 
+	mux.Handle("GET", pattern_InfoAPI_SwapUnconfirmeds_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_InfoAPI_SwapUnconfirmeds_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_InfoAPI_SwapUnconfirmeds_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -1445,6 +1659,8 @@ var (
 	pattern_InfoAPI_SwapAmountByState_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "swapAmountByState"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_InfoAPI_SwapAmountByAddress_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "swapAmountByAddress"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_InfoAPI_SwapUnconfirmeds_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"info", "swapUnconfirmeds"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
@@ -1467,6 +1683,8 @@ var (
 	forward_InfoAPI_SwapAmountByState_0 = runtime.ForwardResponseMessage
 
 	forward_InfoAPI_SwapAmountByAddress_0 = runtime.ForwardResponseMessage
+
+	forward_InfoAPI_SwapUnconfirmeds_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterDebugAPIHandlerFromEndpoint is same as RegisterDebugAPIHandler but
