@@ -48,9 +48,9 @@ func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint
 			}
 			if tx != nil && !p { // if tx not found , p is false
 				if txHeight == 0 {
-					bestHeight, err := t.GetBestBlockHeight()
+					recepit, err := t.client.TransactionReceipt(context.Background(), txHash)
 					if err == nil {
-						txHeight = uint64(bestHeight) - 1
+						txHeight = recepit.BlockNumber.Uint64()
 						goto HeightConfirmed
 					}
 				} else {
