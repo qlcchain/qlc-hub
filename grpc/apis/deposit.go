@@ -256,7 +256,7 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 	}
 	confirmed, err := d.eth.HasBlockConfirmed(common.HexToHash(hash), d.cfg.EthCfg.ConfirmedHeight)
 	if err != nil || !confirmed {
-		d.logger.Errorf("block confirmed: %s, %s", err, confirmed)
+		d.logger.Errorf("block confirmed: %s, %t", err, confirmed)
 		return toBoolean(false), fmt.Errorf("block not confirmed")
 	}
 	amount, address, neoTx, err := d.eth.SyncMintLog(hash)

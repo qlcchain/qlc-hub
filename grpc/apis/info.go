@@ -38,7 +38,6 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e
 		store:  s,
 		logger: log.NewLogger("api/info"),
 	}
-	go api.correctSwapState()
 	return api
 }
 
@@ -253,39 +252,6 @@ func toSwapInfo(info *types.SwapInfo) *pb.SwapInfo {
 		NeoUserAddr:    info.NeoUserAddr,
 		StartTime:      time.Unix(info.StartTime, 0).Format(time.RFC3339),
 		LastModifyTime: time.Unix(info.LastModifyTime, 0).Format(time.RFC3339),
-	}
-}
-
-func (i *InfoAPI) correctSwapState() (*pb.SwapInfo, error) {
-	vTicker := time.NewTicker(3 * time.Minute)
-	for {
-		select {
-		case <-vTicker.C:
-			infos, err := db.GetSwapInfos(i.store, 0, 0)
-			if err != nil {
-				i.logger.Error(err)
-				continue
-			}
-			for _, info := range infos {
-				if info.State == types.WithDrawPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
-					lockedInfo, err := i.neo.QueryLockedInfo(info.EthTxHash)
-					if err == nil && lockedInfo.Amount == info.Amount {
-						info.State = types.WithDrawDone
-						info.NeoTxHash = lockedInfo.Txid
-						db.UpdateSwapInfo(i.store, info)
-						i.logger.Infof("correct withdraw swap state: eth[%s]", info.EthTxHash)
-					}
-				}
-				if info.State == types.DepositPending && time.Now().Unix()-info.LastModifyTime > 60*10 {
-					amount, err := i.eth.GetLockedAmountByNeoTxHash(info.NeoTxHash)
-					if err == nil && amount.Int64() == info.Amount {
-						info.State = types.DepositDone //can not get tx hash in eth contract
-						db.UpdateSwapInfo(i.store, info)
-						i.logger.Infof("correct deposit swap state: neo[%s]", info.NeoTxHash)
-					}
-				}
-			}
-		}
 	}
 }
 
