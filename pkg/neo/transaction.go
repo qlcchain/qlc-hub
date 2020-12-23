@@ -165,7 +165,7 @@ func (n *Transaction) Client() *client.Client {
 	if err := n.client.Ping(); err == nil {
 		return n.client
 	} else {
-		n.logger.Errorf("ping neo client: %s, %s ", err, n.urls[0])
+		n.logger.Errorf("ping neo client: %s, %s ", err, n.url)
 		for _, url := range n.urls {
 			if url != n.url {
 				c, err := client.New(context.Background(), url, client.Options{})

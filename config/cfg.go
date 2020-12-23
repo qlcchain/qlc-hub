@@ -39,10 +39,10 @@ type NEOCfg struct {
 }
 
 type EthCfg struct {
-	EndPoint        string `json:"endpoint" short:"e" long:"ethUrl" description:"Ethereum RPC endpoint" validate:"nonzero"`
-	Contract        string `json:"contract" long:"ethContract" description:"ethereum staking contract address"  validate:"nonzero"`
-	OwnerAddress    string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
-	ConfirmedHeight int64  `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"3" validate:""`
+	EndPoints       []string `json:"ethUrls" long:"ethUrls" description:"Ethereum RPC endpoint" validate:"nonzero"`
+	Contract        string   `json:"contract" long:"ethContract" description:"ethereum staking contract address"  validate:"nonzero"`
+	OwnerAddress    string   `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
+	ConfirmedHeight int64    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"3" validate:""`
 }
 
 type RPCCfg struct {

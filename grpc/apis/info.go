@@ -45,7 +45,7 @@ func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingRespons
 	return &pb.PingResponse{
 		EthContract: i.cfg.EthCfg.Contract,
 		EthOwner:    i.cfg.EthCfg.OwnerAddress,
-		EthUrl:      i.cfg.EthCfg.EndPoint,
+		EthUrl:      i.eth.ClientEndpoint(),
 		NeoContract: i.cfg.NEOCfg.Contract,
 		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
 		NeoUrl:      i.neo.ClientEndpoint(),

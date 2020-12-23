@@ -19,6 +19,8 @@ import (
 
 type Transaction struct {
 	signer     *signer.SignerClient
+	urls       []string
+	url        string
 	client     *ethclient.Client
 	contract   common.Address
 	averageGas int64
@@ -27,28 +29,35 @@ type Transaction struct {
 	logger     *zap.SugaredLogger
 }
 
-func NewTransaction(client *ethclient.Client, contract string) *Transaction {
+func NewTransaction(urls []string, contract string) (*Transaction, error) {
+	eClient, err := ethclient.Dial(urls[0])
+	if err != nil || eClient == nil {
+		return nil, fmt.Errorf("eth dail: %s", err)
+	}
 	return &Transaction{
-		client:    client,
+		client:    eClient,
+		urls:      urls,
+		url:       urls[0],
 		contract:  common.HexToAddress(contract),
 		pendingTx: new(sync.Map),
 		logger:    log.NewLogger("eth/transaction"),
-	}
+	}, nil
 }
 
 func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint64, interval int64) error {
 	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(600 * time.Second)
+	client := t.Client()
 	for {
 		select {
 		case <-cTicker.C:
-			tx, p, err := t.client.TransactionByHash(context.Background(), txHash)
+			tx, p, err := client.TransactionByHash(context.Background(), txHash)
 			if err != nil {
 				t.logger.Errorf("eth tx by hash: %s , txHash: %s", err, txHash.String())
 			}
 			if tx != nil && !p { // if tx not found , p is false
 				if txHeight == 0 {
-					recepit, err := t.client.TransactionReceipt(context.Background(), txHash)
+					recepit, err := client.TransactionReceipt(context.Background(), txHash)
 					if err == nil {
 						txHeight = recepit.BlockNumber.Uint64()
 						goto HeightConfirmed
@@ -141,10 +150,6 @@ func GetAccountByPriKey(priKey string) (*ecdsa.PrivateKey, common.Address, error
 	return privateKey, fromAddress, nil
 }
 
-func (t *Transaction) Client() *ethclient.Client {
-	return t.client
-}
-
 func (t *Transaction) SyncBurnLog(txHash string) (*big.Int, common.Address, string, error) {
 	receipt, err := t.client.TransactionReceipt(context.Background(), common.HexToHash(txHash))
 	if err != nil {
@@ -180,4 +185,33 @@ func (t *Transaction) SyncMintLog(txHash string) (*big.Int, common.Address, stri
 		}
 	}
 	return nil, common.Address{}, "", fmt.Errorf("burn log not found, [%s]", txHash)
+}
+
+func (t *Transaction) Client() *ethclient.Client {
+	if _, err := t.client.BlockByNumber(context.Background(), nil); err == nil {
+		return t.client
+	} else {
+		t.logger.Errorf("eth client: %s, %s ", err, t.url)
+		for _, url := range t.urls {
+			if url != t.url {
+				c, err := ethclient.Dial(url)
+				if err == nil && c != nil {
+					if _, err := t.client.BlockByNumber(context.Background(), nil); err == nil {
+						t.client = c
+						t.url = url
+						return c
+					} else {
+						t.logger.Errorf("eth client: %s, %s ", err, t.url)
+					}
+				} else {
+					t.logger.Errorf("new eth client: %s, %s", err, url)
+				}
+			}
+		}
+	}
+	return t.client
+}
+
+func (t *Transaction) ClientEndpoint() string {
+	return t.url
 }

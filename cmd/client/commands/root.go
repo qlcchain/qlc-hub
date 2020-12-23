@@ -6,7 +6,6 @@ import (
 
 	"github.com/abiosoft/ishell"
 	"github.com/abiosoft/readline"
-	"github.com/ethereum/go-ethereum/ethclient"
 	flag "github.com/jessevdk/go-flags"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
@@ -31,7 +30,7 @@ var (
 	neoConfirmedHeight int
 
 	// eth setting
-	ethUrl             = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
+	ethUrl             = []string{"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"}
 	ethContract        = "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
 	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
 	ethUserPrivate     = "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
@@ -78,11 +77,7 @@ func initParams(osArgs []string) {
 		log.Fatal("invalid neo endpoints")
 	}
 
-	if eClient, err := ethclient.Dial(ethUrl); err != nil {
-		log.Fatal(err)
-	} else {
-		ethTransaction = eth.NewTransaction(eClient, ethContract)
-	}
+	ethTransaction, _ = eth.NewTransaction(ethUrl, ethContract)
 	//defer ethClient.Close()
 
 	log.Println("hub endpoint: ", hubUrl)

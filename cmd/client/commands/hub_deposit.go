@@ -105,7 +105,7 @@ func hNeo2EthByNeoTx() {
 }
 
 func hNeo2Eth() {
-	amount := 510000000
+	amount := 100000000
 
 	// PackNeoTransaction
 	unsignedParas := fmt.Sprintf(`{

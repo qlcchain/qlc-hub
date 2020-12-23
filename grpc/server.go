@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
@@ -105,14 +104,10 @@ func (g *Server) checkBaseInfo() error {
 	g.signer = signer
 	g.logger.Info("signer client connected successfully")
 
-	eClient, err := ethclient.Dial(g.cfg.EthCfg.EndPoint)
+	eTransaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.Contract)
 	if err != nil {
-		return fmt.Errorf("eth dail: %s", err)
+		return fmt.Errorf("eth client: %s", err)
 	}
-	if _, err := eClient.BlockByNumber(context.Background(), nil); err != nil {
-		return fmt.Errorf("eth node connect timeout: %s", err)
-	}
-	eTransaction := eth.NewTransaction(eClient, g.cfg.EthCfg.Contract)
 	g.eth = eTransaction
 	g.logger.Info("eth client connected successfully")
 
