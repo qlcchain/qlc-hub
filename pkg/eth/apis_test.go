@@ -1,5 +1,9 @@
 package eth
 
+import (
+	"testing"
+)
+
 const (
 	endPoint   = "https://rinkeby.infura.io/v3/0865b420656e4d70bcbbcc76e265fd57"
 	endPointws = "wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"
@@ -10,16 +14,14 @@ const (
 	userEthPrikey = "b44980807202aff0707cc4eebad4f9e47b4d645cf9f4320653ff62dcd5751234"
 )
 
-//func getTransaction(t *testing.T) (*Transaction, func()) {
-//client, err := ethclient.Dial(endPointws)
-//if err != nil {
-//	t.Fatal(err)
-//}
-//ethTransaction := NewTransaction(client, contract)
-//return ethTransaction, func() {
-//	client.Close()
-//}
-//}
+func getTransaction(t *testing.T) (*Transaction, func()) {
+	ethTransaction, err := NewTransaction([]string{endPointws}, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return ethTransaction, func() {
+	}
+}
 
 //func TestGetBestBlockHeight(t *testing.T) {
 //	ethTransaction, fn := getTransaction(t)

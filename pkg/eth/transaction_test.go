@@ -12,7 +12,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
@@ -114,12 +113,13 @@ func TestTransaction_Sign2(t *testing.T) {
 
 func TestTransaction_SyncLog(t *testing.T) {
 	t.Skip()
-	eClient, err := ethclient.Dial("wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57")
+	urls := []string{"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"}
+
+	contract := "0x0bA64B339281D4F57DF8B535D61c6ceA71CCc956"
+	client, err := NewTransaction(urls, contract)
 	if err != nil {
 		t.Fatal(err)
 	}
-	contract := "0x0bA64B339281D4F57DF8B535D61c6ceA71CCc956"
-	client := NewTransaction(eClient, contract)
 	hash := "0x98219592dfacebe8988a14a61a13294b1b01fe27dcf31704e29979ca1ec5739e"
 	if _, _, _, err := client.SyncBurnLog(hash); err != nil {
 		t.Fatal(err)
@@ -128,13 +128,13 @@ func TestTransaction_SyncLog(t *testing.T) {
 
 func TestTransaction_Transaction(t *testing.T) {
 	t.Skip()
-	eClient, err := ethclient.Dial("wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57")
+	urls := []string{"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"}
+	contract := "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
+	signAccount := "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
+	client, err := NewTransaction(urls, contract)
 	if err != nil {
 		t.Fatal(err)
 	}
-	contract := "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
-	signAccount := "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
-	client := NewTransaction(eClient, contract)
 	instance, opts, err := client.getTransactor(signAccount)
 	if err != nil {
 		t.Fatal(err)
