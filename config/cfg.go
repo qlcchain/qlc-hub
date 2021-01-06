@@ -26,6 +26,7 @@ type Config struct {
 	EthCfg         *EthCfg         `json:"ethereum" validate:"nonnil"`
 	RPCCfg         *RPCCfg         `json:"rpc" validate:"nonnil"`
 	DateDir        string          `json:"dateDir" validate:"nonnil"`
+	CanRefund      int             `json:"canRefund" long:"canRefund" description:"deposit can refund"  default:"0"`
 	Key            string          `json:"key" short:"K" long:"key" description:"private key" validate:"nonzero"`
 	KeyDuration    string          `json:"duration" long:"duration" default:"0s" validate:"nonzero"`
 	JwtManager     *jwt.JWTManager `json:"-"`

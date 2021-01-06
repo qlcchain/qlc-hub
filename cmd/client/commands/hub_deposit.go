@@ -12,18 +12,19 @@ import (
 )
 
 func addHubCmd(shell *ishell.Shell) {
-	ethCmd := &ishell.Cmd{
+	hubCmd := &ishell.Cmd{
 		Name: "hub",
 		Help: "hub",
 		Func: func(c *ishell.Context) {
 			c.Println(c.Cmd.HelpText())
 		},
 	}
-	shell.AddCmd(ethCmd)
-	hNeo2EthCmd(ethCmd)
-	hNeo2EthByNeoTxCmd(ethCmd)
-	hEth2NeoCmd(ethCmd)
-	hEth2NeoPendingCmd(ethCmd)
+	shell.AddCmd(hubCmd)
+	hNeo2EthCmd(hubCmd)
+	hNeo2EthByNeoTxCmd(hubCmd)
+	hNeo2EthRefundCmd(hubCmd)
+	hEth2NeoCmd(hubCmd)
+	hEth2NeoPendingCmd(hubCmd)
 }
 
 func hNeo2EthCmd(parentCmd *ishell.Cmd) {
@@ -39,10 +40,21 @@ func hNeo2EthCmd(parentCmd *ishell.Cmd) {
 
 func hNeo2EthByNeoTxCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "neo2EthByNeoTx",
+		Name: "neo2ethByNeoTx",
 		Help: "neo -> eth",
 		Func: func(c *ishell.Context) {
 			hNeo2EthByNeoTx()
+		},
+	}
+	parentCmd.AddCmd(c)
+}
+
+func hNeo2EthRefundCmd(parentCmd *ishell.Cmd) {
+	c := &ishell.Cmd{
+		Name: "neo2ethRefund",
+		Help: "neo -> eth",
+		Func: func(c *ishell.Context) {
+			hNeo2EthRefund()
 		},
 	}
 	parentCmd.AddCmd(c)
@@ -199,4 +211,41 @@ func getSwapState(hash string) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return ret, nil
+}
+
+func hNeo2EthRefund() {
+	amount := 500000000
+
+	//ethUserAddress = "0x2e1ac6242bb084029a9eb29dfb083757d27fced4"
+	fmt.Println(ethUserAddress)
+
+	neoTxHash, err := neoTrasaction.CreateLockTransaction(neoUserAddr, ethUserAddress, neoUserWif, amount)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("neo locked: ", neoTxHash)
+
+	txHash := fmt.Sprintf(`{
+		"hash": "%s"
+	}`, neoTxHash)
+	r, err := post(txHash, fmt.Sprintf("%s/deposit/neoTransactionConfirmed", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+
+	if !waitForSwapState(neoTxHash, types.SwapStateToString(types.DepositPending)) {
+		log.Fatal("fail")
+	}
+
+	log.Println("refund...")
+	// Refund
+	params := fmt.Sprintf(`{
+		"hash": "%s"
+	}`, neoTxHash)
+	r2, err := post(params, fmt.Sprintf("%s/deposit/refund", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+	log.Println("refund done: ", r2["value"].(bool))
+
 }

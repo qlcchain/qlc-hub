@@ -13,6 +13,7 @@ const (
 	WithDrawDone
 
 	WithDrawFail
+	DepositRefund
 	Invalid
 )
 
@@ -22,6 +23,8 @@ func SwapStateToString(t SwapState) string {
 		return "DepositPending"
 	case DepositDone:
 		return "DepositDone"
+	case DepositRefund:
+		return "DepositRefund"
 	case WithDrawPending:
 		return "WithDrawPending"
 	case WithDrawDone:

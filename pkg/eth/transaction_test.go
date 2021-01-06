@@ -147,3 +147,32 @@ func TestTransaction_Transaction(t *testing.T) {
 	}
 	t.Log(tx.Hash().Hex())
 }
+
+func TestTransaction_Block(t *testing.T) {
+	urls1 := []string{"wss://mainnet.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"}
+	urls2 := []string{"wss://eth-ws.qlcchain.online"}
+
+	client1, err := NewTransaction(urls1, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	client2, err := NewTransaction(urls2, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	hash := common.HexToHash("0xfdb54fad8376f78c1fae5e3afc589cee7668af20d7747f0832590429afc1f7a9")
+
+	_, p, err := client1.client.TransactionByHash(context.Background(), hash)
+	t.Log("client1 transactionbyhash: ", p, err)
+
+	_, p, err = client2.client.TransactionByHash(context.Background(), hash)
+	t.Log("client2 transactionbyhash: ", p, err)
+
+	_, err = client1.client.TransactionReceipt(context.Background(), hash)
+	t.Log("client1 receipt: ", err)
+
+	_, err = client2.client.TransactionReceipt(context.Background(), hash)
+	t.Log("client2 receipt: ", err)
+}

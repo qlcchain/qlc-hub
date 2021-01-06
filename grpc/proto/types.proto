@@ -65,6 +65,13 @@ service DepositAPI {
           body: "*"
         };
     }
+
+    rpc Refund(Hash) returns (Boolean){
+        option (google.api.http) = {
+          post: "/deposit/refund"
+          body: "*"
+        };
+    }
 }
 
 service WithdrawAPI {

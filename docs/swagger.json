@@ -201,6 +201,38 @@
         ]
       }
     },
+    "/deposit/refund": {
+      "post": {
+        "operationId": "DepositAPI_Refund",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          }
+        ],
+        "tags": [
+          "DepositAPI"
+        ]
+      }
+    },
     "/deposit/sendNeoTransaction": {
       "post": {
         "operationId": "DepositAPI_SendNeoTransaction",

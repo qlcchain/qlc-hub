@@ -182,7 +182,7 @@ func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (
 		d.logger.Infof("neo not locked, %s, neo[%s]", err, neoTxHash)
 		return nil, fmt.Errorf("neo not locked")
 	}
-	if swapInfo.State == types.DepositDone {
+	if swapInfo.State >= types.DepositDone {
 		d.logger.Errorf("repeat operation, neo tx[%s]", neoTxHash)
 		return nil, fmt.Errorf("repeat operation, [%s]", neoTxHash)
 	}
@@ -360,4 +360,47 @@ func (d *DepositAPI) correctSwapPending() error {
 			}
 		}
 	}
+}
+
+//eth transaction must fail or cancel first
+func (d *DepositAPI) Refund(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
+	if d.cfg.CanRefund > 0 {
+		d.logger.Infof("call deposit refund: %s", h.String())
+		hash := h.GetHash()
+		if hash == "" {
+			return nil, fmt.Errorf("invalid hash, %s", h)
+		}
+		if swapInfo, err := db.GetSwapInfoByTxHash(d.store, hash, types.NEO); err == nil {
+			if swapInfo.State < types.DepositDone {
+				neoTx, err := d.neo.CreateUnLockTransaction(hash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), d.cfg.NEOCfg.OwnerAddress)
+				if err != nil {
+					d.logger.Errorf("create neo tx: %s, neo[%s]", err, hash)
+					return nil, fmt.Errorf("create tx: %s", err)
+				}
+				d.logger.Infof("refund neo tx created: %s. neo[%s]", neoTx, hash)
+				go func() {
+					if _, err := d.neo.WaitTxVerifyAndConfirmed(neoTx, d.cfg.NEOCfg.ConfirmedHeight); err != nil {
+						d.logger.Error(err)
+						return
+					}
+					if _, err := d.neo.QueryLockedInfo(hash); err != nil {
+						d.logger.Error(err)
+						return
+					}
+
+					swapInfo.State = types.DepositRefund
+					d.logger.Infof("update state to %s", types.SwapStateToString(types.DepositRefund))
+					if err := db.UpdateSwapInfo(d.store, swapInfo); err != nil {
+						d.logger.Error(err)
+						return
+					}
+					d.logger.Infof("refund successfully, %s", hash)
+				}()
+			}
+		} else {
+			d.logger.Error(err)
+			return nil, fmt.Errorf("neo deposit recode not found: %s", err)
+		}
+	}
+	return toBoolean(true), nil
 }
