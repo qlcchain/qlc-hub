@@ -350,7 +350,13 @@ func (d *DepositAPI) correctSwapPending() error {
 				if info.Typ == types.Deposit && time.Now().Unix()-info.LastModifyTime > 60*10 {
 					swapInfo, err := db.GetSwapInfoByTxHash(d.store, info.NeoTxHash, types.NEO)
 					if err == nil {
-						if swapInfo.State == types.DepositDone && swapInfo.EthTxHash != "" {
+						if swapInfo.State == types.DepositDone {
+							if swapInfo.EthTxHash == "" {
+								swapInfo.EthTxHash = info.EthTxHash
+								if err := db.UpdateSwapInfo(d.store, swapInfo); err != nil {
+									d.logger.Error(err)
+								}
+							}
 							_ = db.DeleteSwapPending(d.store, info)
 						} else if swapInfo.State == types.DepositPending {
 							d.logger.Infof("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
