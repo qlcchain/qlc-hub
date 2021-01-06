@@ -103,8 +103,9 @@ func hNeo2EthByNeoTx() {
 	fmt.Println("deposit send eth tx done: ", ethTx)
 
 	sentParas := fmt.Sprintf(`{
-		"hash":"%s"
-	}`, ethTx)
+		"ethTxHash":"%s",
+		"neoTxHash":"%s"
+	}`, ethTx, neoTxHash)
 	r, err = post(sentParas, fmt.Sprintf("%s/deposit/ethTransactionSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
@@ -174,8 +175,9 @@ func hNeo2Eth() {
 	fmt.Println("deposit send eth tx done: ", ethTx)
 
 	sentParas := fmt.Sprintf(`{
-		"hash":"%s"
-	}`, ethTx)
+		"ethTxHash":"%s",
+		"neoTxHash":"%s"
+	}`, ethTx, neoTxHash)
 	r, err = post(sentParas, fmt.Sprintf("%s/deposit/ethTransactionSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)

@@ -41,5 +41,6 @@ type SwapPending struct {
 	gorm.Model
 	Typ            SwapType `msg:"typ" json:"typ"`
 	EthTxHash      string   `msg:"ethTxHash" json:"ethTxHash"`
+	NeoTxHash      string   `msg:"neoTxHash" json:"neoTxHash"`
 	LastModifyTime int64    `msg:"lastModifyTime" json:"lastModifyTime"`
 }

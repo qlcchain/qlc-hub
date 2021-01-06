@@ -291,7 +291,7 @@ func (w *WithdrawAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.B
 		return nil, fmt.Errorf("invalid hash, %s", h)
 	}
 
-	if _, err := db.GetSwapPendingByTxHash(w.store, hash); err != nil {
+	if _, err := db.GetSwapPendingByTxEthHash(w.store, hash); err != nil {
 		if err := db.InsertSwapPending(w.store, &types.SwapPending{
 			Typ:       types.Withdraw,
 			EthTxHash: hash,
@@ -388,6 +388,7 @@ func (w *WithdrawAPI) correctSwapPending() error {
 	}
 }
 
+// update by state, withdrawPending or DepositPending
 func (w *WithdrawAPI) correctSwapState() error {
 	vTicker := time.NewTicker(8 * time.Minute)
 	for {

@@ -73,6 +73,36 @@
         ]
       }
     },
+    "/deposit/ethTransactionID": {
+      "get": {
+        "operationId": "DepositAPI_EthTransactionID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DepositAPI"
+        ]
+      }
+    },
     "/deposit/ethTransactionSent": {
       "post": {
         "operationId": "DepositAPI_EthTransactionSent",
@@ -96,7 +126,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoEthTransactionSentRequest"
             }
           }
         ],
@@ -702,6 +732,17 @@
         }
       }
     },
+    "protoEthTransactionSentRequest": {
+      "type": "object",
+      "properties": {
+        "ethTxHash": {
+          "type": "string"
+        },
+        "neoTxHash": {
+          "type": "string"
+        }
+      }
+    },
     "protoHash": {
       "type": "object",
       "properties": {
@@ -866,6 +907,9 @@
           "format": "int32"
         },
         "ethTxHash": {
+          "type": "string"
+        },
+        "neoTxHash": {
           "type": "string"
         },
         "lastModifyTime": {

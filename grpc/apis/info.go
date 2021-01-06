@@ -310,6 +310,7 @@ func toSwapPendings(infos []*types.SwapPending) *pb.SwapPendings {
 		ri := &pb.SwapPending{
 			Typ:            int32(info.Typ),
 			EthTxHash:      info.EthTxHash,
+			NeoTxHash:      info.NeoTxHash,
 			LastModifyTime: time.Unix(info.LastModifyTime, 0).Format(time.RFC3339),
 		}
 		r = append(r, ri)

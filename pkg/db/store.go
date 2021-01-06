@@ -128,6 +128,7 @@ func stringToLower(str string) string {
 func InsertSwapPending(db *gorm.DB, record *types.SwapPending) error {
 	record.LastModifyTime = time.Now().Unix()
 	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
+	record.NeoTxHash = util.AddHashPrefix(record.NeoTxHash)
 	return db.Create(record).Error
 }
 
@@ -140,10 +141,20 @@ func GetSwapPendings(db *gorm.DB, page, pageSize int) ([]*types.SwapPending, err
 	}
 }
 
-func GetSwapPendingByTxHash(db *gorm.DB, hash string) (*types.SwapPending, error) {
+func GetSwapPendingByTxEthHash(db *gorm.DB, hash string) (*types.SwapPending, error) {
 	var result types.SwapPending
 	hash = util.AddHashPrefix(hash)
 	if err := db.Where("eth_tx_hash = ?", hash).First(&result).Error; err == nil {
+		return &result, nil
+	} else {
+		return nil, err
+	}
+}
+
+func GetSwapPendingByTxNeoHash(db *gorm.DB, hash string) (*types.SwapPending, error) {
+	var result types.SwapPending
+	hash = util.AddHashPrefix(hash)
+	if err := db.Where("neo_tx_hash = ?", hash).First(&result).Error; err == nil {
 		return &result, nil
 	} else {
 		return nil, err

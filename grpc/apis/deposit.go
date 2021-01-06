@@ -302,16 +302,18 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 	return toBoolean(false), errors.New("invalid state")
 }
 
-func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
+func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.EthTransactionSentRequest) (*pb.Boolean, error) {
 	d.logger.Infof("call deposit EthTransactionSent: %s", h.String())
-	hash := h.GetHash()
-	if hash == "" {
+	ethHash := h.GetEthTxHash()
+	neoHash := h.GetNeoTxHash()
+	if ethHash == "" || neoHash == "" {
 		return nil, fmt.Errorf("invalid hash, %s", h)
 	}
-	if _, err := db.GetSwapPendingByTxHash(d.store, hash); err != nil {
+	if _, err := db.GetSwapPendingByTxEthHash(d.store, ethHash); err != nil {
 		if err := db.InsertSwapPending(d.store, &types.SwapPending{
 			Typ:       types.Deposit,
-			EthTxHash: hash,
+			EthTxHash: ethHash,
+			NeoTxHash: neoHash,
 		}); err != nil {
 			d.logger.Error(err)
 			return toBoolean(false), err
@@ -319,11 +321,14 @@ func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.Bo
 	}
 
 	go func() {
-		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(hash), 0, d.cfg.EthCfg.ConfirmedHeight); err != nil {
+		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethHash), 0, d.cfg.EthCfg.ConfirmedHeight); err != nil {
 			d.logger.Errorf("tx confirmed: %s", err)
 			return
 		}
-		if _, err := d.EthTransactionConfirmed(ctx, h); err != nil {
+		h := pb.Hash{
+			Hash: ethHash,
+		}
+		if _, err := d.EthTransactionConfirmed(ctx, &h); err != nil {
 			d.logger.Errorf("tx confirmed: %s", err)
 			return
 		}
@@ -349,11 +354,20 @@ func (d *DepositAPI) correctSwapPending() error {
 							_ = db.DeleteSwapPending(d.store, info)
 						} else {
 							d.logger.Info("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
-							if _, err := d.EthTransactionSent(context.Background(), &pb.Hash{
-								Hash: info.EthTxHash,
+							if _, err := d.EthTransactionSent(context.Background(), &pb.EthTransactionSentRequest{
+								EthTxHash: info.EthTxHash,
+								NeoTxHash: info.NeoTxHash,
 							}); err != nil {
 								d.logger.Error(err)
 							}
+						}
+					} else {
+						d.logger.Info("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
+						if _, err := d.EthTransactionSent(context.Background(), &pb.EthTransactionSentRequest{
+							EthTxHash: info.EthTxHash,
+							NeoTxHash: info.NeoTxHash,
+						}); err != nil {
+							d.logger.Error(err)
 						}
 					}
 				}
@@ -403,4 +417,18 @@ func (d *DepositAPI) Refund(ctx context.Context, h *pb.Hash) (*pb.Boolean, error
 		}
 	}
 	return toBoolean(true), nil
+}
+
+func (d *DepositAPI) EthTransactionID(ctx context.Context, hash *pb.Hash) (*pb.Hash, error) {
+	neoHash := hash.GetHash()
+	if neoHash == "" {
+		return nil, fmt.Errorf("invalid hash, %s", neoHash)
+	}
+	info, err := db.GetSwapPendingByTxNeoHash(d.store, neoHash)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.Hash{
+		Hash: info.EthTxHash,
+	}, nil
 }

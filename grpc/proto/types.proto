@@ -23,6 +23,11 @@ message SendNeoTxnRequest {
     string  nep5SenderAddr    = 4;
 }
 
+message EthTransactionSentRequest{
+    string  ethTxHash         = 1;
+    string  neoTxHash         = 2;
+}
+
 service DepositAPI {
     rpc PackNeoTransaction(PackNeoTxRequest) returns (PackNeoTxResponse){
         option (google.api.http) = {
@@ -59,10 +64,16 @@ service DepositAPI {
         };
     }
 
-    rpc EthTransactionSent(Hash) returns (Boolean){
+    rpc EthTransactionSent(EthTransactionSentRequest) returns (Boolean){
         option (google.api.http) = {
           post: "/deposit/ethTransactionSent"
           body: "*"
+        };
+    }
+
+    rpc EthTransactionID(Hash) returns (Hash){
+        option (google.api.http) = {
+          get: "/deposit/ethTransactionID"
         };
     }
 
@@ -136,7 +147,8 @@ message SwapInfos {
 message SwapPending {
     int32  typ              = 1;
 	string ethTxHash        = 2;
-	string lastModifyTime   = 3;
+	string neoTxHash        = 3;
+	string lastModifyTime   = 4;
 }
 
 message SwapPendings {
