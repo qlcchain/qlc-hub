@@ -222,6 +222,7 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.DepositAPI/EthTransactionSent":       jwt.Both,
 		"/proto.DepositAPI/GetEthOwnerSign":          jwt.Both,
 		"/proto.DepositAPI/Refund":                   jwt.Both,
+		"/proto.DepositAPI/EthTransactionID":         jwt.Both,
 		"/proto.WithdrawAPI/EthTransactionConfirmed": jwt.Both,
 		"/proto.WithdrawAPI/EthTransactionSent":      jwt.Both,
 		"/proto.InfoAPI/Ping":                        jwt.Both,

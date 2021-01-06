@@ -348,26 +348,18 @@ func (d *DepositAPI) correctSwapPending() error {
 			}
 			for _, info := range infos {
 				if info.Typ == types.Deposit && time.Now().Unix()-info.LastModifyTime > 60*10 {
-					swapInfo, err := db.GetSwapInfoByTxHash(d.store, info.EthTxHash, types.ETH)
+					swapInfo, err := db.GetSwapInfoByTxHash(d.store, info.NeoTxHash, types.NEO)
 					if err == nil {
 						if swapInfo.State == types.DepositDone && swapInfo.EthTxHash != "" {
 							_ = db.DeleteSwapPending(d.store, info)
-						} else {
-							d.logger.Info("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
+						} else if swapInfo.State == types.DepositPending {
+							d.logger.Infof("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
 							if _, err := d.EthTransactionSent(context.Background(), &pb.EthTransactionSentRequest{
 								EthTxHash: info.EthTxHash,
 								NeoTxHash: info.NeoTxHash,
 							}); err != nil {
 								d.logger.Error(err)
 							}
-						}
-					} else {
-						d.logger.Info("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
-						if _, err := d.EthTransactionSent(context.Background(), &pb.EthTransactionSentRequest{
-							EthTxHash: info.EthTxHash,
-							NeoTxHash: info.NeoTxHash,
-						}); err != nil {
-							d.logger.Error(err)
 						}
 					}
 				}
