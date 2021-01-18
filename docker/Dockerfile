@@ -7,7 +7,7 @@ COPY . /qlcchain/qlc-hub
 RUN cd /qlcchain/qlc-hub && make clean build
 
 # Pull gqlc into a second stage deploy alpine container
-FROM alpine:3.12.1
+FROM alpine:3.13.0
 LABEL maintainer="developers@qlink.mobi"
 
 ENV HUBHOME /qlchub
