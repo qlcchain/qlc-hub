@@ -22,7 +22,7 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
 	gorm.io/driver/sqlite v1.1.3
-	gorm.io/gorm v1.20.7
+	gorm.io/gorm v1.20.12
 )
 
 go 1.14
