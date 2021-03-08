@@ -6,9 +6,9 @@ require (
 	github.com/bluele/gcache v0.0.0-20190518031135-bc40bd653833
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/ethereum/go-ethereum v1.9.22
+	github.com/ethereum/go-ethereum v1.10.0
 	github.com/golang/protobuf v1.4.3
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.1.5
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mr-tron/base58 v1.2.0
