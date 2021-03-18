@@ -149,6 +149,7 @@ func TestTransaction_Transaction(t *testing.T) {
 }
 
 func TestTransaction_Block(t *testing.T) {
+	t.Skip()
 	urls1 := []string{"wss://mainnet.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"}
 	urls2 := []string{"wss://eth-ws.qlcchain.online"}
 
