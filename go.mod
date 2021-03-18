@@ -7,7 +7,7 @@ require (
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ethereum/go-ethereum v1.9.22
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.0
 	github.com/google/uuid v1.1.2
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/jessevdk/go-flags v1.4.0
@@ -17,12 +17,12 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/tools v0.0.0-20201022035929-9cf592e881e9 // indirect
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
-	google.golang.org/grpc v1.33.2
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/grpc v1.36.0
+	google.golang.org/protobuf v1.26.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
-	gorm.io/driver/sqlite v1.1.3
-	gorm.io/gorm v1.20.7
+	gorm.io/driver/sqlite v1.1.4
+	gorm.io/gorm v1.21.3
 )
 
 go 1.14
