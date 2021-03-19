@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	qlcchain "github.com/qlcchain/qlc-go-sdk"
 	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
 	"github.com/qlcchain/qlc-hub/config"
@@ -57,7 +58,7 @@ type QGasPledgeParam struct {
 
 func (g *QGasSwapAPI) Pledge(ctx context.Context, params *pb.QGasPledgeRequest) (*pb.StateBlock, error) {
 	g.logger.Infof("QGas Pledge ......... (%s) ", params)
-	if params.PledgeAddress == "" || params.Amount <= 0 {
+	if params.GetPledgeAddress() == "" || params.GetAmount() <= 0 {
 		return nil, errors.New("error params")
 	}
 	pledgeAddress, err := qlctypes.HexToAddress(params.GetPledgeAddress())
@@ -94,8 +95,84 @@ func (g *QGasSwapAPI) Pledge(ctx context.Context, params *pb.QGasPledgeRequest) 
 	return toStateBlock(sendBlk), nil
 }
 
-func (g *QGasSwapAPI) Withdraw(ctx context.Context, request *pb.QGasWithdrawRequest) (*pb.StateBlock, error) {
-	panic("implement me")
+func (g *QGasSwapAPI) Withdraw(ctx context.Context, param *pb.Hash) (*pb.StateBlock, error) {
+	g.logger.Infof("QGas Pledge ......... (%s) ", param)
+	if param == nil {
+		return nil, errors.New("error params")
+	}
+	ethTxHash := param.GetHash()
+	swapInfo, err := db.GetQGasSwapInfoByTxHash(g.store, ethTxHash, types.ETH)
+	if swapInfo == nil {
+		if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethTxHash), 0, 1); err != nil {
+			g.logger.Errorf("QGas withdraw eth tx not confirmed %s", ethTxHash)
+			return nil, err
+		}
+		amount, ethAddr, qlcAddrStr, err := g.eth.SyncBurnLog(ethTxHash)
+		if err != nil {
+			g.logger.Error("QGas get withdraw log: %s", err)
+			return nil, err
+		}
+		qlcAddr, err := qlctypes.HexToAddress(qlcAddrStr)
+		if err != nil {
+			g.logger.Error("QGas invalid address: %s, %s", err, qlcAddrStr)
+			return nil, err
+		}
+
+		swapInfo = &types.QGasSwapInfo{
+			SwapType:    types.QGasWithdraw,
+			State:       types.QGasWithDrawPending,
+			Amount:      amount.Int64(),
+			FromAddress: g.ownerAddr,
+			ToAddress:   qlcAddr,
+			EthTxHash:   ethTxHash,
+			EthUserAddr: ethAddr.String(),
+			StartTime:   time.Now().Unix(),
+		}
+		if err := db.InsertQGasSwapInfo(g.store, swapInfo); err != nil {
+			g.logger.Errorf("QGas insert invalid info: %s", err)
+			return nil, err
+		}
+		g.logger.Infof("QGas insert withdraw info to %s: %s", types.QGasSwapStateToString(types.QGasWithDrawPending), ethTxHash)
+	} else {
+		if swapInfo.State == types.QGasWithDrawDone {
+			return nil, fmt.Errorf("reduplicate tx: %s", err)
+		}
+	}
+
+	if swapInfo.SendTxHash == qlctypes.ZeroHash {
+		sendBlk, err := g.qlc.Client().QGasSwap.GetWithdrawSendBlock(&qlcchain.QGasWithdrawInfo{
+			WithdrawAddress: swapInfo.ToAddress,
+			Amount:          qlctypes.Balance{Int: big.NewInt(swapInfo.Amount)},
+			FromAddress:     g.ownerAddr,
+		})
+		if err != nil {
+			g.logger.Errorf("QGas get withdraw send block: %s", err)
+			return nil, err
+		}
+
+		if _, err := g.qlc.Client().Ledger.Process(sendBlk); err != nil {
+			g.logger.Errorf("QGas process withdraw send block: %s", err)
+			return nil, err
+		}
+		swapInfo.SendTxHash = sendBlk.GetHash()
+		if err := db.UpdateQGasSwapInfo(g.store, swapInfo); err != nil {
+			g.logger.Errorf("update invalid info: %s", err)
+			return nil, err
+		}
+		g.logger.Infof("QGas update withdraw send block to %s: %s", sendBlk.GetHash(), ethTxHash)
+	}
+
+	rewardBlk, err := g.qlc.Client().QGasSwap.GetWithdrawRewardBlock(swapInfo.SendTxHash)
+	if err != nil {
+		g.logger.Errorf("QGas get withdraw reward block: %s", err)
+		return nil, err
+	}
+	if err := db.UpdateQGasSwapInfo(g.store, swapInfo); err != nil {
+		g.logger.Errorf("update invalid info: %s", err)
+		return nil, err
+	}
+	g.logger.Infof("QGas update withdraw reward block to %s: %s", rewardBlk.GetHash(), ethTxHash)
+	return toStateBlock(rewardBlk), nil
 }
 
 func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlock) (*pb.Hash, error) {
@@ -130,7 +207,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlock) (
 			g.logger.Errorf("update invalid info: %s", err)
 			return nil, err
 		}
-		g.logger.Infof("QGas update pledge info to %s: %s", types.QGasSwapStateToString(types.QGasPledgeInit), h)
+		g.logger.Infof("QGas update pledge info to %s: %s", types.QGasSwapStateToString(types.QGasPledgePending), h)
 		go func() {
 
 		}()
@@ -138,7 +215,22 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlock) (
 			Hash: h.String(),
 		}, nil
 	} else if blk.Type == qlctypes.ContractReward {
+		swapInfo, err := db.GetQGasSwapInfoByTxHash(g.store, blk.GetHash().String(), types.ETH)
+		if err != nil {
+			g.logger.Errorf("QGas pledge withdraw not found: %s", err)
+			return nil, err
+		}
 
+		if _, err := g.qlc.Client().Ledger.Process(blk); err != nil {
+			g.logger.Errorf("QGas process withdraw reward block: %s", err)
+			return nil, err
+		}
+		swapInfo.RewardTxHash = blk.GetHash()
+		if err := db.UpdateQGasSwapInfo(g.store, swapInfo); err != nil {
+			g.logger.Errorf("update invalid info: %s", err)
+			return nil, err
+		}
+		g.logger.Infof("QGas update withdraw info to %s: %s", types.QGasSwapStateToString(types.QGasWithDrawDone), swapInfo.EthTxHash)
 	}
 	return nil, fmt.Errorf("invalid block typ: %s", blk.GetType())
 }

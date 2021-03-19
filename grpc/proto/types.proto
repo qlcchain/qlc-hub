@@ -303,7 +303,8 @@ message QGasPledgeRequest {
 
 message QGasWithdrawRequest {
     string withdrawAddress  = 1;
-    int64  amount           = 2;
+    string ethTxHash        = 2;
+    int64  amount           = 3;
 }
 
 service QGasPledgeAPI {
@@ -313,7 +314,7 @@ service QGasPledgeAPI {
         };
     }
 
-    rpc Withdraw(QGasWithdrawRequest) returns (StateBlock){
+    rpc Withdraw(Hash) returns (StateBlock){
         option (google.api.http) = {
           get: "/qgasswap/withdraw"
         };

@@ -775,7 +775,7 @@ var (
 )
 
 func request_QGasPledgeAPI_Withdraw_0(ctx context.Context, marshaler runtime.Marshaler, client QGasPledgeAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QGasWithdrawRequest
+	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -791,7 +791,7 @@ func request_QGasPledgeAPI_Withdraw_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func local_request_QGasPledgeAPI_Withdraw_0(ctx context.Context, marshaler runtime.Marshaler, server QGasPledgeAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QGasWithdrawRequest
+	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
