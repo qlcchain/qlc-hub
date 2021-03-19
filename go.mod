@@ -12,7 +12,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mr-tron/base58 v1.2.0
-	github.com/nspcc-dev/neo-go v0.77.0
+	github.com/nspcc-dev/neo-go v0.93.0
 	github.com/qlcchain/qlc-go-sdk v0.0.0-20210319050146-30d61d4dfe6d
 	github.com/rs/cors v1.7.0
 	go.uber.org/zap v1.16.0
