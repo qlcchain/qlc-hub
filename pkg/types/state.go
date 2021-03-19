@@ -58,6 +58,7 @@ type ChainType byte
 const (
 	ETH ChainType = iota
 	NEO
+	QLC
 )
 
 type SwapType byte

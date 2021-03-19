@@ -266,3 +266,62 @@ message Address {
 message Map {
     map<string, int64> count = 1;
 }
+
+
+message StateBlock  {
+    string    type    = 1;
+    string    token   = 2;
+    string    address = 3;
+    int64     balance = 4;
+    int64     vote    = 5;
+    int64     network = 6;
+    int64     storage = 7;
+    int64     oracle  = 8;
+    string    previous   = 9;
+    string    link       = 10;
+    bytes     sender     = 11;
+    bytes     receiver   = 12;
+    string    message    = 13;
+    bytes     data       = 14;
+    uint64    poVHeight  = 15;
+    int64     timestamp  = 16;
+    string    extra      = 17;
+    string    representative   = 18;
+
+    string    privateFrom      = 19;
+    repeated string privateFor = 20;
+    string    privateGroupID   = 21;
+
+    uint64    work           = 22;
+    string    signature      = 23;
+}
+
+message QGasPledgeRequest {
+    string pledgeAddress  = 1;
+    int64  amount         = 2;
+}
+
+message QGasWithdrawRequest {
+    string withdrawAddress  = 1;
+    int64  amount           = 2;
+}
+
+service QGasPledgeAPI {
+    rpc Pledge(QGasPledgeRequest) returns (StateBlock){
+        option (google.api.http) = {
+          get: "/qgasswap/pledge"
+        };
+    }
+
+    rpc Withdraw(QGasWithdrawRequest) returns (StateBlock){
+        option (google.api.http) = {
+          get: "/qgasswap/withdraw"
+        };
+    }
+
+    rpc ProcessBlock(StateBlock) returns (Hash){
+        option (google.api.http) = {
+          get: "/qgasswap/processBlock"
+        };
+    }
+}

@@ -24,6 +24,7 @@ type Config struct {
 	SignerEndPoint string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" validate:"nonzero"`
 	NEOCfg         *NEOCfg         `json:"neo" validate:"nonnil"`
 	EthCfg         *EthCfg         `json:"ethereum" validate:"nonnil"`
+	QlcCfg         *QlcCfg         `json:"qlc" validate:"nonnil"`
 	RPCCfg         *RPCCfg         `json:"rpc" validate:"nonnil"`
 	DateDir        string          `json:"dateDir" validate:"nonnil"`
 	CanRefund      int             `json:"canRefund" long:"canRefund" description:"deposit can refund"  default:"0"`
@@ -44,6 +45,11 @@ type EthCfg struct {
 	Contract        string   `json:"contract" long:"ethContract" description:"ethereum staking contract address"  validate:"nonzero"`
 	OwnerAddress    string   `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
 	ConfirmedHeight int64    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"3" validate:""`
+}
+
+type QlcCfg struct {
+	EndPoint     string `json:"qlcUrl" long:"qlcUrl" description:"QLC RPC endpoint" validate:"nonzero"`
+	OwnerAddress string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
 }
 
 type RPCCfg struct {

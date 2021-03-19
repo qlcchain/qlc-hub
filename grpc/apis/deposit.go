@@ -3,7 +3,6 @@ package apis
 import (
 	"bytes"
 	"context"
-	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -29,14 +28,13 @@ import (
 )
 
 type DepositAPI struct {
-	neo     *neo.Transaction
-	eth     *eth.Transaction
-	store   *gorm.DB
-	cfg     *config.Config
-	ctx     context.Context
-	Account *ecdsa.PrivateKey
-	signer  *signer.SignerClient
-	logger  *zap.SugaredLogger
+	neo    *neo.Transaction
+	eth    *eth.Transaction
+	store  *gorm.DB
+	cfg    *config.Config
+	ctx    context.Context
+	signer *signer.SignerClient
+	logger *zap.SugaredLogger
 }
 
 func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e *eth.Transaction, signer *signer.SignerClient, s *gorm.DB) *DepositAPI {

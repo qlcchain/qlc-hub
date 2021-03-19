@@ -17,6 +17,7 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
+	"github.com/qlcchain/qlc-hub/pkg/qlc"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
 	"github.com/rs/cors"
@@ -35,6 +36,7 @@ type Server struct {
 	cfg    *config.Config
 	eth    *eth.Transaction
 	neo    *neo.Transaction
+	qlc    *qlc.Transaction
 	store  *gorm.DB
 	logger *zap.SugaredLogger
 }
@@ -121,6 +123,13 @@ func (g *Server) checkBaseInfo() error {
 
 	g.neo = nTransaction
 	g.logger.Info("neo client connected successfully")
+
+	qTransaction, err := qlc.NewTransaction(g.cfg.QlcCfg.EndPoint, signer)
+	if err != nil {
+		return fmt.Errorf("qlc transaction: %s", err)
+	}
+	g.qlc = qTransaction
+	g.logger.Info("qlc client connected successfully")
 
 	//store, err := store.NewStore(g.cfg.DataDir())
 	//if err != nil {
