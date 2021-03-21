@@ -36,6 +36,10 @@ var (
 	ethUserPrivate     = "aaa052c4f2eed8b96335af467b2ff80dd3a734c57d5ec4b0a8b19e1242ddc601"
 	ethUserAddress     = "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
 	ethConfirmedHeight int
+
+	// qlc setting
+	qlcUserPrivate = "d25b9f42b33c8d13a7589e1f4df44b6207a0cfe1af56d2e0e667d4f0b06297e95eeaaee5eeea9bd2a93f4c0e5c139471eadb2ca068a717614fe51a1ad352e795"
+	qlcUserAddress = "qlc_1qqcoukyxtnutcnmym1gdibsawhcuepc1t794xinzsat5dbo7swojmd8g8cc"
 )
 
 var (
@@ -104,6 +108,7 @@ func Execute(osArgs []string) {
 	//set common variable
 	addNeoCmd(shell)
 	addHubCmd(shell)
+	addQLCCmd(shell)
 	// run shell
 	shell.Run()
 }

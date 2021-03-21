@@ -123,3 +123,28 @@ func post(paras string, url string) (map[string]interface{}, error) {
 	}
 	return ret, nil
 }
+
+func postBytes(paras string, url string) ([]byte, error) {
+	jsonStr := []byte(paras)
+	ioBody := bytes.NewBuffer(jsonStr)
+	request, err := http.NewRequest("POST", url, ioBody)
+	if err != nil {
+		log.Fatal("request ", err)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("authorization", hubCmd.HubToken)
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		log.Fatal("do ", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode > 200 {
+		log.Fatalf("%d status code returned ,%s", response.StatusCode, url)
+	}
+	bytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return bytes, nil
+}

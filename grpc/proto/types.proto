@@ -297,8 +297,9 @@ message StateBlock  {
 }
 
 message QGasPledgeRequest {
-    string pledgeAddress  = 1;
-    int64  amount         = 2;
+    string       pledgeAddress  = 1;
+    int64        amount         = 2;
+    string  erc20ReceiverAddr   = 3;
 }
 
 message QGasWithdrawRequest {
@@ -308,15 +309,22 @@ message QGasWithdrawRequest {
 }
 
 service QGasPledgeAPI {
-    rpc Pledge(QGasPledgeRequest) returns (StateBlock){
+    rpc GetPledgeBlock(QGasPledgeRequest) returns (StateBlock){
         option (google.api.http) = {
-          get: "/qgasswap/pledge"
+          get: "/qgasswap/getPledgeBlock"
         };
     }
 
-    rpc Withdraw(Hash) returns (StateBlock){
+    rpc GetPledgeEthOwnerSign(Hash) returns (String){
         option (google.api.http) = {
-          get: "/qgasswap/withdraw"
+          post: "/deposit/getPledgeEthOwnerSign"
+          body: "*"
+        };
+    }
+
+    rpc GetWithdrawBlock(Hash) returns (StateBlock){
+        option (google.api.http) = {
+          get: "/qgasswap/getWithdrawBlock"
         };
     }
 

@@ -339,8 +339,8 @@ github.com/prometheus/procfs v0.0.5/go.mod h1:4A/X28fw3Fc593LaREMrKMqOKvUAntwMDa
 github.com/prometheus/tsdb v0.6.2-0.20190402121629-4f204dcbc150 h1:ZeU+auZj1iNzN8iVhff6M38Mfu73FQiJve/GEXYJBjE=
 github.com/prometheus/tsdb v0.6.2-0.20190402121629-4f204dcbc150/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/qlcchain/jsonrpc2 v0.0.7/go.mod h1:VwJvudc0L888gtEldst7bZdZxvk3wubZs18yO0CI0Zc=
-github.com/qlcchain/qlc-go-sdk v0.0.0-20210319050146-30d61d4dfe6d h1:uhdYaQMANWO5zHljOKAPy5bcRTVaKE8FXNs8635SDmw=
-github.com/qlcchain/qlc-go-sdk v0.0.0-20210319050146-30d61d4dfe6d/go.mod h1:mJCwFArCXVIhwkBWN+N4xjeaDA4BW17iMXCATlfq8Oc=
+github.com/qlcchain/qlc-go-sdk v0.0.0-20210319072051-986607ee8b5b h1:WNe4oiL3qAGxRdzMmQ2vX6DKn7guwu+2ZVl1Zu7IT9s=
+github.com/qlcchain/qlc-go-sdk v0.0.0-20210319072051-986607ee8b5b/go.mod h1:mJCwFArCXVIhwkBWN+N4xjeaDA4BW17iMXCATlfq8Oc=
 github.com/rjeczalik/notify v0.9.1 h1:CLCKso/QK1snAlnhNR/CNvNiFU2saUtjV0bx3EwNeCE=
 github.com/rjeczalik/notify v0.9.1/go.mod h1:rKwnCoCGeuQnwBtTSPL9Dad03Vh2n40ePRrjvIXnJho=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
