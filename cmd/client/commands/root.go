@@ -64,7 +64,7 @@ func initParams(osArgs []string) {
 	if hubCmd.TestNet {
 		hubUrl = "https://hub-test.qlcchain.online"
 	} else {
-		hubUrl = "http://127.0.0.1:19745"
+		hubUrl = "http://127.0.0.1:29735"
 	}
 
 	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight

@@ -49,7 +49,7 @@ type EthCfg struct {
 
 type QlcCfg struct {
 	EndPoint     string `json:"qlcUrl" long:"qlcUrl" description:"QLC RPC endpoint" validate:"nonzero"`
-	OwnerAddress string `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
+	OwnerAddress string `json:"qlcOwnerAddress" long:"qlcOwnerAddress" description:"qlc owner address"  validate:"nonzero"`
 }
 
 type RPCCfg struct {

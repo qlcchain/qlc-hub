@@ -27,7 +27,7 @@ var (
 )
 
 // QLCChainABI is the input ABI used to generate the binding from.
-const QLCChainABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"nep5Addr\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Burn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"nep5Hash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Mint\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"active\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\"}],\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\"}],\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"lockedAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"nep5Hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"nep5Addr\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"circuitBraker\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const QLCChainABI = "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"nep5Addr\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Burn\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"nep5Hash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Mint\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"burnAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"subtractedValue\",\"type\":\"uint256\"}],\"name\":\"decreaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"spender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"addedValue\",\"type\":\"uint256\"}],\"name\":\"increaseAllowance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"lockedAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"minDestroyAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"minIssueAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"mintAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\",\"constant\":true},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol\",\"type\":\"string\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"nep5Hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"nep5Addr\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"burn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // QLCChain is an auto generated Go binding around an Ethereum contract.
 type QLCChain struct {
@@ -137,7 +137,7 @@ func bindQLCChain(address common.Address, caller bind.ContractCaller, transactor
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_QLCChain *QLCChainRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+func (_QLCChain *QLCChainRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
 	return _QLCChain.Contract.QLCChainCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -156,7 +156,7 @@ func (_QLCChain *QLCChainRaw) Transact(opts *bind.TransactOpts, method string, p
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_QLCChain *QLCChainCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
+func (_QLCChain *QLCChainCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
 	return _QLCChain.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -171,52 +171,16 @@ func (_QLCChain *QLCChainTransactorRaw) Transact(opts *bind.TransactOpts, method
 	return _QLCChain.Contract.contract.Transact(opts, method, params...)
 }
 
-// Active is a free data retrieval call binding the contract method 0x02fb0c5e.
-//
-// Solidity: function active() view returns(bool)
-func (_QLCChain *QLCChainCaller) Active(opts *bind.CallOpts) (bool, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "active")
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// Active is a free data retrieval call binding the contract method 0x02fb0c5e.
-//
-// Solidity: function active() view returns(bool)
-func (_QLCChain *QLCChainSession) Active() (bool, error) {
-	return _QLCChain.Contract.Active(&_QLCChain.CallOpts)
-}
-
-// Active is a free data retrieval call binding the contract method 0x02fb0c5e.
-//
-// Solidity: function active() view returns(bool)
-func (_QLCChain *QLCChainCallerSession) Active() (bool, error) {
-	return _QLCChain.Contract.Active(&_QLCChain.CallOpts)
-}
-
 // Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
 //
 // Solidity: function allowance(address owner, address spender) view returns(uint256)
 func (_QLCChain *QLCChainCaller) Allowance(opts *bind.CallOpts, owner common.Address, spender common.Address) (*big.Int, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "allowance", owner, spender)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "allowance", owner, spender)
+	return *ret0, err
 }
 
 // Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
@@ -237,17 +201,12 @@ func (_QLCChain *QLCChainCallerSession) Allowance(owner common.Address, spender 
 //
 // Solidity: function balanceOf(address account) view returns(uint256)
 func (_QLCChain *QLCChainCaller) BalanceOf(opts *bind.CallOpts, account common.Address) (*big.Int, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "balanceOf", account)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "balanceOf", account)
+	return *ret0, err
 }
 
 // BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
@@ -264,21 +223,42 @@ func (_QLCChain *QLCChainCallerSession) BalanceOf(account common.Address) (*big.
 	return _QLCChain.Contract.BalanceOf(&_QLCChain.CallOpts, account)
 }
 
+// BurnAmount is a free data retrieval call binding the contract method 0x238e5b14.
+//
+// Solidity: function burnAmount(address ) view returns(uint256)
+func (_QLCChain *QLCChainCaller) BurnAmount(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "burnAmount", arg0)
+	return *ret0, err
+}
+
+// BurnAmount is a free data retrieval call binding the contract method 0x238e5b14.
+//
+// Solidity: function burnAmount(address ) view returns(uint256)
+func (_QLCChain *QLCChainSession) BurnAmount(arg0 common.Address) (*big.Int, error) {
+	return _QLCChain.Contract.BurnAmount(&_QLCChain.CallOpts, arg0)
+}
+
+// BurnAmount is a free data retrieval call binding the contract method 0x238e5b14.
+//
+// Solidity: function burnAmount(address ) view returns(uint256)
+func (_QLCChain *QLCChainCallerSession) BurnAmount(arg0 common.Address) (*big.Int, error) {
+	return _QLCChain.Contract.BurnAmount(&_QLCChain.CallOpts, arg0)
+}
+
 // Decimals is a free data retrieval call binding the contract method 0x313ce567.
 //
 // Solidity: function decimals() view returns(uint8)
 func (_QLCChain *QLCChainCaller) Decimals(opts *bind.CallOpts) (uint8, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "decimals")
-
-	if err != nil {
-		return *new(uint8), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint8)).(*uint8)
-
-	return out0, err
-
+	var (
+		ret0 = new(uint8)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "decimals")
+	return *ret0, err
 }
 
 // Decimals is a free data retrieval call binding the contract method 0x313ce567.
@@ -299,17 +279,12 @@ func (_QLCChain *QLCChainCallerSession) Decimals() (uint8, error) {
 //
 // Solidity: function lockedAmount(bytes32 ) view returns(uint256)
 func (_QLCChain *QLCChainCaller) LockedAmount(opts *bind.CallOpts, arg0 [32]byte) (*big.Int, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "lockedAmount", arg0)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "lockedAmount", arg0)
+	return *ret0, err
 }
 
 // LockedAmount is a free data retrieval call binding the contract method 0x172a16a4.
@@ -326,21 +301,94 @@ func (_QLCChain *QLCChainCallerSession) LockedAmount(arg0 [32]byte) (*big.Int, e
 	return _QLCChain.Contract.LockedAmount(&_QLCChain.CallOpts, arg0)
 }
 
+// MinDestroyAmount is a free data retrieval call binding the contract method 0xd53b82f1.
+//
+// Solidity: function minDestroyAmount() view returns(uint256)
+func (_QLCChain *QLCChainCaller) MinDestroyAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "minDestroyAmount")
+	return *ret0, err
+}
+
+// MinDestroyAmount is a free data retrieval call binding the contract method 0xd53b82f1.
+//
+// Solidity: function minDestroyAmount() view returns(uint256)
+func (_QLCChain *QLCChainSession) MinDestroyAmount() (*big.Int, error) {
+	return _QLCChain.Contract.MinDestroyAmount(&_QLCChain.CallOpts)
+}
+
+// MinDestroyAmount is a free data retrieval call binding the contract method 0xd53b82f1.
+//
+// Solidity: function minDestroyAmount() view returns(uint256)
+func (_QLCChain *QLCChainCallerSession) MinDestroyAmount() (*big.Int, error) {
+	return _QLCChain.Contract.MinDestroyAmount(&_QLCChain.CallOpts)
+}
+
+// MinIssueAmount is a free data retrieval call binding the contract method 0x9361981d.
+//
+// Solidity: function minIssueAmount() view returns(uint256)
+func (_QLCChain *QLCChainCaller) MinIssueAmount(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "minIssueAmount")
+	return *ret0, err
+}
+
+// MinIssueAmount is a free data retrieval call binding the contract method 0x9361981d.
+//
+// Solidity: function minIssueAmount() view returns(uint256)
+func (_QLCChain *QLCChainSession) MinIssueAmount() (*big.Int, error) {
+	return _QLCChain.Contract.MinIssueAmount(&_QLCChain.CallOpts)
+}
+
+// MinIssueAmount is a free data retrieval call binding the contract method 0x9361981d.
+//
+// Solidity: function minIssueAmount() view returns(uint256)
+func (_QLCChain *QLCChainCallerSession) MinIssueAmount() (*big.Int, error) {
+	return _QLCChain.Contract.MinIssueAmount(&_QLCChain.CallOpts)
+}
+
+// MintAmount is a free data retrieval call binding the contract method 0x055d822c.
+//
+// Solidity: function mintAmount(address ) view returns(uint256)
+func (_QLCChain *QLCChainCaller) MintAmount(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "mintAmount", arg0)
+	return *ret0, err
+}
+
+// MintAmount is a free data retrieval call binding the contract method 0x055d822c.
+//
+// Solidity: function mintAmount(address ) view returns(uint256)
+func (_QLCChain *QLCChainSession) MintAmount(arg0 common.Address) (*big.Int, error) {
+	return _QLCChain.Contract.MintAmount(&_QLCChain.CallOpts, arg0)
+}
+
+// MintAmount is a free data retrieval call binding the contract method 0x055d822c.
+//
+// Solidity: function mintAmount(address ) view returns(uint256)
+func (_QLCChain *QLCChainCallerSession) MintAmount(arg0 common.Address) (*big.Int, error) {
+	return _QLCChain.Contract.MintAmount(&_QLCChain.CallOpts, arg0)
+}
+
 // Name is a free data retrieval call binding the contract method 0x06fdde03.
 //
 // Solidity: function name() view returns(string)
 func (_QLCChain *QLCChainCaller) Name(opts *bind.CallOpts) (string, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "name")
-
-	if err != nil {
-		return *new(string), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(string)).(*string)
-
-	return out0, err
-
+	var (
+		ret0 = new(string)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "name")
+	return *ret0, err
 }
 
 // Name is a free data retrieval call binding the contract method 0x06fdde03.
@@ -361,17 +409,12 @@ func (_QLCChain *QLCChainCallerSession) Name() (string, error) {
 //
 // Solidity: function owner() view returns(address)
 func (_QLCChain *QLCChainCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "owner")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "owner")
+	return *ret0, err
 }
 
 // Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
@@ -392,17 +435,12 @@ func (_QLCChain *QLCChainCallerSession) Owner() (common.Address, error) {
 //
 // Solidity: function symbol() view returns(string)
 func (_QLCChain *QLCChainCaller) Symbol(opts *bind.CallOpts) (string, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "symbol")
-
-	if err != nil {
-		return *new(string), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(string)).(*string)
-
-	return out0, err
-
+	var (
+		ret0 = new(string)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "symbol")
+	return *ret0, err
 }
 
 // Symbol is a free data retrieval call binding the contract method 0x95d89b41.
@@ -423,17 +461,12 @@ func (_QLCChain *QLCChainCallerSession) Symbol() (string, error) {
 //
 // Solidity: function totalSupply() view returns(uint256)
 func (_QLCChain *QLCChainCaller) TotalSupply(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _QLCChain.contract.Call(opts, &out, "totalSupply")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _QLCChain.contract.Call(opts, out, "totalSupply")
+	return *ret0, err
 }
 
 // TotalSupply is a free data retrieval call binding the contract method 0x18160ddd.
@@ -490,27 +523,6 @@ func (_QLCChain *QLCChainSession) Burn(nep5Addr string, amount *big.Int) (*types
 // Solidity: function burn(string nep5Addr, uint256 amount) returns()
 func (_QLCChain *QLCChainTransactorSession) Burn(nep5Addr string, amount *big.Int) (*types.Transaction, error) {
 	return _QLCChain.Contract.Burn(&_QLCChain.TransactOpts, nep5Addr, amount)
-}
-
-// CircuitBraker is a paid mutator transaction binding the contract method 0xdd064a7d.
-//
-// Solidity: function circuitBraker() returns()
-func (_QLCChain *QLCChainTransactor) CircuitBraker(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _QLCChain.contract.Transact(opts, "circuitBraker")
-}
-
-// CircuitBraker is a paid mutator transaction binding the contract method 0xdd064a7d.
-//
-// Solidity: function circuitBraker() returns()
-func (_QLCChain *QLCChainSession) CircuitBraker() (*types.Transaction, error) {
-	return _QLCChain.Contract.CircuitBraker(&_QLCChain.TransactOpts)
-}
-
-// CircuitBraker is a paid mutator transaction binding the contract method 0xdd064a7d.
-//
-// Solidity: function circuitBraker() returns()
-func (_QLCChain *QLCChainTransactorSession) CircuitBraker() (*types.Transaction, error) {
-	return _QLCChain.Contract.CircuitBraker(&_QLCChain.TransactOpts)
 }
 
 // DecreaseAllowance is a paid mutator transaction binding the contract method 0xa457c2d7.
@@ -831,7 +843,6 @@ func (_QLCChain *QLCChainFilterer) ParseApproval(log types.Log) (*QLCChainApprov
 	if err := _QLCChain.contract.UnpackLog(event, "Approval", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -977,7 +988,6 @@ func (_QLCChain *QLCChainFilterer) ParseBurn(log types.Log) (*QLCChainBurn, erro
 	if err := _QLCChain.contract.UnpackLog(event, "Burn", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1123,7 +1133,6 @@ func (_QLCChain *QLCChainFilterer) ParseMint(log types.Log) (*QLCChainMint, erro
 	if err := _QLCChain.contract.UnpackLog(event, "Mint", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1276,7 +1285,6 @@ func (_QLCChain *QLCChainFilterer) ParseOwnershipTransferred(log types.Log) (*QL
 	if err := _QLCChain.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
 
@@ -1430,6 +1438,5 @@ func (_QLCChain *QLCChainFilterer) ParseTransfer(log types.Log) (*QLCChainTransf
 	if err := _QLCChain.contract.UnpackLog(event, "Transfer", log); err != nil {
 		return nil, err
 	}
-	event.Raw = log
 	return event, nil
 }
