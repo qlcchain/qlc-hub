@@ -10,9 +10,9 @@ require (
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/jessevdk/go-flags v1.4.0
+	github.com/jessevdk/go-flags v1.5.0
 	github.com/mr-tron/base58 v1.2.0
-	github.com/nspcc-dev/neo-go v0.77.0
+	github.com/nspcc-dev/neo-go v0.78.3
 	github.com/qlcchain/qlc-go-sdk v0.0.0-20210322022732-234966c5814a
 	github.com/rs/cors v1.7.0
 	go.uber.org/zap v1.16.0

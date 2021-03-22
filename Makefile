@@ -26,7 +26,7 @@ deps:
 	go get -u golang.org/x/tools/cmd/goimports
 
 build:
-	go build ${LDFLAGS} -o $(BUILDDIR)/${BINARY} -i $(MAIN)
+	go build ${LDFLAGS} -o $(BUILDDIR)/${BINARY} $(MAIN)
 	@echo 'Build $(BINARY) done.'
 
 changelog:
@@ -66,5 +66,5 @@ signer-proto:
 	protoc -I$(GOPATH)/src -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I=$(shell pwd)/grpc/proto/ --go_out=plugins=grpc:$(shell pwd)/grpc/proto $(shell pwd)/grpc/proto/signer.proto
 
 signer:
-	go build ${LDFLAGS} -o $(BUILDDIR)/signer -i $(shell pwd)/cmd/signer/main.go
+	go build ${LDFLAGS} -o $(BUILDDIR)/signer $(shell pwd)/cmd/signer/main.go
 	@echo 'Build signer done.'
