@@ -13,7 +13,7 @@ require (
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/mr-tron/base58 v1.2.0
 	github.com/nspcc-dev/neo-go v0.77.0
-	github.com/qlcchain/qlc-go-sdk v0.0.0-20210319072051-986607ee8b5b
+	github.com/qlcchain/qlc-go-sdk v0.0.0-20210322022732-234966c5814a
 	github.com/rs/cors v1.7.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/tools v0.0.0-20201022035929-9cf592e881e9 // indirect
