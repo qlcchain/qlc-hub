@@ -1,12 +1,12 @@
 package commands
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
+	"log" //pb "github.com/qlcchain/qlc-hub/grpc/proto"
 
 	"github.com/abiosoft/ishell"
-	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
+	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types" //"github.com/gogo/protobuf/jsonpb"
+	//qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
 )
 
 func addQLCCmd(shell *ishell.Shell) {
@@ -35,21 +35,45 @@ func qQlc2EthCmd(parentCmd *ishell.Cmd) {
 
 func nQlc2Eth() {
 
-	// GetEthOwnerSign
-	qlcPledgeParas := fmt.Sprintf(`{
+	// get pledge send block
+	Paras := fmt.Sprintf(`{
 		"pledgeAddress":"%s",
-		"amount": %d,
 		"erc20ReceiverAddr":"%s",
-	}`, qlcUserAddress, 100, "0x68247e576d0a6128ff655d0fecdea15800f5fcf2")
-	bytes, err := postBytes(qlcPledgeParas, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
+		"amount": "%d"
+	}`, qlcUserAddress, "0x73feaa1eE314F8c655E354234017bE2193C9E24E", 100000)
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
 	if err != nil {
-		log.Fatal(err, bytes)
+		log.Fatal(err, result)
 	}
+	sendHash := result["hash"].(string)
+	fmt.Println("result ", result)
+	sign, work := signQLCTx(sendHash, result["root"].(string))
 
-	sendBlk := new(qlctypes.StateBlock)
-	err = json.Unmarshal(bytes, &sendBlk)
+	// process send block
+	processParas := fmt.Sprintf(`{
+		"hash":"%s",
+		"signature":"%s",
+		"work": "%s"
+	}`, sendHash, sign, work)
+	pResult, err := post(processParas, fmt.Sprintf("%s/qgasswap/processBlock", hubUrl))
+	if err != nil {
+		log.Fatal(err, result)
+	}
+	fmt.Println("process block: ", pResult)
+}
+
+func signQLCTx(hash, root string) (string, string) {
+	var w qlctypes.Work
+	var rootHash qlctypes.Hash
+	rootHash.Of(root)
+	worker, err := qlctypes.NewWorker(w, rootHash)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(sendBlk)
+	work := worker.NewWork()
+
+	var blockHash qlctypes.Hash
+	blockHash.Of(hash)
+	signature := qlcUserAccount.Sign(blockHash)
+	return signature.String(), work.String()
 }

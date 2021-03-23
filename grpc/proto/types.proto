@@ -308,10 +308,29 @@ message QGasWithdrawRequest {
     int64  amount           = 3;
 }
 
-service QGasPledgeAPI {
-    rpc GetPledgeBlock(QGasPledgeRequest) returns (StateBlock){
+message StateBlockHash {
+    string  hash       = 1;
+    string  root       = 2;
+}
+
+message StateBlockSigned {
+    string  hash       = 1;
+    string  signature  = 2;
+    string  work       = 3;
+}
+
+service QGasSwapAPI {
+    rpc GetPledgeBlock(QGasPledgeRequest) returns (StateBlockHash){
         option (google.api.http) = {
-          get: "/qgasswap/getPledgeBlock"
+          post: "/qgasswap/getPledgeBlock"
+          body: "*"
+        };
+    }
+
+    rpc GetWithdrawBlock(Hash) returns (StateBlockHash){
+        option (google.api.http) = {
+          post: "/qgasswap/getWithdrawBlock"
+          body: "*"
         };
     }
 
@@ -322,15 +341,11 @@ service QGasPledgeAPI {
         };
     }
 
-    rpc GetWithdrawBlock(Hash) returns (StateBlock){
+    rpc ProcessBlock(StateBlockSigned) returns (Hash){
         option (google.api.http) = {
-          get: "/qgasswap/getWithdrawBlock"
+          post: "/qgasswap/processBlock"
+          body: "*"
         };
     }
 
-    rpc ProcessBlock(StateBlock) returns (Hash){
-        option (google.api.http) = {
-          get: "/qgasswap/processBlock"
-        };
-    }
 }

@@ -1,7 +1,9 @@
 package commands
 
 import (
+	"encoding/hex"
 	"fmt"
+	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
 	"log"
 
 	"github.com/abiosoft/ishell"
@@ -39,8 +41,10 @@ var (
 	ethConfirmedHeight int
 
 	// qlc setting
-	qlcUserPrivate = "d25b9f42b33c8d13a7589e1f4df44b6207a0cfe1af56d2e0e667d4f0b06297e95eeaaee5eeea9bd2a93f4c0e5c139471eadb2ca068a717614fe51a1ad352e795"
-	qlcUserAddress = "qlc_1qqcoukyxtnutcnmym1gdibsawhcuepc1t794xinzsat5dbo7swojmd8g8cc"
+	qlcUserPrivate = "8be0696a2d51dec8e2859dcb8ce2fd7ce7412eb9d6fa8a2089be8e8f1eeb4f0e458779381a8d21312b071729344a0cb49dc1da385993e19d58b5578da44c0df0"
+	priv, _ = hex.DecodeString(qlcUserPrivate)
+	qlcUserAccount = qlctypes.NewAccount(priv)
+	qlcUserAddress = "qlc_1je9h6w3o5b386oig7sb8j71sf6xr9f5ipemw8gojfcqjpk6r5hiu7z3jx3z"
 )
 
 var (
@@ -65,7 +69,7 @@ func initParams(osArgs []string) {
 	if hubCmd.TestNet {
 		hubUrl = "https://hub-test.qlcchain.online"
 	} else {
-		hubUrl = "http://127.0.0.1:29735"
+		hubUrl = "http://127.0.0.1:19745"
 	}
 
 	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight

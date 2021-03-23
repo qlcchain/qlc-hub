@@ -205,6 +205,7 @@ func (g *Server) registerApi() error {
 	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.neo, g.store))
+	pb.RegisterQGasSwapAPIServer(g.rpc, apis.NewQGasSwapAPI(g.ctx,g.cfg,g.qlc,g.eth,g.signer,g.store))
 	return nil
 }
 
@@ -221,6 +222,9 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 	if err := pb.RegisterDebugAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
+	if err := pb.RegisterQGasSwapAPIHandlerFromEndpoint(ctx,gwmux,endpoint,opts);err !=nil{
+		return err
+	}
 	return nil
 }
 
@@ -233,6 +237,7 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.DepositAPI/GetEthOwnerSign":          jwt.Both,
 		"/proto.DepositAPI/Refund":                   jwt.Both,
 		"/proto.DepositAPI/EthTransactionID":         jwt.Both,
+		"/proto.DepositAPI/ProcessBlock2":         jwt.Both,
 		"/proto.WithdrawAPI/EthTransactionConfirmed": jwt.Both,
 		"/proto.WithdrawAPI/EthTransactionSent":      jwt.Both,
 		"/proto.InfoAPI/Ping":                        jwt.Both,
@@ -245,6 +250,8 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.InfoAPI/SwapAmountByAddress":         jwt.Both,
 		"/proto.InfoAPI/CheckNeoTransaction":         jwt.Both,
 		"/proto.InfoAPI/CheckEthTransaction":         jwt.Both,
+		"/proto.QGasSwapAPI/GetPledgeBlock":          jwt.Both,
+		"/proto.QGasSwapAPI/ProcessBlock":            jwt.Both,
 	})
 	return authorizer
 }

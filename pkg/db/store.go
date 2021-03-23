@@ -5,13 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm/logger"
-
-	"gorm.io/gorm"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func NewDB(url string) (*gorm.DB, error) {
@@ -193,7 +191,16 @@ func GetQGasSwapInfos(db *gorm.DB, page, pageSize int) ([]*types.QGasSwapInfo, e
 	}
 }
 
-func GetQGasSwapInfoByTxHash(db *gorm.DB, hash string, action types.ChainType) (*types.QGasSwapInfo, error) {
+func GetQGasSwapInfoByUserTxHash(db *gorm.DB, hash string) (*types.QGasSwapInfo, error) {
+	var result types.QGasSwapInfo
+	if err := db.Where("user_tx_hash = ?", hash).First(&result).Error; err == nil {
+		return &result, nil
+	} else {
+		return nil, err
+	}
+}
+
+func GetQGasSwapInfoByUniqueID(db *gorm.DB, hash string, action types.ChainType) (*types.QGasSwapInfo, error) {
 	var result types.QGasSwapInfo
 	if action == types.ETH {
 		hash = util.AddHashPrefix(hash)
