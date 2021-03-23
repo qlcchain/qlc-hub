@@ -7,9 +7,9 @@ import (
 	"syscall"
 
 	flag "github.com/jessevdk/go-flags"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc"
-	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/util"
@@ -54,11 +54,7 @@ func main() {
 	logger := log.NewLogger("signer/main")
 	logger.Info(util.ToIndentString(cfg))
 
-	r1 := cfg.AddressList(pb.SignType_NEO)
-	logger.Info("NEO: ", util.ToIndentString(r1))
-
-	r2 := cfg.AddressList(pb.SignType_ETH)
-	logger.Info("ETH: ", util.ToIndentString(r2))
+	logger.Info(util.ToIndentString(cfg.AddressLists()))
 
 	for i := 0; i < 10; i++ {
 		if token, err := cfg.JwtManager.Generate(jwt.User); err == nil {

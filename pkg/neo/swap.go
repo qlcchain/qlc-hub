@@ -23,6 +23,7 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )

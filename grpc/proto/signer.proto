@@ -5,6 +5,8 @@ option go_package = ".;proto";
 enum SignType {
     ETH = 0;
     NEO = 1;
+    BSC = 2;
+    QLC = 3;
 }
 
 message SignRequest {

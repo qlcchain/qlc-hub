@@ -8,12 +8,13 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	qlcchain "github.com/qlcchain/qlc-go-sdk"
 	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+
 	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/signer"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type Transaction struct {

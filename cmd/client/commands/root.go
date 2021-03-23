@@ -9,6 +9,7 @@ import (
 	flag "github.com/jessevdk/go-flags"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
+
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
