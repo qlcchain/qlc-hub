@@ -5,8 +5,9 @@ import (
 	"time"
 
 	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
-	"github.com/qlcchain/qlc-hub/pkg/log"
 	"go.uber.org/zap"
+
+	"github.com/qlcchain/qlc-hub/pkg/log"
 )
 
 type AddressPool struct {

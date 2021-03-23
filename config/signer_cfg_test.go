@@ -4,17 +4,18 @@ import (
 	"encoding/hex"
 	"testing"
 
+	"github.com/qlcchain/qlc-go-sdk/pkg/types"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
 
-	"github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 )
 
 func TestSignerConfig_Verify(t *testing.T) {
 	jwtKey := jwt.NewBase58Key()
-	var neoKeys, ethKeys []string
+	var neoKeys, ethKeys, bscKeys, qlcKeys []string
 
 	for i := 0; i < 2; i++ {
 		key, _ := crypto.GenerateKey()
@@ -31,6 +32,22 @@ func TestSignerConfig_Verify(t *testing.T) {
 		neoKeys = append(neoKeys, s)
 	}
 
+	for i := 0; i < 2; i++ {
+		key, _ := crypto.GenerateKey()
+		privateKeyBytes := crypto.FromECDSA(key)
+		s := hex.EncodeToString(privateKeyBytes)
+		t.Logf("2:%s", s)
+		bscKeys = append(bscKeys, s)
+	}
+
+	for i := 0; i < 2; i++ {
+		seed, _ := types.NewSeed()
+		a, _ := seed.Account(0)
+		s := hex.EncodeToString(a.PrivateKey())
+		t.Logf("3:%s", s)
+		qlcKeys = append(qlcKeys, s)
+	}
+
 	cfg := &SignerConfig{
 		Verbose:           false,
 		Key:               jwtKey,
@@ -38,16 +55,15 @@ func TestSignerConfig_Verify(t *testing.T) {
 		LogLevel:          "debug",
 		NeoAccounts:       neoKeys,
 		EthAccounts:       ethKeys,
+		BSCAccounts:       bscKeys,
+		QLCAccounts:       qlcKeys,
 		GRPCListenAddress: "tcp://0.0.0.0:19747",
 		JwtManager:        nil,
 		Keys:              nil,
 	}
+
 	if err := cfg.Verify(); err != nil {
 		t.Fatal(err)
 	}
-	r1 := cfg.AddressList(proto.SignType_NEO)
-	t.Log("NEO: ", util.ToIndentString(r1))
-
-	r2 := cfg.AddressList(proto.SignType_ETH)
-	t.Log("NEO: ", util.ToIndentString(r2))
+	t.Log(util.ToIndentString(cfg.AddressLists()))
 }

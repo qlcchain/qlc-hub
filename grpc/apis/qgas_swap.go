@@ -11,6 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	qlcchain "github.com/qlcchain/qlc-go-sdk"
 	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/db"
@@ -20,8 +23,6 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type QGasSwapAPI struct {

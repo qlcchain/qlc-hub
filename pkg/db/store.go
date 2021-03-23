@@ -2,14 +2,16 @@ package db
 
 import (
 	"fmt"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm/logger"
 	"strings"
 	"time"
 
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm/logger"
+
+	"gorm.io/gorm"
+
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
-	"gorm.io/gorm"
 )
 
 func NewDB(url string) (*gorm.DB, error) {

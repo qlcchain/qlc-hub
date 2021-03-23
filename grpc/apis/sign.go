@@ -6,8 +6,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/qlcchain/qlc-go-sdk/pkg/ed25519"
+
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nspcc-dev/neo-go/pkg/crypto/keys"
+
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 )
@@ -49,6 +52,9 @@ func (s *SignerService) Sign(ctx context.Context, request *pb.SignRequest) (*pb.
 					Sign:       sign,
 					VerifyData: k.PublicKey().GetVerificationScript(),
 				}, nil
+			case ed25519.PrivateKey:
+				signature := ed25519.Sign(k, rawData)
+				return &pb.SignResponse{Sign: signature}, nil
 			default:
 				return nil, invalidKey(t, address)
 			}
