@@ -734,18 +734,15 @@ func local_request_DebugAPI_SignData_0(ctx context.Context, marshaler runtime.Ma
 
 }
 
-var (
-	filter_QGasPledgeAPI_GetPledgeBlock_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_QGasPledgeAPI_GetPledgeBlock_0(ctx context.Context, marshaler runtime.Marshaler, client QGasPledgeAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_QGasSwapAPI_GetPledgeBlock_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QGasPledgeRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasPledgeAPI_GetPledgeBlock_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -754,14 +751,15 @@ func request_QGasPledgeAPI_GetPledgeBlock_0(ctx context.Context, marshaler runti
 
 }
 
-func local_request_QGasPledgeAPI_GetPledgeBlock_0(ctx context.Context, marshaler runtime.Marshaler, server QGasPledgeAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_QGasSwapAPI_GetPledgeBlock_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QGasPledgeRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasPledgeAPI_GetPledgeBlock_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -770,8 +768,8 @@ func local_request_QGasPledgeAPI_GetPledgeBlock_0(ctx context.Context, marshaler
 
 }
 
-func request_QGasPledgeAPI_GetPledgeEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client QGasPledgeAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func request_QGasSwapAPI_PledgeEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq EthTxSentRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -782,13 +780,13 @@ func request_QGasPledgeAPI_GetPledgeEthOwnerSign_0(ctx context.Context, marshale
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.GetPledgeEthOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.PledgeEthTxSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_QGasPledgeAPI_GetPledgeEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server QGasPledgeAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func local_request_QGasSwapAPI_PledgeEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq EthTxSentRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -799,23 +797,20 @@ func local_request_QGasPledgeAPI_GetPledgeEthOwnerSign_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.GetPledgeEthOwnerSign(ctx, &protoReq)
+	msg, err := server.PledgeEthTxSent(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-var (
-	filter_QGasPledgeAPI_GetWithdrawBlock_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_QGasPledgeAPI_GetWithdrawBlock_0(ctx context.Context, marshaler runtime.Marshaler, client QGasPledgeAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_QGasSwapAPI_GetWithdrawBlock_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasPledgeAPI_GetWithdrawBlock_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -824,14 +819,15 @@ func request_QGasPledgeAPI_GetWithdrawBlock_0(ctx context.Context, marshaler run
 
 }
 
-func local_request_QGasPledgeAPI_GetWithdrawBlock_0(ctx context.Context, marshaler runtime.Marshaler, server QGasPledgeAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_QGasSwapAPI_GetWithdrawBlock_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasPledgeAPI_GetWithdrawBlock_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -840,18 +836,83 @@ func local_request_QGasPledgeAPI_GetWithdrawBlock_0(ctx context.Context, marshal
 
 }
 
-var (
-	filter_QGasPledgeAPI_ProcessBlock_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_QGasPledgeAPI_ProcessBlock_0(ctx context.Context, marshaler runtime.Marshaler, client QGasPledgeAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StateBlock
+func request_QGasSwapAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasPledgeAPI_ProcessBlock_0); err != nil {
+
+	msg, err := client.GetEthOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.GetEthOwnerSign(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.WithdrawEthTxSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.WithdrawEthTxSent(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_QGasSwapAPI_ProcessBlock_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq StateBlockSigned
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -860,18 +921,199 @@ func request_QGasPledgeAPI_ProcessBlock_0(ctx context.Context, marshaler runtime
 
 }
 
-func local_request_QGasPledgeAPI_ProcessBlock_0(ctx context.Context, marshaler runtime.Marshaler, server QGasPledgeAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq StateBlock
+func local_request_QGasSwapAPI_ProcessBlock_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq StateBlockSigned
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.ProcessBlock(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_QGasSwapAPI_SwapInfoList_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_QGasSwapAPI_SwapInfoList_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Offset
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasPledgeAPI_ProcessBlock_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfoList_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.ProcessBlock(ctx, &protoReq)
+	msg, err := client.SwapInfoList(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_SwapInfoList_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Offset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfoList_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.SwapInfoList(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_QGasSwapAPI_SwapInfosByAddress_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_QGasSwapAPI_SwapInfosByAddress_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq AddrAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfosByAddress_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.SwapInfosByAddress(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_SwapInfosByAddress_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq AddrAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfosByAddress_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.SwapInfosByAddress(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_QGasSwapAPI_SwapInfoByTxHash_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_QGasSwapAPI_SwapInfoByTxHash_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfoByTxHash_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.SwapInfoByTxHash(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_SwapInfoByTxHash_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq Hash
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfoByTxHash_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.SwapInfoByTxHash(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_QGasSwapAPI_SwapInfosByState_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_QGasSwapAPI_SwapInfosByState_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq StateAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfosByState_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.SwapInfosByState(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_SwapInfosByState_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq StateAndOffset
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_QGasSwapAPI_SwapInfosByState_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.SwapInfosByState(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_QGasSwapAPI_SwapInfosCount_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.SwapInfosCount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_SwapInfosCount_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.SwapInfosCount(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_QGasSwapAPI_SwapInfosAmount_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.SwapInfosAmount(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_QGasSwapAPI_SwapInfosAmount_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq empty.Empty
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.SwapInfosAmount(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -1348,12 +1590,12 @@ func RegisterDebugAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 	return nil
 }
 
-// RegisterQGasPledgeAPIHandlerServer registers the http handlers for service QGasPledgeAPI to "mux".
-// UnaryRPC     :call QGasPledgeAPIServer directly.
+// RegisterQGasSwapAPIHandlerServer registers the http handlers for service QGasSwapAPI to "mux".
+// UnaryRPC     :call QGasSwapAPIServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterQGasPledgeAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server QGasPledgeAPIServer) error {
+func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server QGasSwapAPIServer) error {
 
-	mux.Handle("GET", pattern_QGasPledgeAPI_GetPledgeBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetPledgeBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1362,18 +1604,18 @@ func RegisterQGasPledgeAPIHandlerServer(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasPledgeAPI_GetPledgeBlock_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_GetPledgeBlock_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_GetPledgeBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetPledgeBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_QGasPledgeAPI_GetPledgeEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_PledgeEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1382,18 +1624,18 @@ func RegisterQGasPledgeAPIHandlerServer(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasPledgeAPI_GetPledgeEthOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_PledgeEthTxSent_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_GetPledgeEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_PledgeEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_QGasPledgeAPI_GetWithdrawBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetWithdrawBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1402,18 +1644,18 @@ func RegisterQGasPledgeAPIHandlerServer(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasPledgeAPI_GetWithdrawBlock_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_GetWithdrawBlock_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_GetWithdrawBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetWithdrawBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_QGasPledgeAPI_ProcessBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1422,14 +1664,174 @@ func RegisterQGasPledgeAPIHandlerServer(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasPledgeAPI_ProcessBlock_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_GetEthOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_ProcessBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_QGasSwapAPI_WithdrawEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_WithdrawEthTxSent_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_WithdrawEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_QGasSwapAPI_ProcessBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_ProcessBlock_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_ProcessBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfoList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_SwapInfoList_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfoList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosByAddress_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_SwapInfosByAddress_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosByAddress_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfoByTxHash_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_SwapInfoByTxHash_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfoByTxHash_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosByState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_SwapInfosByState_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosByState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_SwapInfosCount_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosCount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosAmount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_QGasSwapAPI_SwapInfosAmount_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosAmount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2144,9 +2546,9 @@ var (
 	forward_DebugAPI_SignData_0 = runtime.ForwardResponseMessage
 )
 
-// RegisterQGasPledgeAPIHandlerFromEndpoint is same as RegisterQGasPledgeAPIHandler but
+// RegisterQGasSwapAPIHandlerFromEndpoint is same as RegisterQGasSwapAPIHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterQGasPledgeAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterQGasSwapAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -2166,23 +2568,23 @@ func RegisterQGasPledgeAPIHandlerFromEndpoint(ctx context.Context, mux *runtime.
 		}()
 	}()
 
-	return RegisterQGasPledgeAPIHandler(ctx, mux, conn)
+	return RegisterQGasSwapAPIHandler(ctx, mux, conn)
 }
 
-// RegisterQGasPledgeAPIHandler registers the http handlers for service QGasPledgeAPI to "mux".
+// RegisterQGasSwapAPIHandler registers the http handlers for service QGasSwapAPI to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterQGasPledgeAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterQGasPledgeAPIHandlerClient(ctx, mux, NewQGasPledgeAPIClient(conn))
+func RegisterQGasSwapAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterQGasSwapAPIHandlerClient(ctx, mux, NewQGasSwapAPIClient(conn))
 }
 
-// RegisterQGasPledgeAPIHandlerClient registers the http handlers for service QGasPledgeAPI
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "QGasPledgeAPIClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "QGasPledgeAPIClient"
+// RegisterQGasSwapAPIHandlerClient registers the http handlers for service QGasSwapAPI
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "QGasSwapAPIClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "QGasSwapAPIClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "QGasPledgeAPIClient" to call the correct interceptors.
-func RegisterQGasPledgeAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client QGasPledgeAPIClient) error {
+// "QGasSwapAPIClient" to call the correct interceptors.
+func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client QGasSwapAPIClient) error {
 
-	mux.Handle("GET", pattern_QGasPledgeAPI_GetPledgeBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetPledgeBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2191,18 +2593,18 @@ func RegisterQGasPledgeAPIHandlerClient(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasPledgeAPI_GetPledgeBlock_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_GetPledgeBlock_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_GetPledgeBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetPledgeBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_QGasPledgeAPI_GetPledgeEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_PledgeEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2211,18 +2613,18 @@ func RegisterQGasPledgeAPIHandlerClient(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasPledgeAPI_GetPledgeEthOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_PledgeEthTxSent_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_GetPledgeEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_PledgeEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_QGasPledgeAPI_GetWithdrawBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetWithdrawBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2231,18 +2633,18 @@ func RegisterQGasPledgeAPIHandlerClient(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasPledgeAPI_GetWithdrawBlock_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_GetWithdrawBlock_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_GetWithdrawBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetWithdrawBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_QGasPledgeAPI_ProcessBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2251,14 +2653,174 @@ func RegisterQGasPledgeAPIHandlerClient(ctx context.Context, mux *runtime.ServeM
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasPledgeAPI_ProcessBlock_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_GetEthOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasPledgeAPI_ProcessBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_QGasSwapAPI_WithdrawEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_WithdrawEthTxSent_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_WithdrawEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_QGasSwapAPI_ProcessBlock_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_ProcessBlock_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_ProcessBlock_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfoList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_SwapInfoList_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfoList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosByAddress_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_SwapInfosByAddress_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosByAddress_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfoByTxHash_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_SwapInfoByTxHash_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfoByTxHash_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosByState_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_SwapInfosByState_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosByState_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosCount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_SwapInfosCount_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosCount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_QGasSwapAPI_SwapInfosAmount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_QGasSwapAPI_SwapInfosAmount_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_QGasSwapAPI_SwapInfosAmount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2266,21 +2828,53 @@ func RegisterQGasPledgeAPIHandlerClient(ctx context.Context, mux *runtime.ServeM
 }
 
 var (
-	pattern_QGasPledgeAPI_GetPledgeBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getPledgeBlock"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_GetPledgeBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getPledgeBlock"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_QGasPledgeAPI_GetPledgeEthOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "getPledgeEthOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_PledgeEthTxSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "pledgeEthTxSent"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_QGasPledgeAPI_GetWithdrawBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getWithdrawBlock"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_GetWithdrawBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getWithdrawBlock"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_QGasPledgeAPI_ProcessBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "processBlock"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_GetEthOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getEthOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_WithdrawEthTxSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "withdrawEthTxSent"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_ProcessBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "processBlock"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_SwapInfoList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "swapInfoList"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_SwapInfosByAddress_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "swapInfosByAddress"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_SwapInfoByTxHash_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "swapInfoByTxHash"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_SwapInfosByState_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "swapInfosByState"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_SwapInfosCount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "swapInfosCount"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_QGasSwapAPI_SwapInfosAmount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "swapInfosAmount"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_QGasPledgeAPI_GetPledgeBlock_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_GetPledgeBlock_0 = runtime.ForwardResponseMessage
 
-	forward_QGasPledgeAPI_GetPledgeEthOwnerSign_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_PledgeEthTxSent_0 = runtime.ForwardResponseMessage
 
-	forward_QGasPledgeAPI_GetWithdrawBlock_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_GetWithdrawBlock_0 = runtime.ForwardResponseMessage
 
-	forward_QGasPledgeAPI_ProcessBlock_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_GetEthOwnerSign_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_WithdrawEthTxSent_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_ProcessBlock_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_SwapInfoList_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_SwapInfosByAddress_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_SwapInfoByTxHash_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_SwapInfosByState_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_SwapInfosCount_0 = runtime.ForwardResponseMessage
+
+	forward_QGasSwapAPI_SwapInfosAmount_0 = runtime.ForwardResponseMessage
 )

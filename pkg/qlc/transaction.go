@@ -8,13 +8,12 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	qlcchain "github.com/qlcchain/qlc-go-sdk"
 	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
-
 	"github.com/qlcchain/qlc-hub/pkg/db"
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Transaction struct {
@@ -86,9 +85,14 @@ func (t *Transaction) GetSwapInfoHashByWithdrawSendBlock(hash qlctypes.Hash, sto
 	if err != nil {
 		return nil, fmt.Errorf("QGas parse withdraw param: %s", err)
 	}
-	swapInfo, err := db.GetQGasSwapInfoByTxHash(store, swapParam.LinkHash.String(), types.ETH)
+	swapInfo, err := db.GetQGasSwapInfoByUniqueID(store, swapParam.LinkHash.String(), types.ETH)
 	if err != nil {
 		return nil, fmt.Errorf("QGas pledge withdraw not found: %s", err)
 	}
 	return swapInfo, nil
+}
+
+func (t *Transaction) ValidateAddress(addr string) error {
+	_, err := qlctypes.HexToAddress(addr)
+	return err
 }

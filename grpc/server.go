@@ -9,12 +9,6 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/rs/cors"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"gorm.io/gorm"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/apis"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
@@ -26,6 +20,11 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/qlc"
 	"github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"github.com/rs/cors"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"gorm.io/gorm"
 )
 
 type Server struct {
@@ -205,6 +204,7 @@ func (g *Server) registerApi() error {
 	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
 	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.neo, g.store))
+	pb.RegisterQGasSwapAPIServer(g.rpc, apis.NewQGasSwapAPI(g.ctx, g.cfg, g.qlc, g.eth, g.signer, g.store))
 	return nil
 }
 
@@ -219,6 +219,9 @@ func registerGWApi(ctx context.Context, gwmux *runtime.ServeMux, endpoint string
 		return err
 	}
 	if err := pb.RegisterDebugAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := pb.RegisterQGasSwapAPIHandlerFromEndpoint(ctx, gwmux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil
@@ -245,6 +248,18 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.InfoAPI/SwapAmountByAddress":         jwt.Both,
 		"/proto.InfoAPI/CheckNeoTransaction":         jwt.Both,
 		"/proto.InfoAPI/CheckEthTransaction":         jwt.Both,
+		"/proto.QGasSwapAPI/GetPledgeBlock":          jwt.Both,
+		"/proto.QGasSwapAPI/PledgeEthTxSent":         jwt.Both,
+		"/proto.QGasSwapAPI/GetEthOwnerSign":         jwt.Both,
+		"/proto.QGasSwapAPI/GetWithdrawBlock":        jwt.Both,
+		"/proto.QGasSwapAPI/WithdrawEthTxSent":       jwt.Both,
+		"/proto.QGasSwapAPI/ProcessBlock":            jwt.Both,
+		"/proto.QGasSwapAPI/SwapInfoList":            jwt.Both,
+		"/proto.QGasSwapAPI/SwapInfoByTxHash":        jwt.Both,
+		"/proto.QGasSwapAPI/SwapInfosByAddress":      jwt.Both,
+		"/proto.QGasSwapAPI/SwapInfosByState":        jwt.Both,
+		"/proto.QGasSwapAPI/SwapInfosCount":          jwt.Both,
+		"/proto.QGasSwapAPI/SwapInfosAmount":         jwt.Both,
 	})
 	return authorizer
 }

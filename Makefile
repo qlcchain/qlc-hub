@@ -62,6 +62,11 @@ release: changelog
 		-w /qlc-hub \
 		goreng/golang-cross:$(GO_BUILDER_VERSION) --rm-dist --debug --release-notes=CHANGELOG.md
 
+hub-proto:
+	protoc -I$(GOPATH)/src -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I=$(shell pwd)/grpc/proto/ --go_out=plugins=grpc:$(shell pwd)/grpc/proto $(shell pwd)/grpc/proto/types.proto
+	protoc -I$(GOPATH)/src -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I=$(shell pwd)/grpc/proto/ --grpc-gateway_out=logtostderr=true:$(shell pwd)/grpc/proto $(shell pwd)/grpc/proto/types.proto
+	protoc -I$(GOPATH)/src -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I=$(shell pwd)/grpc/proto/ --swagger_out=logtostderr=true:$(shell pwd)/docs $(shell pwd)/grpc/proto/types.proto
+
 signer-proto:
 	protoc -I$(GOPATH)/src -I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis -I=$(shell pwd)/grpc/proto/ --go_out=plugins=grpc:$(shell pwd)/grpc/proto $(shell pwd)/grpc/proto/signer.proto
 

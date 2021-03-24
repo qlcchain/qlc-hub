@@ -9,9 +9,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/golang/protobuf/ptypes/empty"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/db"
@@ -19,6 +16,8 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/types"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type InfoAPI struct {
@@ -50,6 +49,7 @@ func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingRespons
 		NeoContract: i.cfg.NEOCfg.Contract,
 		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
 		NeoUrl:      i.neo.ClientEndpoint(),
+		QlcOwner:    i.cfg.QlcCfg.OwnerAddress,
 		TotalSupply: i.eth.TotalSupply(),
 	}, nil
 }

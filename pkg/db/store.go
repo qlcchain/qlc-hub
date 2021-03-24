@@ -5,13 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm/logger"
-
-	"gorm.io/gorm"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func NewDB(url string) (*gorm.DB, error) {
@@ -193,7 +191,16 @@ func GetQGasSwapInfos(db *gorm.DB, page, pageSize int) ([]*types.QGasSwapInfo, e
 	}
 }
 
-func GetQGasSwapInfoByTxHash(db *gorm.DB, hash string, action types.ChainType) (*types.QGasSwapInfo, error) {
+func GetQGasSwapInfoByUserTxHash(db *gorm.DB, hash string) (*types.QGasSwapInfo, error) {
+	var result types.QGasSwapInfo
+	if err := db.Where("user_tx_hash = ?", hash).First(&result).Error; err == nil {
+		return &result, nil
+	} else {
+		return nil, err
+	}
+}
+
+func GetQGasSwapInfoByUniqueID(db *gorm.DB, hash string, action types.ChainType) (*types.QGasSwapInfo, error) {
 	var result types.QGasSwapInfo
 	if action == types.ETH {
 		hash = util.AddHashPrefix(hash)
@@ -220,23 +227,23 @@ func GetQGasSwapInfosByState(db *gorm.DB, page, pageSize int, state types.QGasSw
 	}
 }
 
-//func GetQGasSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, action types.ChainType) ([]*types.QGasSwapInfo, error) {
-//	var result []*types.QGasSwapInfo
-//	if action == types.ETH {
-//		addr = stringToLower(addr)
-//		if len(addr) == 40 {
-//			addr = fmt.Sprintf("0x%s", addr)
-//		}
-//		if err := db.Where("eth_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-//			return result, nil
-//		} else {
-//			return nil, err
-//		}
-//	} else {
-//		if err := db.Where("neo_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-//			return result, nil
-//		} else {
-//			return nil, err
-//		}
-//	}
-//}
+func GetQGasSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, action types.ChainType) ([]*types.QGasSwapInfo, error) {
+	var result []*types.QGasSwapInfo
+	if action == types.ETH {
+		addr = stringToLower(addr)
+		if len(addr) == 40 {
+			addr = fmt.Sprintf("0x%s", addr)
+		}
+		if err := db.Where("eth_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+			return result, nil
+		} else {
+			return nil, err
+		}
+	} else {
+		if err := db.Where("qlc_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+			return result, nil
+		} else {
+			return nil, err
+		}
+	}
+}
