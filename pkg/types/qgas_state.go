@@ -10,6 +10,7 @@ const (
 	QGasPledgeDone
 
 	// withdraw
+	QGasWithDrawInit
 	QGasWithDrawPending
 	QGasWithDrawDone
 
@@ -26,6 +27,8 @@ func QGasSwapStateToString(t QGasSwapState) string {
 		return "QGasPledgeDone"
 	case QGasWithDrawPending:
 		return "QGasWithDrawPending"
+	case QGasWithDrawInit:
+		return "QGasWithDrawInit"
 	case QGasWithDrawDone:
 		return "QGasWithDrawDone"
 	default:
@@ -41,6 +44,8 @@ func StringToQGasSwapState(t string) QGasSwapState {
 		return QGasPledgePending
 	case "QGasPledgeDone":
 		return QGasPledgeDone
+	case "QGasWithDrawInit":
+		return QGasWithDrawInit
 	case "QGasWithDrawPending":
 		return QGasWithDrawPending
 	case "QGasWithDrawDone":

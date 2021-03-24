@@ -108,7 +108,8 @@ message PingResponse {
    string ethContract   = 4;
    string ethOwner      = 5;
    string ethUrl        = 6;
-   int64  totalSupply   = 7;
+   string qlcOwner      = 7;
+   int64  totalSupply   = 8;
 }
 
 message Offset {
@@ -268,34 +269,6 @@ message Map {
 }
 
 
-message StateBlock  {
-    string    type    = 1;
-    string    token   = 2;
-    string    address = 3;
-    int64     balance = 4;
-    int64     vote    = 5;
-    int64     network = 6;
-    int64     storage = 7;
-    int64     oracle  = 8;
-    string    previous   = 9;
-    string    link       = 10;
-    bytes     sender     = 11;
-    bytes     receiver   = 12;
-    string    message    = 13;
-    bytes     data       = 14;
-    uint64    poVHeight  = 15;
-    int64     timestamp  = 16;
-    string    extra      = 17;
-    string    representative   = 18;
-
-    string    privateFrom      = 19;
-    repeated string privateFor = 20;
-    string    privateGroupID   = 21;
-
-    uint64    work           = 22;
-    string    signature      = 23;
-}
-
 message QGasPledgeRequest {
     string       pledgeAddress  = 1;
     int64        amount         = 2;
@@ -319,10 +292,39 @@ message StateBlockSigned {
     string  work       = 3;
 }
 
+message EthTxSentRequest{
+    string  ethTxHash         = 1;
+    string  qlcTxHash         = 2;
+}
+
+message QGasSwapInfo {
+    int32  state            = 1;
+    string stateStr         = 2;
+	int64  amount           = 3;
+	string qlcUserAddr      = 4;
+	string sendTxHash       = 5;
+    string rewardTxHash     = 6;
+    string ethUserAddr      = 7;
+    string ethTxHash        = 8;
+	string startTime        = 9;
+	string lastModifyTime   = 10;
+}
+
+message QGasSwapInfos {
+    repeated QGasSwapInfo infos = 1;
+}
+
 service QGasSwapAPI {
     rpc GetPledgeBlock(QGasPledgeRequest) returns (StateBlockHash){
         option (google.api.http) = {
           post: "/qgasswap/getPledgeBlock"
+          body: "*"
+        };
+    }
+
+    rpc PledgeEthTxSent(EthTxSentRequest) returns (Boolean){
+        option (google.api.http) = {
+          post: "/qgasswap/pledgeEthTxSent"
           body: "*"
         };
     }
@@ -334,9 +336,16 @@ service QGasSwapAPI {
         };
     }
 
-    rpc GetPledgeEthOwnerSign(Hash) returns (String){
+    rpc GetEthOwnerSign(Hash) returns (String){
         option (google.api.http) = {
-          post: "/deposit/getPledgeEthOwnerSign"
+          post: "/qgasswap/getEthOwnerSign"
+          body: "*"
+        };
+    }
+
+    rpc WithdrawEthTxSent(Hash) returns (Boolean){
+        option (google.api.http) = {
+          post: "/qgasswap/withdrawEthTxSent"
           body: "*"
         };
     }
@@ -347,5 +356,42 @@ service QGasSwapAPI {
           body: "*"
         };
     }
+
+
+   rpc SwapInfoList(Offset) returns (QGasSwapInfos){
+       option (google.api.http) = {
+         get: "/qgasswap/swapInfoList"
+       };
+   }
+
+   rpc SwapInfosByAddress(AddrAndOffset) returns (QGasSwapInfos){
+       option (google.api.http) = {
+         get: "/qgasswap/swapInfosByAddress"
+       };
+   }
+
+   rpc SwapInfoByTxHash(Hash) returns (QGasSwapInfo){
+       option (google.api.http) = {
+         get: "/qgasswap/swapInfoByTxHash"
+       };
+   }
+
+   rpc SwapInfosByState(StateAndOffset) returns (QGasSwapInfos){
+      option (google.api.http) = {
+        get: "/qgasswap/swapInfosByState"
+      };
+   }
+
+   rpc SwapInfosCount(google.protobuf.Empty) returns (Map){
+      option (google.api.http) = {
+        get: "/qgasswap/swapInfosCount"
+      };
+   }
+
+   rpc SwapInfosAmount(google.protobuf.Empty) returns (Map){
+      option (google.api.http) = {
+        get: "/qgasswap/swapInfosAmount"
+      };
+   }
 
 }

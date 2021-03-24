@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"log" //pb "github.com/qlcchain/qlc-hub/grpc/proto"
+	"math/big"
 
 	"github.com/abiosoft/ishell"
 	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types" //"github.com/gogo/protobuf/jsonpb"
@@ -34,19 +35,20 @@ func qQlc2EthCmd(parentCmd *ishell.Cmd) {
 }
 
 func nQlc2Eth() {
+	amount := 5000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
 		"pledgeAddress":"%s",
 		"erc20ReceiverAddr":"%s",
 		"amount": "%d"
-	}`, qlcUserAddress, "0x73feaa1eE314F8c655E354234017bE2193C9E24E", 100000)
+	}`, qlcUserAddress, ethUserAddress, amount)
 	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
 	sendHash := result["hash"].(string)
-	fmt.Println("result ", result)
+	fmt.Println("send Hash: ", sendHash)
 	sign, work := signQLCTx(sendHash, result["root"].(string))
 
 	// process send block
@@ -59,7 +61,37 @@ func nQlc2Eth() {
 	if err != nil {
 		log.Fatal(err, result)
 	}
-	fmt.Println("process block: ", pResult)
+	fmt.Println("reward block: ", pResult)
+
+	// GetEthOwnerSign
+	signParas := fmt.Sprintf(`{
+		"hash":"%s"
+	}`, sendHash)
+	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getEthOwnerSign", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+	ownerSign := r["value"].(string)
+	fmt.Println("hub sign: ", ownerSign)
+
+	ethTx, err := ethTransactionQLC.QGasMint(ethUserPrivate, big.NewInt(int64(amount)), sendHash, ownerSign)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("deposit send eth tx done: ", ethTx)
+
+	// process send block
+	sentParas := fmt.Sprintf(`{
+		"ethTxHash":"%s",
+		"qlcTxHash":"%s"
+	}`, ethTx, sendHash)
+	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeEthTxSent", hubUrl))
+	if err != nil {
+		log.Fatal(err, result)
+	}
+	fmt.Println("reward block: ", sResult)
+
 }
 
 func signQLCTx(hash, root string) (string, string) {

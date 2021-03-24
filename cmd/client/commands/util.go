@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	//"github.com/gogo/protobuf/jsonpb"
-	"github.com/golang/protobuf/proto"
-	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -125,43 +122,4 @@ func post(paras string, url string) (map[string]interface{}, error) {
 		log.Fatal(err)
 	}
 	return ret, nil
-}
-
-func postBytes(paras string, url string) ([]byte, error) {
-	jsonStr := []byte(paras)
-	ioBody := bytes.NewBuffer(jsonStr)
-	request, err := http.NewRequest("POST", url, ioBody)
-	if err != nil {
-		log.Fatal("request ", err)
-	}
-	request.Header.Set("Content-Type", "application/json")
-	fmt.Println("=== ", hubCmd.HubToken)
-	request.Header.Set("authorization", hubCmd.HubToken)
-	client := http.Client{}
-	response, err := client.Do(request)
-	fmt.Println("===========1")
-	if err != nil {
-		log.Fatal("do ", err)
-	}
-	defer response.Body.Close()
-	fmt.Println("===========12")
-	fmt.Println(response.Body)
-	if response.StatusCode > 200 {
-		log.Fatalf("%d status code returned, %s", response.StatusCode, url)
-	}
-	fmt.Println("===========13")
-	bytes, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal("readAll ",err)
-	}
-
-
-	var result pb.StateBlock
-	if err := proto.Unmarshal(bytes, &result);err !=nil{
-		log.Fatal("=== ",err)
-	}
-	fmt.Println(result)
-
-
-	return bytes, nil
 }

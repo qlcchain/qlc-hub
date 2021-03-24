@@ -3,7 +3,6 @@ package commands
 import (
 	"encoding/hex"
 	"fmt"
-	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
 	"log"
 
 	"github.com/abiosoft/ishell"
@@ -11,7 +10,7 @@ import (
 	flag "github.com/jessevdk/go-flags"
 	"github.com/nspcc-dev/neo-go/pkg/util"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-
+	qlctypes "github.com/qlcchain/qlc-go-sdk/pkg/types"
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/pkg/eth"
 	"github.com/qlcchain/qlc-hub/pkg/neo"
@@ -32,7 +31,7 @@ var (
 	//neoUserAddr        = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
 	neoConfirmedHeight int
 
-	// eth setting
+	// eth setting (neo -> eth)
 	ethUrl             = []string{"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"}
 	ethContract        = "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
 	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
@@ -40,19 +39,23 @@ var (
 	ethUserAddress     = "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
 	ethConfirmedHeight int
 
+	// eth setting (qlc -> eth)
+	ethContractQLC = "0xC23B5A66811dfe107e08cf8e9De4791Da48f7a65"
+
 	// qlc setting
 	qlcUserPrivate = "8be0696a2d51dec8e2859dcb8ce2fd7ce7412eb9d6fa8a2089be8e8f1eeb4f0e458779381a8d21312b071729344a0cb49dc1da385993e19d58b5578da44c0df0"
-	priv, _ = hex.DecodeString(qlcUserPrivate)
+	priv, _        = hex.DecodeString(qlcUserPrivate)
 	qlcUserAccount = qlctypes.NewAccount(priv)
 	qlcUserAddress = "qlc_1je9h6w3o5b386oig7sb8j71sf6xr9f5ipemw8gojfcqjpk6r5hiu7z3jx3z"
 )
 
 var (
-	neoTrasaction  *neo.Transaction
-	ethTransaction *eth.Transaction
-	singerClient   *signer.SignerClient
-	cfg            = &config.Config{}
-	hubCmd         = &HubCmd{}
+	neoTrasaction     *neo.Transaction
+	ethTransaction    *eth.Transaction
+	ethTransactionQLC *eth.Transaction
+	singerClient      *signer.SignerClient
+	cfg               = &config.Config{}
+	hubCmd            = &HubCmd{}
 )
 
 type HubCmd struct {
@@ -87,6 +90,8 @@ func initParams(osArgs []string) {
 	}
 
 	ethTransaction, _ = eth.NewTransaction(ethUrl, ethContract)
+	ethTransactionQLC, _ = eth.NewTransaction(ethUrl, ethContractQLC)
+
 	//defer ethClient.Close()
 
 	log.Println("hub endpoint: ", hubUrl)

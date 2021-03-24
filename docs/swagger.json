@@ -629,6 +629,398 @@
         ]
       }
     },
+    "/qgasswap/getEthOwnerSign": {
+      "post": {
+        "operationId": "QGasSwapAPI_GetEthOwnerSign",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoString"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/getPledgeBlock": {
+      "post": {
+        "operationId": "QGasSwapAPI_GetPledgeBlock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoStateBlockHash"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoQGasPledgeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/getWithdrawBlock": {
+      "post": {
+        "operationId": "QGasSwapAPI_GetWithdrawBlock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoStateBlockHash"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/pledgeEthTxSent": {
+      "post": {
+        "operationId": "QGasSwapAPI_PledgeEthTxSent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoEthTxSentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/processBlock": {
+      "post": {
+        "operationId": "QGasSwapAPI_ProcessBlock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoStateBlockSigned"
+            }
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/swapInfoByTxHash": {
+      "get": {
+        "operationId": "QGasSwapAPI_SwapInfoByTxHash",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoQGasSwapInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/swapInfoList": {
+      "get": {
+        "operationId": "QGasSwapAPI_SwapInfoList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoQGasSwapInfos"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/swapInfosAmount": {
+      "get": {
+        "operationId": "QGasSwapAPI_SwapInfosAmount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoMap"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/swapInfosByAddress": {
+      "get": {
+        "operationId": "QGasSwapAPI_SwapInfosByAddress",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoQGasSwapInfos"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/swapInfosByState": {
+      "get": {
+        "operationId": "QGasSwapAPI_SwapInfosByState",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoQGasSwapInfos"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/swapInfosCount": {
+      "get": {
+        "operationId": "QGasSwapAPI_SwapInfosCount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoMap"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
+    "/qgasswap/withdrawEthTxSent": {
+      "post": {
+        "operationId": "QGasSwapAPI_WithdrawEthTxSent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoBoolean"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protoHash"
+            }
+          }
+        ],
+        "tags": [
+          "QGasSwapAPI"
+        ]
+      }
+    },
     "/withdraw/ethTransactionConfirmed": {
       "post": {
         "operationId": "WithdrawAPI_EthTransactionConfirmed",
@@ -743,6 +1135,17 @@
         }
       }
     },
+    "protoEthTxSentRequest": {
+      "type": "object",
+      "properties": {
+        "ethTxHash": {
+          "type": "string"
+        },
+        "qlcTxHash": {
+          "type": "string"
+        }
+      }
+    },
     "protoHash": {
       "type": "object",
       "properties": {
@@ -810,9 +1213,75 @@
         "ethUrl": {
           "type": "string"
         },
+        "qlcOwner": {
+          "type": "string"
+        },
         "totalSupply": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "protoQGasPledgeRequest": {
+      "type": "object",
+      "properties": {
+        "pledgeAddress": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "erc20ReceiverAddr": {
+          "type": "string"
+        }
+      }
+    },
+    "protoQGasSwapInfo": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "stateStr": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "qlcUserAddr": {
+          "type": "string"
+        },
+        "sendTxHash": {
+          "type": "string"
+        },
+        "rewardTxHash": {
+          "type": "string"
+        },
+        "ethUserAddr": {
+          "type": "string"
+        },
+        "ethTxHash": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "lastModifyTime": {
+          "type": "string"
+        }
+      }
+    },
+    "protoQGasSwapInfos": {
+      "type": "object",
+      "properties": {
+        "infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protoQGasSwapInfo"
+          }
         }
       }
     },
@@ -843,6 +1312,31 @@
         "verifyData": {
           "type": "string",
           "format": "byte"
+        }
+      }
+    },
+    "protoStateBlockHash": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "root": {
+          "type": "string"
+        }
+      }
+    },
+    "protoStateBlockSigned": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        },
+        "work": {
+          "type": "string"
         }
       }
     },
