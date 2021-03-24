@@ -393,5 +393,4 @@ service QGasSwapAPI {
         get: "/qgasswap/swapInfosAmount"
       };
    }
-
 }

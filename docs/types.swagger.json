@@ -879,28 +879,6 @@
         ]
       }
     },
-    "/qgasswap/swapInfosAmount2": {
-      "get": {
-        "operationId": "QGasSwapAPI_SwapInfosAmount2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/protoMap"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "QGasSwapAPI"
-        ]
-      }
-    },
     "/qgasswap/swapInfosByAddress": {
       "get": {
         "operationId": "QGasSwapAPI_SwapInfosByAddress",
