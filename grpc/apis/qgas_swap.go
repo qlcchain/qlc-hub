@@ -54,6 +54,7 @@ func NewQGasSwapAPI(ctx context.Context, cfg *config.Config, q *qlc.Transaction,
 	}
 	api.ownerAddr = address
 	api.addrPool = AddressPools(address)
+	go api.correctSwapState()
 	return api
 }
 
@@ -76,9 +77,9 @@ func (g *QGasSwapAPI) GetPledgeBlock(ctx context.Context, params *pb.QGasPledgeR
 	}
 
 	sendBlk, err := g.qlc.Client().QGasSwap.GetPledgeSendBlock(&qlcchain.QGasPledgeParam{
-		PledgeAddress: pledgeAddress,
-		Amount:        qlctypes.Balance{Int: big.NewInt(params.GetAmount())},
-		ToAddress:     g.ownerAddr,
+		FromAddress: pledgeAddress,
+		Amount:      qlctypes.Balance{Int: big.NewInt(params.GetAmount())},
+		ToAddress:   g.ownerAddr,
 	})
 	if err != nil {
 		g.logger.Errorf("QGas get pledge send block: %s", err)
@@ -156,10 +157,10 @@ func (g *QGasSwapAPI) GetWithdrawBlock(ctx context.Context, param *pb.Hash) (*pb
 			return nil, err
 		}
 		sendBlk, err := g.qlc.Client().QGasSwap.GetWithdrawSendBlock(&qlcchain.QGasWithdrawParam{
-			WithdrawAddress: qlcUserAddress,
-			Amount:          qlctypes.Balance{Int: big.NewInt(swapInfo.Amount)},
-			FromAddress:     g.ownerAddr,
-			LinkHash:        linkHash,
+			ToAddress:   qlcUserAddress,
+			Amount:      qlctypes.Balance{Int: big.NewInt(swapInfo.Amount)},
+			FromAddress: g.ownerAddr,
+			LinkHash:    linkHash,
 		})
 		if err != nil {
 			g.logger.Errorf("QGas get withdraw send block: %s, eth[%s]", err, ethTxHash)
@@ -256,8 +257,10 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 		}
 
 		if swapInfo.State >= types.QGasPledgeDone {
-			g.logger.Errorf("QGas invalid pledge state: %s, qlc[%s]", types.QGasSwapStateToString(swapInfo.State), blk.GetHash())
-			return nil, errors.New("invalid state")
+			g.logger.Infof("QGas invalid pledge state: %s, qlc[%s]", types.QGasSwapStateToString(swapInfo.State), blk.GetHash())
+			return &pb.Hash{
+				Hash: swapInfo.SendTxHash,
+			}, nil
 		}
 
 		if swapInfo.State == types.QGasPledgeInit {
@@ -269,31 +272,36 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 				g.logger.Infof("QGas process pledge send block successfully, qlc[%s]", blk.GetHash())
 			}
 
-			qlcAddress := g.addrPool.SearchSync(g.ownerAddr)
-			if qlcAddress == qlctypes.ZeroAddress {
-				g.logger.Errorf("can not search address %s, qlc[%s]", g.ownerAddr, blk.GetHash())
-				return nil, errors.New("can not search address")
-			}
-			defer g.addrPool.Enqueue(qlcAddress)
+			var receiverBlkHash qlctypes.Hash
+			if receiverHash, _ := g.qlc.ReceiverBlockHash(blk.GetHash()); receiverHash.IsZero() {
+				qlcAddress := g.addrPool.SearchSync(g.ownerAddr)
+				if qlcAddress == qlctypes.ZeroAddress {
+					g.logger.Errorf("can not search address %s, qlc[%s]", g.ownerAddr, blk.GetHash())
+					return nil, errors.New("can not search address")
+				}
+				defer g.addrPool.Enqueue(qlcAddress)
 
-			rewardBlk, err := g.qlc.Client().QGasSwap.GetPledgeRewardBlock(blk.GetHash())
-			if err != nil {
-				g.logger.Errorf("QGas get pledge reward block error: %s, qlc[%s]", err, blk.GetHash())
-				return nil, err
-			}
+				rewardBlk, err := g.qlc.Client().QGasSwap.GetPledgeRewardBlock(blk.GetHash())
+				if err != nil {
+					g.logger.Errorf("QGas get pledge reward block error: %s, qlc[%s]", err, blk.GetHash())
+					return nil, err
+				}
+				g.logger.Infof("QGas get pledge reward block, %s, qlc[%s]", rewardBlk.GetHash().String(), blk.GetHash())
+				receiverBlkHash = rewardBlk.GetHash()
+				if err := g.signQLCTx(rewardBlk); err != nil {
+					g.logger.Errorf("QGas sign reward block: %s, qlc[%s]", err, blk.GetHash())
+					return nil, err
+				}
 
-			if err := g.signQLCTx(rewardBlk); err != nil {
-				g.logger.Errorf("QGas sign reward block: %s, qlc[%s]", err, blk.GetHash())
-				return nil, err
+				if err := g.qlc.ProcessAndWaitConfirmed(rewardBlk); err != nil {
+					g.logger.Errorf("QGas Process pledge reward block: %s, qlc[%s]", err, blk.GetHash())
+					return nil, err
+				}
+				g.logger.Infof("QGas process pledge reward block successfully: %s, qlc[%s]", rewardBlk.GetHash().String(), blk.GetHash())
+			} else {
+				receiverBlkHash = receiverHash
 			}
-
-			if err := g.qlc.ProcessAndWaitConfirmed(rewardBlk); err != nil {
-				g.logger.Errorf("QGas Process pledge reward block: %s, qlc[%s]", err, blk.GetHash())
-				return nil, err
-			}
-			g.logger.Infof("QGas process pledge reward block successfully: %s, qlc[%s]", rewardBlk.GetHash().String(), blk.GetHash())
-
-			swapInfo.RewardTxHash = rewardBlk.GetHash().String()
+			swapInfo.RewardTxHash = receiverBlkHash.String()
 			swapInfo.State = types.QGasPledgePending
 			if err := db.UpdateQGasSwapInfo(g.store, swapInfo); err != nil {
 				g.logger.Errorf("update invalid info: %s, qlc[%s]", err, blk.GetHash())
@@ -301,7 +309,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 			}
 			g.logger.Infof("QGas update pledge info to %s: qlc[%s]", types.QGasSwapStateToString(types.QGasPledgePending), swapInfo.SendTxHash)
 			return &pb.Hash{
-				Hash: rewardBlk.GetHash().String(),
+				Hash: receiverBlkHash.String(),
 			}, nil
 		}
 
@@ -325,6 +333,8 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 				return nil, err
 			}
 			g.logger.Infof("QGas update withdraw info to %s: eth[%s]", types.QGasSwapStateToString(types.QGasWithDrawDone), swapInfo.EthTxHash)
+			g.logger.Infof("QGas withdraw successfully. eth[%s]", swapInfo.EthTxHash)
+
 		}
 		return &pb.Hash{
 			Hash: swapInfo.RewardTxHash,
@@ -381,35 +391,47 @@ func (g *QGasSwapAPI) PledgeEthTxSent(ctx context.Context, param *pb.EthTxSentRe
 		return nil, errors.New("invalid state")
 	}
 	go func() {
-		if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethTxHash), 0, g.cfg.EthCfg.ConfirmedHeight); err != nil {
-			g.logger.Errorf("QGas pledge eth tx confirmed: %s", err)
-			return
-		}
-		g.logger.Infof("QGas pledge eth Tx confirmed, %s, qlc[%s]", ethTxHash, qlcTxHash)
-
-		amount, ethAddress, qlcTx, err := g.eth.QGasSyncMintLog(ethTxHash)
-		if err != nil {
-			g.logger.Errorf("mint log: %s", err)
-			return
-		}
-
-		if amount.Int64() != swapInfo.Amount || strings.ToLower(ethAddress.String()) != strings.ToLower(swapInfo.EthUserAddr) || qlcTx != qlcTxHash {
-			g.logger.Errorf("swap info not match: %s, amount %d, address %s", qlcTx, amount.Int64(), ethAddress.String())
-			return
-		}
-
-		swapInfo.State = types.QGasPledgeDone
 		swapInfo.EthTxHash = ethTxHash
-		swapInfo.EthUserAddr = ethAddress.String()
-		swapInfo.Amount = amount.Int64()
 		if err := db.UpdateQGasSwapInfo(g.store, swapInfo); err != nil {
 			g.logger.Error(err)
 			return
 		}
-		g.logger.Infof("update state to %s, qlc[%s]", types.QGasSwapStateToString(types.QGasPledgeDone), qlcTx)
-		g.logger.Infof("QGas pledge successfully. qlc[%s]", qlcTx)
+		g.processPledgeEthTx(swapInfo)
 	}()
 	return toBoolean(true), nil
+}
+
+func (g *QGasSwapAPI) processPledgeEthTx(swapInfo *types.QGasSwapInfo) {
+	ethTxHash := swapInfo.EthTxHash
+	qlcTxHash := swapInfo.SendTxHash
+
+	if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethTxHash), 0, g.cfg.EthCfg.ConfirmedHeight); err != nil {
+		g.logger.Errorf("QGas pledge eth tx confirmed: %s", err)
+		return
+	}
+	g.logger.Infof("QGas pledge eth Tx confirmed, %s, qlc[%s]", ethTxHash, qlcTxHash)
+
+	amount, ethAddress, qlcTx, err := g.eth.QGasSyncMintLog(ethTxHash)
+	if err != nil {
+		g.logger.Errorf("mint log: %s", err)
+		return
+	}
+
+	if amount.Int64() != swapInfo.Amount || strings.ToLower(ethAddress.String()) != strings.ToLower(swapInfo.EthUserAddr) || qlcTx != qlcTxHash {
+		g.logger.Errorf("swap info not match: %s, amount %d, address %s", qlcTx, amount.Int64(), ethAddress.String())
+		return
+	}
+
+	swapInfo.State = types.QGasPledgeDone
+	swapInfo.EthTxHash = ethTxHash
+	swapInfo.EthUserAddr = ethAddress.String()
+	swapInfo.Amount = amount.Int64()
+	if err := db.UpdateQGasSwapInfo(g.store, swapInfo); err != nil {
+		g.logger.Error(err)
+		return
+	}
+	g.logger.Infof("update state to %s, qlc[%s]", types.QGasSwapStateToString(types.QGasPledgeDone), qlcTx)
+	g.logger.Infof("QGas pledge successfully. qlc[%s]", qlcTx)
 }
 
 func (g *QGasSwapAPI) WithdrawEthTxSent(ctx context.Context, param *pb.Hash) (*pb.Boolean, error) {
@@ -438,14 +460,16 @@ func (g *QGasSwapAPI) WithdrawEthTxSent(ctx context.Context, param *pb.Hash) (*p
 		}
 		g.logger.Infof("QGas insert withdraw info to %s, eth[%s]", types.QGasSwapStateToString(types.QGasWithDrawInit), ethTxHash)
 
-		if err := g.withdrawInit(ethTxHash); err != nil {
+		if err := g.processWithdrawEthTx(swapInfo); err != nil {
 			g.logger.Errorf("QGas eth tx confirmed:  %s, eth[%s]", err, ethTxHash)
 		}
 	}()
 	return toBoolean(true), nil
 }
 
-func (g *QGasSwapAPI) withdrawInit(ethTxHash string) error {
+func (g *QGasSwapAPI) processWithdrawEthTx(swapInfo *types.QGasSwapInfo) error {
+	ethTxHash := swapInfo.EthTxHash
+
 	if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethTxHash), 0, g.cfg.EthCfg.ConfirmedHeight); err != nil {
 		return fmt.Errorf("tx confirmed: %s", err)
 	}
@@ -458,11 +482,6 @@ func (g *QGasSwapAPI) withdrawInit(ethTxHash string) error {
 	qlcAddr, err := qlctypes.HexToAddress(qlcAddrStr)
 	if err != nil {
 		return err
-	}
-
-	swapInfo, err := db.GetQGasSwapInfoByUniqueID(g.store, ethTxHash, types.ETH)
-	if err != nil {
-		return fmt.Errorf("get swap info, %s", err)
 	}
 
 	swapInfo.Amount = amount.Int64()
@@ -663,4 +682,32 @@ func (g *QGasSwapAPI) SwapInfosAmount(ctx context.Context, empty *empty.Empty) (
 	return &pb.Map{
 		Count: amount,
 	}, nil
+}
+
+// update by state
+func (g *QGasSwapAPI) correctSwapState() error {
+	vTicker := time.NewTicker(10 * time.Minute)
+	for {
+		select {
+		case <-vTicker.C:
+			infos, err := db.GetQGasSwapInfos(g.store, 0, 0)
+			if err != nil {
+				g.logger.Error(err)
+				continue
+			}
+			for _, info := range infos {
+				if info.State == types.QGasPledgePending {
+					g.processPledgeEthTx(info)
+				}
+				if info.State == types.QGasWithDrawInit {
+					if err := g.processWithdrawEthTx(info); err != nil {
+						g.logger.Errorf("QGas eth tx confirmed:  %s, eth[%s]", err, info.EthTxHash)
+					}
+				}
+				if info.State == types.QGasWithDrawPending {
+
+				}
+			}
+		}
+	}
 }

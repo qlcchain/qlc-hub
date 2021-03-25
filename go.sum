@@ -481,8 +481,8 @@ github.com/prometheus/tsdb v0.7.1 h1:YZcsG11NqnK4czYLrWd9mpEuAJIHVQLwdrleYfszMAA
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/qlcchain/jsonrpc2 v0.0.0-20210322022308-5c5671d5f648 h1:GBegry4fBnIwcp3x6hOrCleKM0skT001XWlL2NLPg2o=
 github.com/qlcchain/jsonrpc2 v0.0.0-20210322022308-5c5671d5f648/go.mod h1:VwJvudc0L888gtEldst7bZdZxvk3wubZs18yO0CI0Zc=
-github.com/qlcchain/qlc-go-sdk v0.0.0-20210322022732-234966c5814a h1:KcIh6+mfgsAvmXqbvMpnXbHemCMS0HCdE6G95Gcv3wk=
-github.com/qlcchain/qlc-go-sdk v0.0.0-20210322022732-234966c5814a/go.mod h1:As+kPHtqiwe/BAhlLcCv4F52TPmnRrzP02Bwwrmvys4=
+github.com/qlcchain/qlc-go-sdk v0.0.0-20210324133031-2045ee7a8e36 h1:CKuvq2JD2oFq12dbMsryhV93oVrPvrzRLQQbs/DWAO0=
+github.com/qlcchain/qlc-go-sdk v0.0.0-20210324133031-2045ee7a8e36/go.mod h1:As+kPHtqiwe/BAhlLcCv4F52TPmnRrzP02Bwwrmvys4=
 github.com/retailnext/hllpp v1.0.1-0.20180308014038-101a6d2f8b52/go.mod h1:RDpi1RftBQPUCDRw6SmxeaREsAaRKnOclghuzp/WRzc=
 github.com/rjeczalik/notify v0.9.1 h1:CLCKso/QK1snAlnhNR/CNvNiFU2saUtjV0bx3EwNeCE=
 github.com/rjeczalik/notify v0.9.1/go.mod h1:rKwnCoCGeuQnwBtTSPL9Dad03Vh2n40ePRrjvIXnJho=

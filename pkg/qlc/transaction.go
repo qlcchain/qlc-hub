@@ -49,7 +49,7 @@ func (t *Transaction) WaitBlockConfirmedOnChain(hash qlctypes.Hash) bool {
 		<-ticker.C
 		b := t.CheckBlockOnChain(hash)
 		if b {
-			t.logger.Infof("check block (%s) confirmed status true", hash.String())
+			t.logger.Infof("check qlc block confirmed %s", hash.String())
 			return true
 		}
 	}
@@ -95,4 +95,12 @@ func (t *Transaction) GetSwapInfoHashByWithdrawSendBlock(hash qlctypes.Hash, sto
 func (t *Transaction) ValidateAddress(addr string) error {
 	_, err := qlctypes.HexToAddress(addr)
 	return err
+}
+
+func (t *Transaction) ReceiverBlockHash(hash qlctypes.Hash) (qlctypes.Hash, error) {
+	r, err := t.client.Debug.BlockLink(hash)
+	if err != nil || r == nil {
+		return [32]byte{}, err
+	}
+	return r["receiver"], nil
 }

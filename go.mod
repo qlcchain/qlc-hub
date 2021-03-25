@@ -7,14 +7,13 @@ require (
 	github.com/dgraph-io/badger/v2 v2.2007.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.1
-	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/mr-tron/base58 v1.2.0
 	github.com/nspcc-dev/neo-go v0.78.3
-	github.com/qlcchain/qlc-go-sdk v0.0.0-20210322022732-234966c5814a
+	github.com/qlcchain/qlc-go-sdk v0.0.0-20210324133031-2045ee7a8e36
 	github.com/rs/cors v1.7.0
 	go.uber.org/zap v1.16.0
 	golang.org/x/tools v0.0.0-20201022035929-9cf592e881e9 // indirect
