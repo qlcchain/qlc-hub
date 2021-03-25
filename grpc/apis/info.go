@@ -47,8 +47,8 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, n
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		EthContract: i.cfg.EthCfg.Nep5Contract,
-		EthOwner:    i.cfg.EthCfg.Nep5OwnerAddress,
+		EthContract: i.cfg.EthCfg.Nep5EthContract,
+		EthOwner:    i.cfg.EthCfg.Nep5EthOwner,
 		EthUrl:      i.nep5Eth.ClientEndpoint(),
 		NeoContract: i.cfg.NEOCfg.Contract,
 		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
@@ -63,11 +63,11 @@ func (i *InfoAPI) Config(ctx context.Context, empty *empty.Empty) (*pb.ConfigRes
 		NeoContract:     i.cfg.NEOCfg.Contract,
 		NeoOwner:        i.cfg.NEOCfg.OwnerAddress,
 		NeoUrl:          i.neo.ClientEndpoint(),
-		Nep5EthContract: i.cfg.EthCfg.Nep5Contract,
-		Nep5EthOwner:    i.cfg.EthCfg.Nep5OwnerAddress,
+		Nep5EthContract: i.cfg.EthCfg.Nep5EthContract,
+		Nep5EthOwner:    i.cfg.EthCfg.Nep5EthOwner,
 		Nep5EthUrl:      i.nep5Eth.ClientEndpoint(),
-		QgasEthContract: i.cfg.EthCfg.QGasSwapContract,
-		QgasEthOwner:    i.cfg.EthCfg.QGasSwapOwnerAddress,
+		QgasEthContract: i.cfg.EthCfg.QGasSwapEthContract,
+		QgasEthOwner:    i.cfg.EthCfg.QGasSwapEthOwner,
 		QgasEthUrl:      i.qgasEth.ClientEndpoint(),
 		QgasBscContract: i.cfg.BscCfg.Contract,
 		QgasBscOwner:    i.cfg.BscCfg.OwnerAddress,

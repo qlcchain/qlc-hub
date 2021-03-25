@@ -102,20 +102,20 @@ func (g *Server) checkBaseInfo() error {
 		return fmt.Errorf("new signer: %s", err)
 	}
 
-	if _, err := signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.Nep5OwnerAddress, bytes.Repeat([]byte{0}, 32)); err != nil {
+	if _, err := signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.Nep5EthOwner, bytes.Repeat([]byte{0}, 32)); err != nil {
 		return fmt.Errorf("sign: %s", err)
 	}
 	g.signer = signer
 	g.logger.Info("signer client connected successfully")
 
-	nep5Transaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.Nep5Contract)
+	nep5Transaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.Nep5EthContract)
 	if err != nil {
 		return fmt.Errorf("eth client: %s", err)
 	}
 	g.nep5Eth = nep5Transaction
 	g.logger.Info("nep5 eth client connected successfully")
 
-	qgasTransaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.QGasSwapContract)
+	qgasTransaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.QGasSwapEthContract)
 	if err != nil {
 		return fmt.Errorf("eth client: %s", err)
 	}

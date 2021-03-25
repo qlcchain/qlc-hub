@@ -50,7 +50,7 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 }
 
 func (w *WithdrawAPI) lister() {
-	contractAddress := common.HexToAddress(w.cfg.EthCfg.Nep5Contract)
+	contractAddress := common.HexToAddress(w.cfg.EthCfg.Nep5EthContract)
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{contractAddress},
 	}
