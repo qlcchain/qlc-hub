@@ -47,6 +47,19 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, n
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
+		EthContract: i.cfg.EthCfg.Nep5Contract,
+		EthOwner:    i.cfg.EthCfg.Nep5OwnerAddress,
+		EthUrl:      i.nep5Eth.ClientEndpoint(),
+		NeoContract: i.cfg.NEOCfg.Contract,
+		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
+		NeoUrl:      i.neo.ClientEndpoint(),
+		QlcOwner:    i.cfg.QlcCfg.OwnerAddress,
+		TotalSupply: i.nep5Eth.TotalSupply(),
+	}, nil
+}
+
+func (i *InfoAPI) Config(ctx context.Context, empty *empty.Empty) (*pb.ConfigResponse, error) {
+	return &pb.ConfigResponse{
 		NeoContract:     i.cfg.NEOCfg.Contract,
 		NeoOwner:        i.cfg.NEOCfg.OwnerAddress,
 		NeoUrl:          i.neo.ClientEndpoint(),

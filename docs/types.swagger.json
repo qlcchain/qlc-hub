@@ -355,6 +355,28 @@
         ]
       }
     },
+    "/info/config": {
+      "get": {
+        "operationId": "InfoAPI_Config",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protoConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "InfoAPI"
+        ]
+      }
+    },
     "/info/ping": {
       "get": {
         "operationId": "InfoAPI_Ping",
@@ -1124,6 +1146,57 @@
         }
       }
     },
+    "protoConfigResponse": {
+      "type": "object",
+      "properties": {
+        "neoContract": {
+          "type": "string"
+        },
+        "neoOwner": {
+          "type": "string"
+        },
+        "neoUrl": {
+          "type": "string"
+        },
+        "nep5EthContract": {
+          "type": "string"
+        },
+        "nep5EthOwner": {
+          "type": "string"
+        },
+        "nep5EthUrl": {
+          "type": "string"
+        },
+        "qgasEthContract": {
+          "type": "string"
+        },
+        "qgasEthOwner": {
+          "type": "string"
+        },
+        "qgasEthUrl": {
+          "type": "string"
+        },
+        "qgasBscContract": {
+          "type": "string"
+        },
+        "qgasBscOwner": {
+          "type": "string"
+        },
+        "qgasBscUrl": {
+          "type": "string"
+        },
+        "qlcOwner": {
+          "type": "string"
+        },
+        "qlcUrl": {
+          "type": "string"
+        },
+        "totalSupply": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "protoEthTransactionSentRequest": {
       "type": "object",
       "properties": {
@@ -1204,37 +1277,16 @@
         "neoUrl": {
           "type": "string"
         },
-        "nep5EthContract": {
+        "ethContract": {
           "type": "string"
         },
-        "nep5EthOwner": {
+        "ethOwner": {
           "type": "string"
         },
-        "nep5EthUrl": {
-          "type": "string"
-        },
-        "qgasEthContract": {
-          "type": "string"
-        },
-        "qgasEthOwner": {
-          "type": "string"
-        },
-        "qgasEthUrl": {
-          "type": "string"
-        },
-        "qgasBscContract": {
-          "type": "string"
-        },
-        "qgasBscOwner": {
-          "type": "string"
-        },
-        "qgasBscUrl": {
+        "ethUrl": {
           "type": "string"
         },
         "qlcOwner": {
-          "type": "string"
-        },
-        "qlcUrl": {
           "type": "string"
         },
         "totalSupply": {

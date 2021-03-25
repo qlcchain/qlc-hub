@@ -258,6 +258,7 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.WithdrawAPI/EthTransactionConfirmed": jwt.Both,
 		"/proto.WithdrawAPI/EthTransactionSent":      jwt.Both,
 		"/proto.InfoAPI/Ping":                        jwt.Both,
+		"/proto.InfoAPI/Config":                      jwt.Both,
 		"/proto.InfoAPI/SwapInfoList":                jwt.Both,
 		"/proto.InfoAPI/SwapInfosByAddress":          jwt.Both,
 		"/proto.InfoAPI/SwapInfoByTxHash":            jwt.Both,

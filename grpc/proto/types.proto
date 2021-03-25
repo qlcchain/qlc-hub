@@ -105,6 +105,17 @@ message PingResponse {
    string neoContract   = 1;
    string neoOwner      = 2;
    string neoUrl        = 3;
+   string ethContract   = 4;
+   string ethOwner      = 5;
+   string ethUrl        = 6;
+   string qlcOwner      = 7;
+   int64  totalSupply   = 8;
+}
+
+message ConfigResponse {
+   string neoContract   = 1;
+   string neoOwner      = 2;
+   string neoUrl        = 3;
    string nep5EthContract   = 4;
    string nep5EthOwner      = 5;
    string nep5EthUrl        = 6;
@@ -163,11 +174,16 @@ message SwapPendings {
     repeated SwapPending infos = 1;
 }
 
-
 service InfoAPI {
     rpc Ping(google.protobuf.Empty) returns (PingResponse){
         option (google.api.http) = {
           get: "/info/ping"
+        };
+    }
+
+    rpc Config(google.protobuf.Empty) returns (ConfigResponse){
+        option (google.api.http) = {
+          get: "/info/config"
         };
     }
 

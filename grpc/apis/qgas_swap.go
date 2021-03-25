@@ -762,10 +762,10 @@ func (g *QGasSwapAPI) correctSwapState() error {
 				continue
 			}
 			for _, info := range infos {
-				if info.State == types.QGasPledgePending && hubUtil.RemoveHexPrefix(info.CrossChainTxHash) != qlctypes.ZeroHash.String() {
-					fmt.Println(hubUtil.RemoveHexPrefix(info.CrossChainTxHash))
-					fmt.Println(qlctypes.ZeroHash.String())
-					g.processPledgeEthTx(info)
+				if info.State == types.QGasPledgePending {
+					if info.CrossChainTxHash != "" {
+						g.processPledgeEthTx(info)
+					}
 				}
 				if info.State == types.QGasWithDrawInit {
 					if err := g.processWithdrawEthTx(info); err != nil {
