@@ -200,7 +200,7 @@ func (d *DepositAPI) signData(amount *big.Int, receiveAddr string, neoTxHash str
 		return "", fmt.Errorf("packed: %s", err)
 	}
 
-	signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.OwnerAddress, packedHash)
+	signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.Nep5OwnerAddress, packedHash)
 	if err != nil {
 		return "", fmt.Errorf("sign: %s", err)
 	}

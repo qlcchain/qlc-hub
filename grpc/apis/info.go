@@ -21,36 +21,47 @@ import (
 )
 
 type InfoAPI struct {
-	eth    *eth.Transaction
-	neo    *neo.Transaction
-	cfg    *config.Config
-	ctx    context.Context
-	store  *gorm.DB
-	logger *zap.SugaredLogger
+	nep5Eth *eth.Transaction
+	qgasEth *eth.Transaction
+	bsc     *eth.Transaction
+	neo     *neo.Transaction
+	cfg     *config.Config
+	ctx     context.Context
+	store   *gorm.DB
+	logger  *zap.SugaredLogger
 }
 
-func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, eth *eth.Transaction, s *gorm.DB) *InfoAPI {
+func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, nep5Eth, qgasEth, bsc *eth.Transaction, s *gorm.DB) *InfoAPI {
 	api := &InfoAPI{
-		ctx:    ctx,
-		cfg:    cfg,
-		neo:    neo,
-		eth:    eth,
-		store:  s,
-		logger: log.NewLogger("api/info"),
+		ctx:     ctx,
+		cfg:     cfg,
+		neo:     neo,
+		nep5Eth: nep5Eth,
+		qgasEth: qgasEth,
+		bsc:     bsc,
+		store:   s,
+		logger:  log.NewLogger("api/info"),
 	}
 	return api
 }
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		EthContract: i.cfg.EthCfg.Nep5Contract,
-		EthOwner:    i.cfg.EthCfg.OwnerAddress,
-		EthUrl:      i.eth.ClientEndpoint(),
-		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
-		NeoUrl:      i.neo.ClientEndpoint(),
-		QlcOwner:    i.cfg.QlcCfg.OwnerAddress,
-		TotalSupply: i.eth.TotalSupply(),
+		NeoContract:     i.cfg.NEOCfg.Contract,
+		NeoOwner:        i.cfg.NEOCfg.OwnerAddress,
+		NeoUrl:          i.neo.ClientEndpoint(),
+		Nep5EthContract: i.cfg.EthCfg.Nep5Contract,
+		Nep5EthOwner:    i.cfg.EthCfg.Nep5OwnerAddress,
+		Nep5EthUrl:      i.nep5Eth.ClientEndpoint(),
+		QgasEthContract: i.cfg.EthCfg.QGasSwapContract,
+		QgasEthOwner:    i.cfg.EthCfg.QGasSwapOwnerAddress,
+		QgasEthUrl:      i.qgasEth.ClientEndpoint(),
+		QgasBscContract: i.cfg.BscCfg.Contract,
+		QgasBscOwner:    i.cfg.BscCfg.OwnerAddress,
+		QgasBscUrl:      i.bsc.ClientEndpoint(),
+		QlcOwner:        i.cfg.QlcCfg.OwnerAddress,
+		QlcUrl:          i.cfg.QlcCfg.EndPoint,
+		TotalSupply:     i.nep5Eth.TotalSupply(),
 	}, nil
 }
 
@@ -217,7 +228,7 @@ func (i *InfoAPI) swapAmountByAddress(infos []*types.SwapInfo, addr string, isEt
 	}
 	var balance int64 = 0
 	if isEthAddr {
-		b, err := i.eth.BalanceOf(addr)
+		b, err := i.nep5Eth.BalanceOf(addr)
 		if err == nil && b != nil {
 			balance = b.Int64()
 		}
@@ -278,12 +289,12 @@ func (i *InfoAPI) CheckNeoTransaction(ctx context.Context, Hash *pb.Hash) (*pb.B
 
 func (i *InfoAPI) CheckEthTransaction(ctx context.Context, Hash *pb.Hash) (*pb.Boolean, error) {
 	hash := common.HexToHash(Hash.GetHash())
-	confirmed, err := i.eth.HasBlockConfirmed(hash, i.cfg.EthCfg.ConfirmedHeight+1)
+	confirmed, err := i.nep5Eth.HasBlockConfirmed(hash, i.cfg.EthCfg.ConfirmedHeight+1)
 	if err != nil || !confirmed {
 		return nil, fmt.Errorf("block not confirmed, %s", err)
 	}
-	if _, _, _, err := i.eth.SyncBurnLog(Hash.GetHash()); err != nil {
-		if _, _, neoTx, err := i.eth.SyncMintLog(Hash.GetHash()); err != nil {
+	if _, _, _, err := i.nep5Eth.SyncBurnLog(Hash.GetHash()); err != nil {
+		if _, _, neoTx, err := i.nep5Eth.SyncMintLog(Hash.GetHash()); err != nil {
 			return toBoolean(false), fmt.Errorf("no sync log, %s", err)
 		} else {
 			if _, err := db.GetSwapInfoByTxHash(i.store, neoTx, types.NEO); err != nil {

@@ -554,7 +554,7 @@ func (g *QGasSwapAPI) signEthData(amount *big.Int, receiveAddr string, neoTxHash
 			return "", fmt.Errorf("packed: %s", err)
 		}
 
-		signature, err := g.signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.OwnerAddress, packedHash)
+		signature, err := g.signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.QGasSwapOwnerAddress, packedHash)
 		if err != nil {
 			return "", fmt.Errorf("sign: %s", err)
 		}

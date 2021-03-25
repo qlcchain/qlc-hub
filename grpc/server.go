@@ -102,7 +102,7 @@ func (g *Server) checkBaseInfo() error {
 		return fmt.Errorf("new signer: %s", err)
 	}
 
-	if _, err := signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.OwnerAddress, bytes.Repeat([]byte{0}, 32)); err != nil {
+	if _, err := signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.Nep5OwnerAddress, bytes.Repeat([]byte{0}, 32)); err != nil {
 		return fmt.Errorf("sign: %s", err)
 	}
 	g.signer = signer
@@ -221,7 +221,7 @@ func (g *Server) Stop() {
 func (g *Server) registerApi() error {
 	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.nep5Eth, g.signer, g.store))
 	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.nep5Eth, g.store))
-	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.nep5Eth, g.store))
+	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.nep5Eth, g.qgasEth, g.bsc, g.store))
 	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.nep5Eth, g.neo, g.store))
 	pb.RegisterQGasSwapAPIServer(g.rpc, apis.NewQGasSwapAPI(g.ctx, g.cfg, g.qlc, g.qgasEth, g.bsc, g.signer, g.store))
 	return nil

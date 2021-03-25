@@ -105,11 +105,18 @@ message PingResponse {
    string neoContract   = 1;
    string neoOwner      = 2;
    string neoUrl        = 3;
-   string ethContract   = 4;
-   string ethOwner      = 5;
-   string ethUrl        = 6;
-   string qlcOwner      = 7;
-   int64  totalSupply   = 8;
+   string nep5EthContract   = 4;
+   string nep5EthOwner      = 5;
+   string nep5EthUrl        = 6;
+   string qgasEthContract   = 7;
+   string qgasEthOwner      = 8;
+   string qgasEthUrl        = 9;
+   string qgasBscContract   = 10;
+   string qgasBscOwner      = 11;
+   string qgasBscUrl        = 12;
+   string qlcOwner          = 13;
+   string qlcUrl            = 14;
+   int64  totalSupply       = 15;
 }
 
 message Offset {
