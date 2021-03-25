@@ -40,7 +40,13 @@ var (
 	ethConfirmedHeight int
 
 	// eth setting (qlc -> eth)
-	ethContractQLC = "0xC23B5A66811dfe107e08cf8e9De4791Da48f7a65"
+	ethContractQLC = "0x3D22aace559A60e3c0989b1dF163b93F92Eb49Cf"
+
+	// bsc setting (qlc -> eth)
+	bscUrl         = []string{""}
+	bscContractQLC = "0x995E49Bd83B4328fda96e259451C91e3208AE29e"
+	bscUserPrivate = "d6aedb156c57320b7246c4463c9ee9c9d54df23513ece5eda0f2c9d3fdfc5822"
+	bscUserAddress = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
 
 	// qlc setting
 	qlcUserPrivate = "8be0696a2d51dec8e2859dcb8ce2fd7ce7412eb9d6fa8a2089be8e8f1eeb4f0e458779381a8d21312b071729344a0cb49dc1da385993e19d58b5578da44c0df0"
@@ -53,6 +59,7 @@ var (
 	neoTrasaction     *neo.Transaction
 	ethTransaction    *eth.Transaction
 	ethTransactionQLC *eth.Transaction
+	bscTransactionQLC *eth.Transaction
 	singerClient      *signer.SignerClient
 	cfg               = &config.Config{}
 	hubCmd            = &HubCmd{}
@@ -91,7 +98,7 @@ func initParams(osArgs []string) {
 
 	ethTransaction, _ = eth.NewTransaction(ethUrl, ethContract)
 	ethTransactionQLC, _ = eth.NewTransaction(ethUrl, ethContractQLC)
-
+	bscTransactionQLC, _ = eth.NewTransaction(bscUrl, bscContractQLC)
 	//defer ethClient.Close()
 
 	log.Println("hub endpoint: ", hubUrl)

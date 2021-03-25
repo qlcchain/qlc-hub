@@ -135,9 +135,9 @@
         ]
       }
     },
-    "/deposit/getOwnerSign": {
+    "/deposit/getEthOwnerSign": {
       "post": {
-        "operationId": "DepositAPI_GetOwnerSign",
+        "operationId": "DepositAPI_GetEthOwnerSign",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -158,7 +158,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoOwnerSignRequest"
+              "$ref": "#/definitions/protoHash"
             }
           }
         ],
@@ -629,9 +629,9 @@
         ]
       }
     },
-    "/qgasswap/getEthOwnerSign": {
+    "/qgasswap/getOwnerSign": {
       "post": {
-        "operationId": "QGasSwapAPI_GetEthOwnerSign",
+        "operationId": "QGasSwapAPI_GetOwnerSign",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1012,7 +1012,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoQGasWithdrawRequest"
             }
           }
         ],
@@ -1166,17 +1166,6 @@
         }
       }
     },
-    "protoOwnerSignRequest": {
-      "type": "object",
-      "properties": {
-        "hash": {
-          "type": "string"
-        },
-        "chain": {
-          "type": "string"
-        }
-      }
-    },
     "protoPackNeoTxRequest": {
       "type": "object",
       "properties": {
@@ -1245,6 +1234,9 @@
         },
         "erc20ReceiverAddr": {
           "type": "string"
+        },
+        "chainType": {
+          "type": "string"
         }
       }
     },
@@ -1265,16 +1257,19 @@
         "qlcUserAddr": {
           "type": "string"
         },
-        "sendTxHash": {
+        "qlcSendTxHash": {
           "type": "string"
         },
-        "rewardTxHash": {
+        "qlcRewardTxHash": {
           "type": "string"
         },
-        "ethUserAddr": {
+        "chain": {
           "type": "string"
         },
-        "ethTxHash": {
+        "chainUserAddr": {
+          "type": "string"
+        },
+        "chainTxHash": {
           "type": "string"
         },
         "startTime": {
@@ -1293,6 +1288,17 @@
           "items": {
             "$ref": "#/definitions/protoQGasSwapInfo"
           }
+        }
+      }
+    },
+    "protoQGasWithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "chainType": {
+          "type": "string"
         }
       }
     },

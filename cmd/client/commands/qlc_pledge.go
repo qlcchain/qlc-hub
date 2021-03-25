@@ -24,6 +24,8 @@ func addQLCCmd(shell *ishell.Shell) {
 	qQlc2EthPendingCmd(qlcCmd)
 	qEth2QlcCmd(qlcCmd)
 	qEth2QlcCmdPending(qlcCmd)
+	qQlc2BscCmd(qlcCmd)
+	qBsc2QlcCmd(qlcCmd)
 }
 
 func qQlc2EthCmd(parentCmd *ishell.Cmd) {
@@ -55,8 +57,9 @@ func nQlc2Eth() {
 	Paras := fmt.Sprintf(`{
 		"pledgeAddress":"%s",
 		"erc20ReceiverAddr":"%s",
-		"amount": "%d"
-	}`, qlcUserAddress, ethUserAddress, amount)
+		"amount": "%d",
+		"chainType": "%s"
+	}`, qlcUserAddress, ethUserAddress, amount, "eth")
 	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
@@ -85,7 +88,7 @@ func nQlc2Eth() {
 	signParas := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, sendHash)
-	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getEthOwnerSign", hubUrl))
+	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getOwnerSign", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}
@@ -188,4 +191,84 @@ func signQLCTx(hash, root string) (string, string) {
 	blockHash.Of(hash)
 	signature := qlcUserAccount.Sign(blockHash)
 	return signature.String(), work.String()
+}
+
+func nQlc2Bsc() {
+	amount := 6000000
+
+	// get pledge send block
+	Paras := fmt.Sprintf(`{
+		"pledgeAddress":"%s",
+		"erc20ReceiverAddr":"%s",
+		"amount": "%d",
+		"chainType":"%s"
+	}`, qlcUserAddress, bscUserAddress, amount, "bsc")
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
+	if err != nil {
+		log.Fatal(err, result)
+	}
+	sendHash := result["hash"].(string)
+	fmt.Println("send Hash: ", sendHash)
+	sign, work := signQLCTx(sendHash, result["root"].(string))
+
+	// process send block
+	processParas := fmt.Sprintf(`{
+		"hash":"%s",
+		"signature":"%s",
+		"work": "%s"
+	}`, sendHash, sign, work)
+	pResult, err := post(processParas, fmt.Sprintf("%s/qgasswap/processBlock", hubUrl))
+	if err != nil {
+		log.Fatal(err, result)
+	}
+	fmt.Println("reward block: ", pResult)
+
+	if !waitForQGasSwapState(sendHash, types.QGasSwapStateToString(types.QGasPledgePending)) {
+		log.Fatal("fail")
+	}
+
+	// GetEthOwnerSign
+	signParas := fmt.Sprintf(`{
+		"hash":"%s"
+	}`, sendHash)
+	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getOwnerSign", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+	ownerSign := r["value"].(string)
+	fmt.Println("hub sign: ", ownerSign)
+
+	ethTx, err := bscTransactionQLC.QGasMint(bscUserPrivate, big.NewInt(int64(amount)), sendHash, ownerSign)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("deposit send eth tx done: ", ethTx)
+
+	// process send block
+	sentParas := fmt.Sprintf(`{
+		"ethTxHash":"%s",
+		"qlcTxHash":"%s"
+	}`, ethTx, sendHash)
+	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeEthTxSent", hubUrl))
+	if err != nil {
+		log.Fatal(err, result)
+	}
+	fmt.Println("reward block: ", sResult)
+
+	if !waitForQGasSwapState(sendHash, types.QGasSwapStateToString(types.QGasPledgeDone)) {
+		log.Fatal("fail")
+	}
+	fmt.Println("successfully ")
+}
+
+func qQlc2BscCmd(parentCmd *ishell.Cmd) {
+	c := &ishell.Cmd{
+		Name: "qlc2bsc",
+		Help: "qlc -> bsc",
+		Func: func(c *ishell.Context) {
+			nQlc2Bsc()
+		},
+	}
+	parentCmd.AddCmd(c)
 }

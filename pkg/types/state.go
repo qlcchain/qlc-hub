@@ -1,5 +1,7 @@
 package types
 
+import "strings"
+
 //go:generate msgp
 type SwapState byte
 
@@ -58,8 +60,36 @@ type ChainType byte
 const (
 	ETH ChainType = iota
 	NEO
-	QLC
+	BSC
+	InvalidChain
 )
+
+func StringToChainType(s string) ChainType {
+	t := strings.ToUpper(s)
+	switch t {
+	case "ETH":
+		return ETH
+	case "NEO":
+		return NEO
+	case "BSC":
+		return BSC
+	default:
+		return InvalidChain
+	}
+}
+
+func ChainTypeToString(c ChainType) string {
+	switch c {
+	case ETH:
+		return "ETH"
+	case NEO:
+		return "NEO"
+	case BSC:
+		return "BSC"
+	default:
+		return "InvalidChain"
+	}
+}
 
 type SwapType byte
 

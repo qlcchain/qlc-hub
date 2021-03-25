@@ -170,15 +170,15 @@ func DeleteSwapPending(db *gorm.DB, record *types.SwapPending) error {
 
 func InsertQGasSwapInfo(db *gorm.DB, record *types.QGasSwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
-	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
-	record.EthUserAddr = stringToLower(record.EthUserAddr)
+	record.CrossChainTxHash = util.AddHashPrefix(record.CrossChainTxHash)
+	record.CrossChainUserAddr = stringToLower(record.CrossChainUserAddr)
 	return db.Create(record).Error
 }
 
 func UpdateQGasSwapInfo(db *gorm.DB, record *types.QGasSwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
-	record.EthTxHash = util.AddHashPrefix(record.EthTxHash)
-	record.EthUserAddr = stringToLower(record.EthUserAddr)
+	record.CrossChainTxHash = util.AddHashPrefix(record.CrossChainTxHash)
+	record.CrossChainUserAddr = stringToLower(record.CrossChainUserAddr)
 	return db.Save(record).Error
 }
 
@@ -200,17 +200,17 @@ func GetQGasSwapInfoByUserTxHash(db *gorm.DB, hash string) (*types.QGasSwapInfo,
 	}
 }
 
-func GetQGasSwapInfoByUniqueID(db *gorm.DB, hash string, action types.ChainType) (*types.QGasSwapInfo, error) {
+func GetQGasSwapInfoByUniqueID(db *gorm.DB, hash string, action types.QGasSwapType) (*types.QGasSwapInfo, error) {
 	var result types.QGasSwapInfo
-	if action == types.ETH {
+	if action == types.QGasWithdraw {
 		hash = util.AddHashPrefix(hash)
-		if err := db.Where("eth_tx_hash = ?", hash).First(&result).Error; err == nil {
+		if err := db.Where("cross_chain_tx_hash = ?", hash).First(&result).Error; err == nil {
 			return &result, nil
 		} else {
 			return nil, err
 		}
 	} else {
-		if err := db.Where("send_tx_hash = ?", hash).First(&result).Error; err == nil {
+		if err := db.Where("qlc_send_tx_hash = ?", hash).First(&result).Error; err == nil {
 			return &result, nil
 		} else {
 			return nil, err
@@ -227,14 +227,14 @@ func GetQGasSwapInfosByState(db *gorm.DB, page, pageSize int, state types.QGasSw
 	}
 }
 
-func GetQGasSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, action types.ChainType) ([]*types.QGasSwapInfo, error) {
+func GetQGasSwapInfosByUserAddr(db *gorm.DB, page, pageSize int, addr string, action types.QGasSwapType) ([]*types.QGasSwapInfo, error) {
 	var result []*types.QGasSwapInfo
-	if action == types.ETH {
+	if action == types.QGasWithdraw {
 		addr = stringToLower(addr)
 		if len(addr) == 40 {
 			addr = fmt.Sprintf("0x%s", addr)
 		}
-		if err := db.Where("eth_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+		if err := db.Where("cross_chain_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
 			return result, nil
 		} else {
 			return nil, err

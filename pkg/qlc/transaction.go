@@ -85,7 +85,7 @@ func (t *Transaction) GetSwapInfoHashByWithdrawSendBlock(hash qlctypes.Hash, sto
 	if err != nil {
 		return nil, fmt.Errorf("QGas parse withdraw param: %s", err)
 	}
-	swapInfo, err := db.GetQGasSwapInfoByUniqueID(store, swapParam.LinkHash.String(), types.ETH)
+	swapInfo, err := db.GetQGasSwapInfoByUniqueID(store, swapParam.LinkHash.String(), types.QGasWithdraw)
 	if err != nil {
 		return nil, fmt.Errorf("QGas pledge withdraw not found: %s", err)
 	}

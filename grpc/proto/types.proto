@@ -270,15 +270,15 @@ message Map {
 
 
 message QGasPledgeRequest {
-    string       pledgeAddress  = 1;
-    int64        amount         = 2;
-    string  erc20ReceiverAddr   = 3;
+    string    pledgeAddress       = 1;
+    int64     amount              = 2;
+    string    erc20ReceiverAddr   = 3;
+    string    chainType           = 4;
 }
 
 message QGasWithdrawRequest {
-    string withdrawAddress  = 1;
-    string ethTxHash        = 2;
-    int64  amount           = 3;
+    string    hash        = 1;
+    string    chainType   = 2;
 }
 
 message StateBlockHash {
@@ -302,12 +302,13 @@ message QGasSwapInfo {
     string stateStr         = 2;
 	int64  amount           = 3;
 	string qlcUserAddr      = 4;
-	string sendTxHash       = 5;
-    string rewardTxHash     = 6;
-    string ethUserAddr      = 7;
-    string ethTxHash        = 8;
-	string startTime        = 9;
-	string lastModifyTime   = 10;
+	string qlcSendTxHash    = 5;
+    string qlcRewardTxHash  = 6;
+    string chain            = 7;
+    string chainUserAddr    = 8;
+    string chainTxHash      = 9;
+	string startTime        = 10;
+	string lastModifyTime   = 11;
 }
 
 message QGasSwapInfos {
@@ -336,14 +337,14 @@ service QGasSwapAPI {
         };
     }
 
-    rpc GetEthOwnerSign(Hash) returns (String){
+    rpc GetOwnerSign(Hash) returns (String){
         option (google.api.http) = {
-          post: "/qgasswap/getEthOwnerSign"
+          post: "/qgasswap/getOwnerSign"
           body: "*"
         };
     }
 
-    rpc WithdrawEthTxSent(Hash) returns (Boolean){
+    rpc WithdrawEthTxSent(QGasWithdrawRequest) returns (Boolean){
         option (google.api.http) = {
           post: "/qgasswap/withdrawEthTxSent"
           body: "*"

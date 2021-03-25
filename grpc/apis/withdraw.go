@@ -13,9 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
-
 	"github.com/qlcchain/qlc-hub/config"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
 	"github.com/qlcchain/qlc-hub/pkg/db"
@@ -24,6 +21,8 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/neo"
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type WithdrawAPI struct {
@@ -51,7 +50,7 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 }
 
 func (w *WithdrawAPI) lister() {
-	contractAddress := common.HexToAddress(w.cfg.EthCfg.Contract)
+	contractAddress := common.HexToAddress(w.cfg.EthCfg.Nep5Contract)
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{contractAddress},
 	}

@@ -13,9 +13,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/nspcc-dev/neo-go/pkg/util"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
-
 	"github.com/qlcchain/qlc-hub/config"
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	pb "github.com/qlcchain/qlc-hub/grpc/proto"
@@ -26,6 +23,8 @@ import (
 	"github.com/qlcchain/qlc-hub/pkg/types"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type DepositAPI struct {

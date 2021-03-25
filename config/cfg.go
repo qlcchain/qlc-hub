@@ -7,10 +7,9 @@ import (
 	"runtime"
 	"time"
 
-	"gopkg.in/validator.v2"
-
 	"github.com/qlcchain/qlc-hub/pkg/jwt"
 	"github.com/qlcchain/qlc-hub/pkg/util"
+	"gopkg.in/validator.v2"
 )
 
 const (
@@ -26,6 +25,7 @@ type Config struct {
 	NEOCfg         *NEOCfg         `json:"neo" validate:"nonnil"`
 	EthCfg         *EthCfg         `json:"ethereum" validate:"nonnil"`
 	QlcCfg         *QlcCfg         `json:"qlc" validate:"nonnil"`
+	BscCfg         *BSCCfg         `json:"bsc" validate:"nonnil"`
 	RPCCfg         *RPCCfg         `json:"rpc" validate:"nonnil"`
 	DateDir        string          `json:"dateDir" validate:"nonnil"`
 	CanRefund      int             `json:"canRefund" long:"canRefund" description:"deposit can refund"  default:"0"`
@@ -42,10 +42,18 @@ type NEOCfg struct {
 }
 
 type EthCfg struct {
-	EndPoints       []string `json:"ethUrls" long:"ethUrls" description:"Ethereum RPC endpoint" validate:"nonzero"`
-	Contract        string   `json:"contract" long:"ethContract" description:"ethereum staking contract address"  validate:"nonzero"`
-	OwnerAddress    string   `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
-	ConfirmedHeight int64    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"3" validate:""`
+	EndPoints        []string `json:"ethUrls" long:"ethUrls" description:"Ethereum RPC endpoint" validate:"nonzero"`
+	Nep5Contract     string   `json:"contract" long:"nep5Contract" description:"QLC staking contract address"  validate:"nonzero"`
+	QGasSwapContract string   `json:"contract" long:"qGasSwapContract" description:"QGas Swap contract address"  validate:"nonzero"`
+	OwnerAddress     string   `json:"ethOwnerAddress" long:"ethOwnerAddress" description:"Ethereum owner address"  validate:"nonzero"`
+	ConfirmedHeight  int64    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"3" validate:""`
+}
+
+type BSCCfg struct {
+	EndPoints       []string `json:"bscUrls" long:"bscUrls" description:"BSC RPC endpoint" validate:"nonzero"`
+	Contract        string   `json:"contract" long:"bscContract" description:"BSC staking contract address"  validate:"nonzero"`
+	OwnerAddress    string   `json:"bscOwnerAddress" long:"bscOwnerAddress" description:"BSC owner address"  validate:"nonzero"`
+	ConfirmedHeight int64    `json:"bscConfirmedHeight" long:"bscConfirmedHeight" description:"BSC transaction Confirmed Height" default:"3" validate:""`
 }
 
 type QlcCfg struct {

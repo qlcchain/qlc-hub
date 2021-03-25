@@ -836,7 +836,7 @@ func local_request_QGasSwapAPI_GetWithdrawBlock_0(ctx context.Context, marshaler
 
 }
 
-func request_QGasSwapAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_QGasSwapAPI_GetOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
@@ -848,12 +848,12 @@ func request_QGasSwapAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.GetEthOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_QGasSwapAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_QGasSwapAPI_GetOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
@@ -865,13 +865,13 @@ func local_request_QGasSwapAPI_GetEthOwnerSign_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.GetEthOwnerSign(ctx, &protoReq)
+	msg, err := server.GetOwnerSign(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
 func request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+	var protoReq QGasWithdrawRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -888,7 +888,7 @@ func request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runt
 }
 
 func local_request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+	var protoReq QGasWithdrawRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -1655,7 +1655,7 @@ func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1664,14 +1664,14 @@ func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasSwapAPI_GetEthOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_GetOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_GetEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2644,7 +2644,7 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2653,14 +2653,14 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasSwapAPI_GetEthOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_GetOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_GetEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2834,7 +2834,7 @@ var (
 
 	pattern_QGasSwapAPI_GetWithdrawBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getWithdrawBlock"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_QGasSwapAPI_GetEthOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getEthOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_GetOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_QGasSwapAPI_WithdrawEthTxSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "withdrawEthTxSent"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -2860,7 +2860,7 @@ var (
 
 	forward_QGasSwapAPI_GetWithdrawBlock_0 = runtime.ForwardResponseMessage
 
-	forward_QGasSwapAPI_GetEthOwnerSign_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_GetOwnerSign_0 = runtime.ForwardResponseMessage
 
 	forward_QGasSwapAPI_WithdrawEthTxSent_0 = runtime.ForwardResponseMessage
 

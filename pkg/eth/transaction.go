@@ -12,10 +12,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"go.uber.org/zap"
-
 	"github.com/qlcchain/qlc-hub/pkg/log"
 	"github.com/qlcchain/qlc-hub/signer"
+	"go.uber.org/zap"
 )
 
 type Transaction struct {
@@ -54,7 +53,7 @@ func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint
 		case <-cTicker.C:
 			tx, p, err := client.TransactionByHash(context.Background(), txHash)
 			if err != nil {
-				t.logger.Errorf("eth tx by hash: %s , txHash: %s", err, txHash.String())
+				t.logger.Errorf("tx by hash: %s , txHash: %s", err, txHash.String())
 			}
 			if tx != nil && !p { // if tx not found , p is false
 				if txHeight == 0 {
@@ -68,7 +67,7 @@ func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint
 				}
 			}
 		case <-cTimer.C:
-			return fmt.Errorf("eth tx by hash timeout: %s", txHash)
+			return fmt.Errorf("tx by hash timeout: %s", txHash)
 		}
 	}
 

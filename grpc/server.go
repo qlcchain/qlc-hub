@@ -28,17 +28,19 @@ import (
 )
 
 type Server struct {
-	rpc    *grpc.Server
-	srv    *http.Server
-	signer *signer.SignerClient
-	ctx    context.Context
-	cancel context.CancelFunc
-	cfg    *config.Config
-	eth    *eth.Transaction
-	neo    *neo.Transaction
-	qlc    *qlc.Transaction
-	store  *gorm.DB
-	logger *zap.SugaredLogger
+	rpc     *grpc.Server
+	srv     *http.Server
+	signer  *signer.SignerClient
+	ctx     context.Context
+	cancel  context.CancelFunc
+	cfg     *config.Config
+	nep5Eth *eth.Transaction
+	qgasEth *eth.Transaction
+	bsc     *eth.Transaction
+	neo     *neo.Transaction
+	qlc     *qlc.Transaction
+	store   *gorm.DB
+	logger  *zap.SugaredLogger
 }
 
 func NewServer(cfg *config.Config) *Server {
@@ -106,12 +108,26 @@ func (g *Server) checkBaseInfo() error {
 	g.signer = signer
 	g.logger.Info("signer client connected successfully")
 
-	eTransaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.Contract)
+	nep5Transaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.Nep5Contract)
 	if err != nil {
 		return fmt.Errorf("eth client: %s", err)
 	}
-	g.eth = eTransaction
-	g.logger.Info("eth client connected successfully")
+	g.nep5Eth = nep5Transaction
+	g.logger.Info("nep5 eth client connected successfully")
+
+	qgasTransaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.QGasSwapContract)
+	if err != nil {
+		return fmt.Errorf("eth client: %s", err)
+	}
+	g.qgasEth = qgasTransaction
+	g.logger.Info("qgas eth client connected successfully")
+
+	bTransaction, err := eth.NewTransaction(g.cfg.BscCfg.EndPoints, g.cfg.BscCfg.Contract)
+	if err != nil {
+		return fmt.Errorf("eth client: %s", err)
+	}
+	g.bsc = bTransaction
+	g.logger.Info("bsc client connected successfully")
 
 	nTransaction, err := neo.NewTransaction(g.cfg.NEOCfg.EndPoints, g.cfg.NEOCfg.Contract, signer)
 	if err != nil {
@@ -192,19 +208,22 @@ func (g *Server) Stop() {
 			g.logger.Errorf("RESTful server shutdown failed:%+v", err)
 		}
 	}
-	g.eth.Client().Close()
+	g.nep5Eth.Client().Close()
+	g.qgasEth.Client().Close()
+	g.bsc.Client().Close()
 	g.rpc.Stop()
+	g.qlc.Client().Close()
 	g.signer.Stop()
 
 	g.logger.Info("grpc stopped")
 }
 
 func (g *Server) registerApi() error {
-	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.eth, g.signer, g.store))
-	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
-	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.eth, g.store))
-	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.eth, g.neo, g.store))
-	pb.RegisterQGasSwapAPIServer(g.rpc, apis.NewQGasSwapAPI(g.ctx, g.cfg, g.qlc, g.eth, g.signer, g.store))
+	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.nep5Eth, g.signer, g.store))
+	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.nep5Eth, g.store))
+	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.nep5Eth, g.store))
+	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.nep5Eth, g.neo, g.store))
+	pb.RegisterQGasSwapAPIServer(g.rpc, apis.NewQGasSwapAPI(g.ctx, g.cfg, g.qlc, g.qgasEth, g.bsc, g.signer, g.store))
 	return nil
 }
 

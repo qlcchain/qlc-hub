@@ -43,7 +43,7 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		EthContract: i.cfg.EthCfg.Contract,
+		EthContract: i.cfg.EthCfg.Nep5Contract,
 		EthOwner:    i.cfg.EthCfg.OwnerAddress,
 		EthUrl:      i.eth.ClientEndpoint(),
 		NeoContract: i.cfg.NEOCfg.Contract,
