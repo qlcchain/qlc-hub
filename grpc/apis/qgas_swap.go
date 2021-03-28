@@ -68,9 +68,9 @@ type QGasPledgeParam struct {
 	Erc20ReceiverAddr string
 }
 
-func (g *QGasSwapAPI) GetPledgeBlock(ctx context.Context, params *pb.QGasPledgeRequest) (*pb.StateBlockHash, error) {
+func (g *QGasSwapAPI) GetPledgeSendBlock(ctx context.Context, params *pb.QGasPledgeRequest) (*pb.StateBlockHash, error) {
 	g.logger.Infof("call QGas Get Pledge Send Block......... (%s) ", params)
-	if params.GetPledgeAddress() == "" || params.Erc20ReceiverAddr == "" || params.GetAmount() <= 0 {
+	if params.GetFromAddress() == "" || params.TokenMintedToAddress == "" || params.GetAmount() <= 0 {
 		return nil, errors.New("error params")
 	}
 	chainType := types.StringToChainType(params.GetChainType())
@@ -78,9 +78,9 @@ func (g *QGasSwapAPI) GetPledgeBlock(ctx context.Context, params *pb.QGasPledgeR
 		return nil, errors.New("invalid chain")
 	}
 
-	pledgeAddress, err := qlctypes.HexToAddress(params.GetPledgeAddress())
+	pledgeAddress, err := qlctypes.HexToAddress(params.GetFromAddress())
 	if err != nil {
-		g.logger.Errorf("invalid address, %s, %s", err, params.GetPledgeAddress())
+		g.logger.Errorf("invalid address, %s, %s", err, params.GetFromAddress())
 		return nil, err
 	}
 
@@ -105,7 +105,7 @@ func (g *QGasSwapAPI) GetPledgeBlock(ctx context.Context, params *pb.QGasPledgeR
 		QlcSendTxHash:      sendBlk.GetHash().String(),
 		BlockStr:           toBlockStr(sendBlk),
 		UserTxHash:         sendBlk.GetHash().String(),
-		CrossChainUserAddr: params.GetErc20ReceiverAddr(),
+		CrossChainUserAddr: params.GetTokenMintedToAddress(),
 		StartTime:          time.Now().Unix(),
 	}
 
@@ -126,7 +126,7 @@ func toBlockStr(blk *qlctypes.StateBlock) string {
 	return hex.EncodeToString(blkBytes)
 }
 
-func (g *QGasSwapAPI) GetWithdrawBlock(ctx context.Context, param *pb.Hash) (*pb.StateBlockHash, error) {
+func (g *QGasSwapAPI) GetWithdrawRewardBlock(ctx context.Context, param *pb.Hash) (*pb.StateBlockHash, error) {
 	g.logger.Infof("call QGas Get Withdraw Block ......... (%s) ", param)
 	if param == nil {
 		return nil, errors.New("error params")

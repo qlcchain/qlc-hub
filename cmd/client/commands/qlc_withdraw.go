@@ -57,7 +57,7 @@ func nEth2Qlc() {
 	Paras := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, ethTx)
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawRewardBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
@@ -94,7 +94,7 @@ func nEth2QlcPending() {
 	Paras := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, ethTx)
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawRewardBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}

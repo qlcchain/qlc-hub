@@ -40,11 +40,11 @@ var (
 	ethConfirmedHeight int
 
 	// eth setting (qlc -> eth)
-	ethContractQLC = "0x3D22aace559A60e3c0989b1dF163b93F92Eb49Cf"
+	ethContractQLC = "0x1aFFc415416f1D157F4603f37aE1AC9011487111"
 
 	// bsc setting (qlc -> eth)
 	bscUrl         = []string{""}
-	bscContractQLC = "0x995E49Bd83B4328fda96e259451C91e3208AE29e"
+	bscContractQLC = "0xF791c6cf47C3650Fb8e65f1Ab0bFaDEfcFD51af5"
 	bscUserPrivate = "d6aedb156c57320b7246c4463c9ee9c9d54df23513ece5eda0f2c9d3fdfc5822"
 	bscUserAddress = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
 

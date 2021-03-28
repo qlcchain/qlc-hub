@@ -55,12 +55,12 @@ func nQlc2Eth() {
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
-		"pledgeAddress":"%s",
-		"erc20ReceiverAddr":"%s",
+		"fromAddress":"%s",
+		"tokenMintedToAddress":"%s",
 		"amount": "%d",
 		"chainType": "%s"
 	}`, qlcUserAddress, ethUserAddress, amount, "eth")
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeSendBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
@@ -198,12 +198,12 @@ func nQlc2Bsc() {
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
-		"pledgeAddress":"%s",
-		"erc20ReceiverAddr":"%s",
+		"fromAddress":"%s",
+		"tokenMintedToAddress":"%s",
 		"amount": "%d",
 		"chainType":"%s"
 	}`, qlcUserAddress, bscUserAddress, amount, "bsc")
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeSendBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
