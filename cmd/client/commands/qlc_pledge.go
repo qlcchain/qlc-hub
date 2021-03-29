@@ -51,7 +51,7 @@ func qQlc2EthPendingCmd(parentCmd *ishell.Cmd) {
 }
 
 func nQlc2Eth() {
-	amount := 5000000
+	amount := 9000000000000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
@@ -194,7 +194,7 @@ func signQLCTx(hash, root string) (string, string) {
 }
 
 func nQlc2Bsc() {
-	amount := 6000000
+	amount := 9000000000000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
