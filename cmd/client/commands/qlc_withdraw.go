@@ -33,7 +33,7 @@ func qEth2QlcCmdPending(parentCmd *ishell.Cmd) {
 }
 
 func nEth2Qlc() {
-	amount := 110000
+	amount := 9000000000000000
 	ethTx, err := ethTransactionQLC.Burn(ethUserPrivate, qlcUserAddress, big.NewInt(int64(amount)))
 	if err != nil {
 		log.Fatal(err)
@@ -57,7 +57,7 @@ func nEth2Qlc() {
 	Paras := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, ethTx)
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawRewardBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
@@ -94,7 +94,7 @@ func nEth2QlcPending() {
 	Paras := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, ethTx)
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawRewardBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}

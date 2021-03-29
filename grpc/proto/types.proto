@@ -293,10 +293,10 @@ message Map {
 
 
 message QGasPledgeRequest {
-    string    pledgeAddress       = 1;
-    int64     amount              = 2;
-    string    erc20ReceiverAddr   = 3;
-    string    chainType           = 4;
+    string    fromAddress            = 1;
+    int64     amount                 = 2;
+    string    tokenMintedToAddress   = 3;
+    string    chainType              = 4;
 }
 
 message QGasWithdrawRequest {
@@ -339,9 +339,9 @@ message QGasSwapInfos {
 }
 
 service QGasSwapAPI {
-    rpc GetPledgeBlock(QGasPledgeRequest) returns (StateBlockHash){
+    rpc GetPledgeSendBlock(QGasPledgeRequest) returns (StateBlockHash){
         option (google.api.http) = {
-          post: "/qgasswap/getPledgeBlock"
+          post: "/qgasswap/getPledgeSendBlock"
           body: "*"
         };
     }
@@ -353,9 +353,9 @@ service QGasSwapAPI {
         };
     }
 
-    rpc GetWithdrawBlock(Hash) returns (StateBlockHash){
+    rpc GetWithdrawRewardBlock(Hash) returns (StateBlockHash){
         option (google.api.http) = {
-          post: "/qgasswap/getWithdrawBlock"
+          post: "/qgasswap/getWithdrawRewardBlock"
           body: "*"
         };
     }

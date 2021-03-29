@@ -683,9 +683,9 @@
         ]
       }
     },
-    "/qgasswap/getPledgeBlock": {
+    "/qgasswap/getPledgeSendBlock": {
       "post": {
-        "operationId": "QGasSwapAPI_GetPledgeBlock",
+        "operationId": "QGasSwapAPI_GetPledgeSendBlock",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -715,9 +715,9 @@
         ]
       }
     },
-    "/qgasswap/getWithdrawBlock": {
+    "/qgasswap/getWithdrawRewardBlock": {
       "post": {
-        "operationId": "QGasSwapAPI_GetWithdrawBlock",
+        "operationId": "QGasSwapAPI_GetWithdrawRewardBlock",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1298,14 +1298,14 @@
     "protoQGasPledgeRequest": {
       "type": "object",
       "properties": {
-        "pledgeAddress": {
+        "fromAddress": {
           "type": "string"
         },
         "amount": {
           "type": "string",
           "format": "int64"
         },
-        "erc20ReceiverAddr": {
+        "tokenMintedToAddress": {
           "type": "string"
         },
         "chainType": {

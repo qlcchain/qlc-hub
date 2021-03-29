@@ -51,16 +51,16 @@ func qQlc2EthPendingCmd(parentCmd *ishell.Cmd) {
 }
 
 func nQlc2Eth() {
-	amount := 5000000
+	amount := 9000000000000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
-		"pledgeAddress":"%s",
-		"erc20ReceiverAddr":"%s",
+		"fromAddress":"%s",
+		"tokenMintedToAddress":"%s",
 		"amount": "%d",
 		"chainType": "%s"
 	}`, qlcUserAddress, ethUserAddress, amount, "eth")
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeSendBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
@@ -194,16 +194,16 @@ func signQLCTx(hash, root string) (string, string) {
 }
 
 func nQlc2Bsc() {
-	amount := 6000000
+	amount := 9000000000000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
-		"pledgeAddress":"%s",
-		"erc20ReceiverAddr":"%s",
+		"fromAddress":"%s",
+		"tokenMintedToAddress":"%s",
 		"amount": "%d",
 		"chainType":"%s"
 	}`, qlcUserAddress, bscUserAddress, amount, "bsc")
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getPledgeSendBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
