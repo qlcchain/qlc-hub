@@ -102,27 +102,27 @@ func (g *Server) checkBaseInfo() error {
 		return fmt.Errorf("new signer: %s", err)
 	}
 
-	if _, err := signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.Nep5EthOwner, bytes.Repeat([]byte{0}, 32)); err != nil {
+	if _, err := signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.EthNep5Owner, bytes.Repeat([]byte{0}, 32)); err != nil {
 		return fmt.Errorf("sign: %s", err)
 	}
 	g.signer = signer
 	g.logger.Info("signer client connected successfully")
 
-	nep5Transaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.Nep5EthContract)
+	nep5Transaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.EthNep5Contract)
 	if err != nil {
 		return fmt.Errorf("eth client: %s", err)
 	}
 	g.nep5Eth = nep5Transaction
 	g.logger.Info("nep5 eth client connected successfully")
 
-	qgasTransaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.QGasSwapEthContract)
+	qgasTransaction, err := eth.NewTransaction(g.cfg.EthCfg.EndPoints, g.cfg.EthCfg.EthQGasContract)
 	if err != nil {
 		return fmt.Errorf("eth client: %s", err)
 	}
 	g.qgasEth = qgasTransaction
 	g.logger.Info("qgas eth client connected successfully")
 
-	bTransaction, err := eth.NewTransaction(g.cfg.BscCfg.EndPoints, g.cfg.BscCfg.Contract)
+	bTransaction, err := eth.NewTransaction(g.cfg.BscCfg.EndPoints, g.cfg.BscCfg.BscQGasContract)
 	if err != nil {
 		return fmt.Errorf("eth client: %s", err)
 	}

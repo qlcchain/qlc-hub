@@ -43,7 +43,7 @@ var (
 	ethContractQLC = "0x1aFFc415416f1D157F4603f37aE1AC9011487111"
 
 	// bsc setting (qlc -> eth)
-	bscUrl         = []string{""}
+	bscUrl         = []string{"https://bsc-rpc-test.qlcchain.online"}
 	bscContractQLC = "0xF791c6cf47C3650Fb8e65f1Ab0bFaDEfcFD51af5"
 	bscUserPrivate = "d6aedb156c57320b7246c4463c9ee9c9d54df23513ece5eda0f2c9d3fdfc5822"
 	bscUserAddress = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
@@ -83,7 +83,7 @@ func initParams(osArgs []string) {
 	}
 
 	neoConfirmedHeight = cfg.NEOCfg.ConfirmedHeight
-	ethConfirmedHeight = int(cfg.EthCfg.ConfirmedHeight)
+	ethConfirmedHeight = int(cfg.EthCfg.EthConfirmedHeight)
 	var err error
 	if neoContractLE, err = util.Uint160DecodeStringLE(neoContract); err != nil {
 		log.Fatal(err)

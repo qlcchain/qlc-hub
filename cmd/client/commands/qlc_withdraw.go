@@ -12,8 +12,8 @@ import (
 
 func qEth2QlcCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "eth2qlc",
-		Help: "eth -> qlc",
+		Name: "eth2qgas",
+		Help: "eth -> qgas",
 		Func: func(c *ishell.Context) {
 			nEth2Qlc()
 		},
@@ -24,7 +24,7 @@ func qEth2QlcCmd(parentCmd *ishell.Cmd) {
 func qEth2QlcCmdPending(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
 		Name: "eth2qlcPending",
-		Help: "eth -> qlc",
+		Help: "eth -> qgas",
 		Func: func(c *ishell.Context) {
 			nEth2QlcPending()
 		},
@@ -148,8 +148,8 @@ func getQGasSwapState(hash string) (map[string]interface{}, error) {
 
 func qBsc2QlcCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "bsc2qlc",
-		Help: "bsc -> qlc",
+		Name: "bsc2qgas",
+		Help: "bsc -> qgas",
 		Func: func(c *ishell.Context) {
 			nBsc2Qlc()
 		},
@@ -182,7 +182,7 @@ func nBsc2Qlc() {
 	Paras := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, ethTx)
-	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawBlock", hubUrl))
+	result, err := post(Paras, fmt.Sprintf("%s/qgasswap/getWithdrawRewardBlock", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}

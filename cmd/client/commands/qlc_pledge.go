@@ -13,8 +13,8 @@ import (
 
 func addQLCCmd(shell *ishell.Shell) {
 	qlcCmd := &ishell.Cmd{
-		Name: "qlc",
-		Help: "qlc",
+		Name: "qgas",
+		Help: "qgas",
 		Func: func(c *ishell.Context) {
 			c.Println(c.Cmd.HelpText())
 		},
@@ -30,8 +30,8 @@ func addQLCCmd(shell *ishell.Shell) {
 
 func qQlc2EthCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "qlc2eth",
-		Help: "qlc -> eth",
+		Name: "qgas2eth",
+		Help: "qgas -> eth",
 		Func: func(c *ishell.Context) {
 			nQlc2Eth()
 		},
@@ -41,8 +41,8 @@ func qQlc2EthCmd(parentCmd *ishell.Cmd) {
 
 func qQlc2EthPendingCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "qlc2ethPending",
-		Help: "qlc -> eth",
+		Name: "qgas2ethPending",
+		Help: "qgas -> eth",
 		Func: func(c *ishell.Context) {
 			nQlc2EthPending()
 		},
@@ -194,7 +194,7 @@ func signQLCTx(hash, root string) (string, string) {
 }
 
 func nQlc2Bsc() {
-	amount := 9000000000000000
+	amount := 900000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
@@ -264,8 +264,8 @@ func nQlc2Bsc() {
 
 func qQlc2BscCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "qlc2bsc",
-		Help: "qlc -> bsc",
+		Name: "qgas2bsc",
+		Help: "qgas -> bsc",
 		Func: func(c *ishell.Context) {
 			nQlc2Bsc()
 		},

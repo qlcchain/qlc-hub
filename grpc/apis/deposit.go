@@ -200,7 +200,7 @@ func (d *DepositAPI) signData(amount *big.Int, receiveAddr string, neoTxHash str
 		return "", fmt.Errorf("packed: %s", err)
 	}
 
-	signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.Nep5EthOwner, packedHash)
+	signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.EthNep5Owner, packedHash)
 	if err != nil {
 		return "", fmt.Errorf("sign: %s", err)
 	}
@@ -252,7 +252,7 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 	if hash == "" {
 		return nil, errors.New("invalid hash")
 	}
-	confirmed, err := d.eth.HasBlockConfirmed(common.HexToHash(hash), d.cfg.EthCfg.ConfirmedHeight)
+	confirmed, err := d.eth.HasBlockConfirmed(common.HexToHash(hash), d.cfg.EthCfg.EthConfirmedHeight)
 	if err != nil || !confirmed {
 		d.logger.Errorf("block confirmed: %s, %t", err, confirmed)
 		return toBoolean(false), fmt.Errorf("block not confirmed")
@@ -291,7 +291,7 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 	}
 	if swapInfo.State == types.DepositPending {
 		if err := toConfirmDepositEthTx(common.HexToHash(hash), 0, neoTx, address.String(), amount.Int64(),
-			d.eth, d.cfg.EthCfg.ConfirmedHeight, d.store, d.logger, false); err != nil {
+			d.eth, d.cfg.EthCfg.EthConfirmedHeight, d.store, d.logger, false); err != nil {
 			d.logger.Errorf("deposit :%s, %s", err, hash)
 			return toBoolean(false), err
 		}
@@ -319,7 +319,7 @@ func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.EthTransactio
 	}
 
 	go func() {
-		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethHash), 0, d.cfg.EthCfg.ConfirmedHeight); err != nil {
+		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethHash), 0, d.cfg.EthCfg.EthConfirmedHeight); err != nil {
 			d.logger.Errorf("tx confirmed: %s", err)
 			return
 		}
@@ -382,7 +382,7 @@ func (d *DepositAPI) Refund(ctx context.Context, h *pb.Hash) (*pb.Boolean, error
 		}
 		if swapInfo, err := db.GetSwapInfoByTxHash(d.store, hash, types.NEO); err == nil {
 			if swapInfo.State < types.DepositDone {
-				neoTx, err := d.neo.CreateUnLockTransaction(hash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), d.cfg.NEOCfg.OwnerAddress)
+				neoTx, err := d.neo.CreateUnLockTransaction(hash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), d.cfg.NEOCfg.Owner)
 				if err != nil {
 					d.logger.Errorf("create neo tx: %s, neo[%s]", err, hash)
 					return nil, fmt.Errorf("create tx: %s", err)

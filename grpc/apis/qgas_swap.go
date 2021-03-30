@@ -52,7 +52,7 @@ func NewQGasSwapAPI(ctx context.Context, cfg *config.Config, q *qlc.Transaction,
 		signer: signer,
 		logger: log.NewLogger("api/qgas_pledge"),
 	}
-	address, err := qlctypes.HexToAddress(cfg.QlcCfg.OwnerAddress)
+	address, err := qlctypes.HexToAddress(cfg.QlcCfg.QlcOwner)
 	if err != nil {
 		api.logger.Fatal(err)
 	}
@@ -429,7 +429,7 @@ func (g *QGasSwapAPI) processPledgeEthTx(swapInfo *types.QGasSwapInfo) {
 	var qlcTx string
 	var err error
 	if swapInfo.Chain == types.ETH {
-		if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.EthCfg.ConfirmedHeight); err != nil {
+		if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.EthCfg.EthConfirmedHeight); err != nil {
 			g.logger.Errorf("QGas pledge eth tx confirmed: %s", err)
 			return
 		}
@@ -440,7 +440,7 @@ func (g *QGasSwapAPI) processPledgeEthTx(swapInfo *types.QGasSwapInfo) {
 			return
 		}
 	} else {
-		if err := g.bsc.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.BscCfg.ConfirmedHeight); err != nil {
+		if err := g.bsc.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.BscCfg.BscConfirmedHeight); err != nil {
 			g.logger.Errorf("QGas pledge eth tx confirmed: %s", err)
 			return
 		}
@@ -515,7 +515,7 @@ func (g *QGasSwapAPI) processWithdrawEthTx(swapInfo *types.QGasSwapInfo) error {
 	var qlcAddrStr string
 	var err error
 	if swapInfo.Chain == types.ETH {
-		if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.EthCfg.ConfirmedHeight); err != nil {
+		if err := g.eth.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.EthCfg.EthConfirmedHeight); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 		g.logger.Infof("QGas withdraw eth tx confirmed, eth[%s]", crossChainTxHash)
@@ -523,7 +523,7 @@ func (g *QGasSwapAPI) processWithdrawEthTx(swapInfo *types.QGasSwapInfo) error {
 			return fmt.Errorf("get burn log, %s", err)
 		}
 	} else {
-		if err := g.bsc.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.BscCfg.ConfirmedHeight); err != nil {
+		if err := g.bsc.WaitTxVerifyAndConfirmed(common.HexToHash(crossChainTxHash), 0, g.cfg.BscCfg.BscConfirmedHeight); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 		g.logger.Infof("QGas withdraw eth tx confirmed, eth[%s]", crossChainTxHash)
@@ -554,7 +554,7 @@ func (g *QGasSwapAPI) signEthData(amount *big.Int, receiveAddr string, neoTxHash
 			return "", fmt.Errorf("packed: %s", err)
 		}
 
-		signature, err := g.signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.QGasSwapEthOwner, packedHash)
+		signature, err := g.signer.Sign(pb.SignType_ETH, g.cfg.EthCfg.EthQGasOwner, packedHash)
 		if err != nil {
 			return "", fmt.Errorf("sign: %s", err)
 		}
@@ -565,7 +565,7 @@ func (g *QGasSwapAPI) signEthData(amount *big.Int, receiveAddr string, neoTxHash
 			return "", fmt.Errorf("packed: %s", err)
 		}
 
-		signature, err := g.signer.Sign(pb.SignType_BSC, g.cfg.BscCfg.OwnerAddress, packedHash)
+		signature, err := g.signer.Sign(pb.SignType_BSC, g.cfg.BscCfg.BscQGasOwner, packedHash)
 		if err != nil {
 			return "", fmt.Errorf("sign: %s", err)
 		}
@@ -594,7 +594,7 @@ func (g *QGasSwapAPI) signQLCTx(block *qlctypes.StateBlock) error {
 	}
 	block.Work = worker.NewWork()
 	hash := block.GetHash()
-	signature, err := g.signer.Sign(pb.SignType_QLC, g.cfg.QlcCfg.OwnerAddress, hash.Bytes())
+	signature, err := g.signer.Sign(pb.SignType_QLC, g.cfg.QlcCfg.QlcOwner, hash.Bytes())
 	if err != nil {
 		return fmt.Errorf("sign: %s", err)
 	}

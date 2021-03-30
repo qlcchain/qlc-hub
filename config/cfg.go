@@ -23,8 +23,8 @@ type Config struct {
 	SignerToken    string          `json:"signerToken"  long:"signerToken" description:"singer JWT token" validate:"nonzero"`
 	SignerEndPoint string          `json:"signerEndPoint"  long:"signerEndPoint" description:"singer endpoint" validate:"nonzero"`
 	NEOCfg         *NEOCfg         `json:"neo" validate:"nonnil"`
-	EthCfg         *EthCfg         `json:"ethereum" validate:"nonnil"`
 	QlcCfg         *QlcCfg         `json:"qlc" validate:"nonnil"`
+	EthCfg         *EthCfg         `json:"ethereum" validate:"nonnil"`
 	BscCfg         *BSCCfg         `json:"bsc" validate:"nonnil"`
 	RPCCfg         *RPCCfg         `json:"rpc" validate:"nonnil"`
 	DateDir        string          `json:"dateDir" validate:"nonnil"`
@@ -37,29 +37,31 @@ type Config struct {
 type NEOCfg struct {
 	EndPoints       []string `json:"neoUrls"  long:"neoUrls" description:"NEO RPC endpoint" validate:"min=1"`
 	Contract        string   `json:"contract" long:"neoContract" description:"NEO staking contract address" validate:"nonzero"`
-	OwnerAddress    string   `json:"neoOwnerAddress" long:"neoOwnerAddress" description:"NEO address to sign tx" validate:"nonzero"`
+	Owner           string   `json:"neoOwner" long:"neoOwner" description:"NEO address to sign tx" validate:"nonzero"`
 	ConfirmedHeight int      `json:"neoConfirmedHeight" long:"neoConfirmedHeight" description:"Neo transaction Confirmed Height" default:"1" validate:""`
 }
 
 type EthCfg struct {
-	EndPoints           []string `json:"ethUrls" long:"ethUrls" description:"Ethereum RPC endpoint" validate:"nonzero"`
-	Nep5EthContract     string   `json:"nep5EthContract" long:"nep5EthContract" description:"QLC staking contract address"  validate:"nonzero"`
-	Nep5EthOwner        string   `json:"nep5EthOwner" long:"nep5EthOwner" description:"nep5 contract owner address"  validate:"nonzero"`
-	QGasSwapEthContract string   `json:"qGasSwapEthContract" long:"qGasSwapEthContract" description:"QGas Swap contract address"  validate:"nonzero"`
-	QGasSwapEthOwner    string   `json:"qgasSwapEthOwner" long:"qgasSwapEthOwner" description:"qgasSwap contract owner address"  validate:"nonzero"`
-	ConfirmedHeight     int64    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"3" validate:""`
+	EndPoints          []string `json:"ethUrls" long:"ethUrls" description:"Ethereum RPC endpoint" validate:"nonzero"`
+	EthConfirmedHeight int64    `json:"ethConfirmedHeight" long:"ethConfirmedHeight" description:"Eth transaction Confirmed Height" default:"3" validate:""`
+	EthNep5Contract    string   `json:"ethNep5Contract" long:"ethNep5Contract" description:"QLC staking contract address"  validate:"nonzero"`
+	EthNep5Owner       string   `json:"ethNep5Owner" long:"ethNep5Owner" description:"nep5 contract owner address"  validate:"nonzero"`
+	EthQGasContract    string   `json:"ethQGasContract" long:"ethQGasContract" description:"QGas Swap contract address"  validate:"nonzero"`
+	EthQGasOwner       string   `json:"ethQGasOwner" long:"ethQGasOwner" description:"qgasSwap contract owner address"  validate:"nonzero"`
 }
 
 type BSCCfg struct {
-	EndPoints       []string `json:"bscUrls" long:"bscUrls" description:"BSC RPC endpoint" validate:"nonzero"`
-	Contract        string   `json:"contract" long:"bscContract" description:"BSC staking contract address"  validate:"nonzero"`
-	OwnerAddress    string   `json:"bscOwnerAddress" long:"bscOwnerAddress" description:"BSC owner address"  validate:"nonzero"`
-	ConfirmedHeight int64    `json:"bscConfirmedHeight" long:"bscConfirmedHeight" description:"BSC transaction Confirmed Height" default:"3" validate:""`
+	EndPoints          []string `json:"bscUrls" long:"bscUrls" description:"BSC RPC endpoint" validate:"nonzero"`
+	BscConfirmedHeight int64    `json:"bscConfirmedHeight" long:"bscConfirmedHeight" description:"BSC transaction Confirmed Height" default:"3" validate:""`
+	//BscNep5Contract    string   `json:"bscNep5Contract" long:"bscNep5Contract" description:"BSC staking nep5 contract address"  validate:"nonzero"`
+	//BscNep5Owner       string   `json:"bscNep5Owner" long:"bscNep5Owner" description:"BSC nep5 owner address"  validate:"nonzero"`
+	BscQGasContract string `json:"bscQGasContract" long:"bscQGasContract" description:"BSC staking qgas contract address"  validate:"nonzero"`
+	BscQGasOwner    string `json:"bscQGasOwner" long:"bscQGasOwner" description:"BSC qgas owner address"  validate:"nonzero"`
 }
 
 type QlcCfg struct {
-	EndPoint     string `json:"qlcUrl" long:"qlcUrl" description:"QLC RPC endpoint" validate:"nonzero"`
-	OwnerAddress string `json:"qlcOwnerAddress" long:"qlcOwnerAddress" description:"qlc owner address"  validate:"nonzero"`
+	EndPoint string `json:"qlcUrl" long:"qlcUrl" description:"QLC RPC endpoint" validate:"nonzero"`
+	QlcOwner string `json:"qlcOwner" long:"qlcOwner" description:"qlc owner address"  validate:"nonzero"`
 }
 
 type RPCCfg struct {

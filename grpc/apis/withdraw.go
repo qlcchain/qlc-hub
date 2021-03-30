@@ -50,7 +50,7 @@ func NewWithdrawAPI(ctx context.Context, cfg *config.Config, neo *neo.Transactio
 }
 
 func (w *WithdrawAPI) lister() {
-	contractAddress := common.HexToAddress(w.cfg.EthCfg.Nep5EthContract)
+	contractAddress := common.HexToAddress(w.cfg.EthCfg.EthNep5Contract)
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{contractAddress},
 	}
@@ -89,7 +89,7 @@ func (w *WithdrawAPI) lister() {
 						txHash.String(), user.String(), amount.String(), neoHash)
 					go func() {
 						if err := toConfirmDepositEthTx(txHash, txHeight, neoHash, user.String(), amount.Int64(),
-							w.eth, w.cfg.EthCfg.ConfirmedHeight, w.store, w.logger, true); err != nil {
+							w.eth, w.cfg.EthCfg.EthConfirmedHeight, w.store, w.logger, true); err != nil {
 							w.logger.Errorf("withdraw event: %s, eth tx[%s]", err, txHash.String())
 						}
 					}()
@@ -119,7 +119,7 @@ func (w *WithdrawAPI) lister() {
 
 func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight uint64, user common.Address, amount *big.Int, nep5Addr string, isEvent bool) error {
 	if txHeight != 0 {
-		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.ConfirmedHeight+1); err != nil {
+		if err := w.eth.WaitTxVerifyAndConfirmed(ethTxHash, txHeight, w.cfg.EthCfg.EthConfirmedHeight+1); err != nil {
 			return fmt.Errorf("tx confirmed: %s", err)
 		}
 	}
@@ -147,7 +147,7 @@ func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(ethTxHash common.Hash, txHeight
 		return fmt.Errorf("withdraw insert: %s", err)
 	}
 
-	neoTx, err := w.neo.CreateUnLockTransaction(ethTxHash.String(), nep5Addr, user.String(), int(amount.Int64()), w.cfg.NEOCfg.OwnerAddress)
+	neoTx, err := w.neo.CreateUnLockTransaction(ethTxHash.String(), nep5Addr, user.String(), int(amount.Int64()), w.cfg.NEOCfg.Owner)
 	if err != nil {
 		swapInfo.State = types.WithDrawFail
 		db.UpdateSwapInfo(w.store, swapInfo)
@@ -224,7 +224,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 		}
 		if swapInfo.State == types.WithDrawFail { // neo tx send fail
 			go func() {
-				neoTx, err := w.neo.CreateUnLockTransaction(swapInfo.EthTxHash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), w.cfg.NEOCfg.OwnerAddress)
+				neoTx, err := w.neo.CreateUnLockTransaction(swapInfo.EthTxHash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), w.cfg.NEOCfg.Owner)
 				if err != nil {
 					w.logger.Errorf("create neo unlock tx: %s", err)
 					return
@@ -258,7 +258,7 @@ func (w *WithdrawAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (
 			return nil, errors.New("invalid state")
 		}
 	} else {
-		confirmed, err := w.eth.HasBlockConfirmed(common.HexToHash(hash), w.cfg.EthCfg.ConfirmedHeight)
+		confirmed, err := w.eth.HasBlockConfirmed(common.HexToHash(hash), w.cfg.EthCfg.EthConfirmedHeight)
 		if err != nil || !confirmed {
 			w.logger.Infof("block not confirmed: %s, %s", err, hash)
 			return nil, err
@@ -302,7 +302,7 @@ func (w *WithdrawAPI) EthTransactionSent(ctx context.Context, h *pb.Hash) (*pb.B
 	}
 
 	go func() {
-		if err := w.eth.WaitTxVerifyAndConfirmed(common.HexToHash(hash), 0, w.cfg.EthCfg.ConfirmedHeight); err != nil {
+		if err := w.eth.WaitTxVerifyAndConfirmed(common.HexToHash(hash), 0, w.cfg.EthCfg.EthConfirmedHeight); err != nil {
 			w.logger.Errorf("tx confirmed: %s", err)
 		}
 		amount, user, nep5Addr, err := w.eth.SyncBurnLog(hash)
