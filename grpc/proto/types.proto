@@ -21,6 +21,13 @@ message SendNeoTxnRequest {
     string  txHash            = 2;
     string  publicKey         = 3;
     string  nep5SenderAddr    = 4;
+    string  chainType         = 5;
+
+}
+
+message NeoTxConfirmedResponse {
+    string  hash           = 1;
+    string  chainType      = 2;
 }
 
 message EthTransactionSentRequest{
@@ -43,16 +50,16 @@ service DepositAPI {
         };
     }
 
-    rpc NeoTransactionConfirmed(Hash) returns (Boolean){
+    rpc NeoTransactionConfirmed(NeoTxConfirmedResponse) returns (Boolean){
         option (google.api.http) = {
           post: "/deposit/neoTransactionConfirmed"
           body: "*"
         };
     }
 
-    rpc GetEthOwnerSign(Hash) returns (String){
+    rpc GetChainOwnerSign(Hash) returns (String){
         option (google.api.http) = {
-          post: "/deposit/getEthOwnerSign"
+          post: "/deposit/getChainOwnerSign"
           body: "*"
         };
     }
@@ -151,12 +158,13 @@ message SwapInfo {
     int32  state            = 1;
     string stateStr         = 2;
 	int64  amount           = 3;
-	string ethTxHash        = 4;
-	string neoTxHash        = 5;
-	string ethUserAddr      = 6;
-	string neoUserAddr      = 7;
-	string startTime        = 8;
-	string lastModifyTime   = 9;
+	string neoUserAddr      = 4;
+    string neoTxHash        = 5;
+    string chain            = 6;
+    string chainUserAddr    = 7;
+	string chainTxHash      = 8;
+	string startTime        = 9;
+	string lastModifyTime   = 10;
 }
 
 message SwapInfos {
@@ -316,7 +324,7 @@ message StateBlockSigned {
 }
 
 message EthTxSentRequest{
-    string  ethTxHash         = 1;
+    string  chainTxHash         = 1;
     string  qlcTxHash         = 2;
 }
 
@@ -346,9 +354,9 @@ service QGasSwapAPI {
         };
     }
 
-    rpc PledgeEthTxSent(EthTxSentRequest) returns (Boolean){
+    rpc PledgeChainTxSent(EthTxSentRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/qgasswap/pledgeEthTxSent"
+          post: "/qgasswap/pledgeChainTxSent"
           body: "*"
         };
     }
@@ -360,16 +368,16 @@ service QGasSwapAPI {
         };
     }
 
-    rpc GetOwnerSign(Hash) returns (String){
+    rpc GetChainOwnerSign(Hash) returns (String){
         option (google.api.http) = {
-          post: "/qgasswap/getOwnerSign"
+          post: "/qgasswap/getChainOwnerSign"
           body: "*"
         };
     }
 
-    rpc WithdrawEthTxSent(QGasWithdrawRequest) returns (Boolean){
+    rpc WithdrawChainTxSent(QGasWithdrawRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/qgasswap/withdrawEthTxSent"
+          post: "/qgasswap/withdrawChainTxSent"
           body: "*"
         };
     }

@@ -9,6 +9,7 @@ import (
 type SwapInfo struct {
 	gorm.Model
 	State          SwapState `msg:"state" json:"state"`
+	Chain          ChainType `msg:"chain" json:"chain"`
 	Amount         int64     `msg:"amount" json:"amount"`
 	EthTxHash      string    `msg:"ethTxHash" json:"ethTxHash"`
 	NeoTxHash      string    `msg:"neoTxHash" json:"neoTxHash"`

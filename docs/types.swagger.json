@@ -135,9 +135,9 @@
         ]
       }
     },
-    "/deposit/getEthOwnerSign": {
+    "/deposit/getChainOwnerSign": {
       "post": {
-        "operationId": "DepositAPI_GetEthOwnerSign",
+        "operationId": "DepositAPI_GetChainOwnerSign",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -190,7 +190,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoNeoTxConfirmedResponse"
             }
           }
         ],
@@ -651,9 +651,9 @@
         ]
       }
     },
-    "/qgasswap/getOwnerSign": {
+    "/qgasswap/getChainOwnerSign": {
       "post": {
-        "operationId": "QGasSwapAPI_GetOwnerSign",
+        "operationId": "QGasSwapAPI_GetChainOwnerSign",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -747,9 +747,9 @@
         ]
       }
     },
-    "/qgasswap/pledgeEthTxSent": {
+    "/qgasswap/pledgeChainTxSent": {
       "post": {
-        "operationId": "QGasSwapAPI_PledgeEthTxSent",
+        "operationId": "QGasSwapAPI_PledgeChainTxSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1011,9 +1011,9 @@
         ]
       }
     },
-    "/qgasswap/withdrawEthTxSent": {
+    "/qgasswap/withdrawChainTxSent": {
       "post": {
-        "operationId": "QGasSwapAPI_WithdrawEthTxSent",
+        "operationId": "QGasSwapAPI_WithdrawChainTxSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1211,7 +1211,7 @@
     "protoEthTxSentRequest": {
       "type": "object",
       "properties": {
-        "ethTxHash": {
+        "chainTxHash": {
           "type": "string"
         },
         "qlcTxHash": {
@@ -1236,6 +1236,17 @@
             "type": "string",
             "format": "int64"
           }
+        }
+      }
+    },
+    "protoNeoTxConfirmedResponse": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "chainType": {
+          "type": "string"
         }
       }
     },
@@ -1389,6 +1400,9 @@
         },
         "nep5SenderAddr": {
           "type": "string"
+        },
+        "chainType": {
+          "type": "string"
         }
       }
     },
@@ -1452,16 +1466,19 @@
           "type": "string",
           "format": "int64"
         },
-        "ethTxHash": {
+        "neoUserAddr": {
           "type": "string"
         },
         "neoTxHash": {
           "type": "string"
         },
-        "ethUserAddr": {
+        "chain": {
           "type": "string"
         },
-        "neoUserAddr": {
+        "chainUserAddr": {
+          "type": "string"
+        },
+        "chainTxHash": {
           "type": "string"
         },
         "startTime": {

@@ -84,6 +84,11 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 		return nil, errors.New("invalid params")
 	}
 
+	chainType := types.StringToChainType(request.GetChainType())
+	if chainType != types.ETH && chainType != types.BSC {
+		return nil, errors.New("invalid chain")
+	}
+
 	if _, err := db.GetSwapInfoByTxHash(d.store, neoTxHash, types.NEO); err == nil {
 		d.logger.Errorf("deposit repeatedly, neo tx[%s]", neoTxHash)
 		return nil, fmt.Errorf("deposit repeatedly, tx[%s]", neoTxHash)
@@ -101,7 +106,7 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 	d.logger.Infof("send neo transaction successfully. neo[%s]", tx)
 
 	go func() {
-		if err := d.neoTransactionConfirmed(neoTxHash); err != nil {
+		if err := d.neoTransactionConfirmed(neoTxHash, chainType); err != nil {
 			d.logger.Errorf("%s, neo[%s]", err, neoTxHash)
 			return
 		}
@@ -112,7 +117,7 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 	}, nil
 }
 
-func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string) error {
+func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string, chainType types.ChainType) error {
 	_, err := d.neo.WaitTxVerifyAndConfirmed(neoTxHash, d.cfg.NEOCfg.ConfirmedHeight)
 	if err != nil {
 		return err
@@ -136,18 +141,23 @@ func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string) error {
 		NeoTxHash:   neoTxHash,
 		EthUserAddr: neoInfo.UserEthAddress,
 		NeoUserAddr: neoInfo.FromAddress,
+		Chain:       chainType,
 		StartTime:   time.Now().Unix(),
 	}
 	d.logger.Infof("add state to %s, neo[%s]", types.SwapStateToString(types.DepositPending), neoTxHash)
 	return db.InsertSwapInfo(d.store, swapInfo)
 }
 
-func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.Hash) (*pb.Boolean, error) {
+func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.NeoTxConfirmedResponse) (*pb.Boolean, error) {
 	d.logger.Infof("call deposit NeoTransactionConfirmed: %s", request.String())
 	neoTxHash := request.GetHash()
 	if neoTxHash == "" {
 		d.logger.Errorf("transaction invalid params")
 		return nil, errors.New("invalid params")
+	}
+	chainType := types.StringToChainType(request.GetChainType())
+	if chainType != types.ETH && chainType != types.BSC {
+		return nil, errors.New("invalid chain")
 	}
 
 	if _, err := db.GetSwapInfoByTxHash(d.store, neoTxHash, types.NEO); err == nil {
@@ -156,7 +166,7 @@ func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.Ha
 	}
 
 	go func() {
-		if err := d.neoTransactionConfirmed(neoTxHash); err != nil {
+		if err := d.neoTransactionConfirmed(neoTxHash, chainType); err != nil {
 			d.logger.Errorf("%s, neo[%s]", err, neoTxHash)
 			return
 		}
@@ -167,7 +177,7 @@ func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.Ha
 	}, nil
 }
 
-func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (*proto.String, error) {
+func (d *DepositAPI) GetChainOwnerSign(ctx context.Context, request *proto.Hash) (*proto.String, error) {
 	d.logger.Infof("call deposit GetEthOwnerSign: %s", request.String())
 	neoTxHash := request.GetHash()
 	if neoTxHash == "" {
@@ -185,7 +195,7 @@ func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (
 		return nil, fmt.Errorf("repeat operation, [%s]", neoTxHash)
 	}
 
-	sign, err := d.signData(big.NewInt(swapInfo.Amount), swapInfo.EthUserAddr, hubUtil.RemoveHexPrefix(neoTxHash))
+	sign, err := d.signData(big.NewInt(swapInfo.Amount), swapInfo.EthUserAddr, hubUtil.RemoveHexPrefix(neoTxHash), swapInfo.Chain)
 	if err != nil {
 		d.logger.Error(err)
 		return nil, err
@@ -194,17 +204,26 @@ func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (
 	return toString(sign), nil
 }
 
-func (d *DepositAPI) signData(amount *big.Int, receiveAddr string, neoTxHash string) (string, error) {
+func (d *DepositAPI) signData(amount *big.Int, receiveAddr string, neoTxHash string, chainType types.ChainType) (string, error) {
 	packedHash, err := packed(amount, receiveAddr, neoTxHash)
 	if err != nil {
 		return "", fmt.Errorf("packed: %s", err)
 	}
-
-	signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.EthNep5Owner, packedHash)
-	if err != nil {
-		return "", fmt.Errorf("sign: %s", err)
+	var sig []byte
+	if chainType == types.ETH {
+		signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.EthNep5Owner, packedHash)
+		if err != nil {
+			return "", fmt.Errorf("sign: %s", err)
+		}
+		sig = signature.Sign
+	} else {
+		signature, err := d.signer.Sign(proto.SignType_BSC, d.cfg.BscCfg.BscNep5Owner, packedHash)
+		if err != nil {
+			return "", fmt.Errorf("sign: %s", err)
+		}
+		sig = signature.Sign
 	}
-	sig := signature.Sign
+
 	if len(sig) == 0 {
 		return "", errors.New("invalid signature")
 	}
