@@ -13,8 +13,8 @@ import (
 
 func addQLCCmd(shell *ishell.Shell) {
 	qlcCmd := &ishell.Cmd{
-		Name: "qlc",
-		Help: "qlc",
+		Name: "qgas",
+		Help: "qgas",
 		Func: func(c *ishell.Context) {
 			c.Println(c.Cmd.HelpText())
 		},
@@ -30,8 +30,8 @@ func addQLCCmd(shell *ishell.Shell) {
 
 func qQlc2EthCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "qlc2eth",
-		Help: "qlc -> eth",
+		Name: "qgas2eth",
+		Help: "qgas -> eth",
 		Func: func(c *ishell.Context) {
 			nQlc2Eth()
 		},
@@ -41,8 +41,8 @@ func qQlc2EthCmd(parentCmd *ishell.Cmd) {
 
 func qQlc2EthPendingCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "qlc2ethPending",
-		Help: "qlc -> eth",
+		Name: "qgas2ethPending",
+		Help: "qgas -> eth",
 		Func: func(c *ishell.Context) {
 			nQlc2EthPending()
 		},
@@ -51,7 +51,7 @@ func qQlc2EthPendingCmd(parentCmd *ishell.Cmd) {
 }
 
 func nQlc2Eth() {
-	amount := 9000000000000000
+	amount := 900000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
@@ -88,7 +88,7 @@ func nQlc2Eth() {
 	signParas := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, sendHash)
-	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getOwnerSign", hubUrl))
+	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getChainOwnerSign", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}
@@ -104,10 +104,10 @@ func nQlc2Eth() {
 
 	// process send block
 	sentParas := fmt.Sprintf(`{
-		"ethTxHash":"%s",
+		"chainTxHash":"%s",
 		"qlcTxHash":"%s"
 	}`, ethTx, sendHash)
-	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeEthTxSent", hubUrl))
+	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeChainTxSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
@@ -162,10 +162,10 @@ func nQlc2EthPending() {
 
 	// process send block
 	sentParas := fmt.Sprintf(`{
-		"ethTxHash":"%s",
+		"chainTxHash":"%s",
 		"qlcTxHash":"%s"
 	}`, ethTx, sendHash)
-	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeEthTxSent", hubUrl))
+	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeChainTxSent", hubUrl))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -194,7 +194,7 @@ func signQLCTx(hash, root string) (string, string) {
 }
 
 func nQlc2Bsc() {
-	amount := 9000000000000000
+	amount := 900000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{
@@ -231,7 +231,7 @@ func nQlc2Bsc() {
 	signParas := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, sendHash)
-	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getOwnerSign", hubUrl))
+	r, err := post(signParas, fmt.Sprintf("%s/qgasswap/getChainOwnerSign", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}
@@ -247,10 +247,10 @@ func nQlc2Bsc() {
 
 	// process send block
 	sentParas := fmt.Sprintf(`{
-		"ethTxHash":"%s",
+		"chainTxHash":"%s",
 		"qlcTxHash":"%s"
 	}`, ethTx, sendHash)
-	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeEthTxSent", hubUrl))
+	sResult, err := post(sentParas, fmt.Sprintf("%s/qgasswap/pledgeChainTxSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, result)
 	}
@@ -264,8 +264,8 @@ func nQlc2Bsc() {
 
 func qQlc2BscCmd(parentCmd *ishell.Cmd) {
 	c := &ishell.Cmd{
-		Name: "qlc2bsc",
-		Help: "qlc -> bsc",
+		Name: "qgas2bsc",
+		Help: "qgas -> bsc",
 		Func: func(c *ishell.Context) {
 			nQlc2Bsc()
 		},

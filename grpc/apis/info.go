@@ -47,13 +47,13 @@ func NewInfoAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, n
 
 func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingResponse, error) {
 	return &pb.PingResponse{
-		EthContract: i.cfg.EthCfg.Nep5EthContract,
-		EthOwner:    i.cfg.EthCfg.Nep5EthOwner,
+		EthContract: i.cfg.EthCfg.EthNep5Contract,
+		EthOwner:    i.cfg.EthCfg.EthNep5Owner,
 		EthUrl:      i.nep5Eth.ClientEndpoint(),
 		NeoContract: i.cfg.NEOCfg.Contract,
-		NeoOwner:    i.cfg.NEOCfg.OwnerAddress,
+		NeoOwner:    i.cfg.NEOCfg.Owner,
 		NeoUrl:      i.neo.ClientEndpoint(),
-		QlcOwner:    i.cfg.QlcCfg.OwnerAddress,
+		QlcOwner:    i.cfg.QlcCfg.QlcOwner,
 		TotalSupply: i.nep5Eth.TotalSupply(),
 	}, nil
 }
@@ -61,18 +61,19 @@ func (i *InfoAPI) Ping(ctx context.Context, empty *empty.Empty) (*pb.PingRespons
 func (i *InfoAPI) Config(ctx context.Context, empty *empty.Empty) (*pb.ConfigResponse, error) {
 	return &pb.ConfigResponse{
 		NeoContract:     i.cfg.NEOCfg.Contract,
-		NeoOwner:        i.cfg.NEOCfg.OwnerAddress,
+		NeoOwner:        i.cfg.NEOCfg.Owner,
 		NeoUrl:          i.neo.ClientEndpoint(),
-		Nep5EthContract: i.cfg.EthCfg.Nep5EthContract,
-		Nep5EthOwner:    i.cfg.EthCfg.Nep5EthOwner,
-		Nep5EthUrl:      i.nep5Eth.ClientEndpoint(),
-		QgasEthContract: i.cfg.EthCfg.QGasSwapEthContract,
-		QgasEthOwner:    i.cfg.EthCfg.QGasSwapEthOwner,
-		QgasEthUrl:      i.qgasEth.ClientEndpoint(),
-		QgasBscContract: i.cfg.BscCfg.Contract,
-		QgasBscOwner:    i.cfg.BscCfg.OwnerAddress,
-		QgasBscUrl:      i.bsc.ClientEndpoint(),
-		QlcOwner:        i.cfg.QlcCfg.OwnerAddress,
+		EthNep5Contract: i.cfg.EthCfg.EthNep5Contract,
+		EthNep5Owner:    i.cfg.EthCfg.EthNep5Owner,
+		EthUrl:          i.nep5Eth.ClientEndpoint(),
+		EthQGasContract: i.cfg.EthCfg.EthQGasContract,
+		EthQGasOwner:    i.cfg.EthCfg.EthQGasOwner,
+		BscNep5Contract: i.cfg.BscCfg.BscNep5Contract,
+		BscNep5Owner:    i.cfg.BscCfg.BscNep5Owner,
+		BscQGasContract: i.cfg.BscCfg.BscQGasContract,
+		BscQGasOwner:    i.cfg.BscCfg.BscQGasOwner,
+		BscUrl:          i.bsc.ClientEndpoint(),
+		QlcOwner:        i.cfg.QlcCfg.QlcOwner,
 		QlcUrl:          i.cfg.QlcCfg.EndPoint,
 		TotalSupply:     i.nep5Eth.TotalSupply(),
 	}, nil
@@ -271,10 +272,11 @@ func toSwapInfo(info *types.SwapInfo) *pb.SwapInfo {
 		State:          int32(info.State),
 		StateStr:       types.SwapStateToString(info.State),
 		Amount:         info.Amount,
-		EthTxHash:      info.EthTxHash,
-		NeoTxHash:      info.NeoTxHash,
-		EthUserAddr:    info.EthUserAddr,
 		NeoUserAddr:    info.NeoUserAddr,
+		NeoTxHash:      info.NeoTxHash,
+		Chain:          types.ChainTypeToString(info.Chain),
+		ChainUserAddr:  info.EthUserAddr,
+		ChainTxHash:    info.EthTxHash,
 		StartTime:      time.Unix(info.StartTime, 0).Format(time.RFC3339),
 		LastModifyTime: time.Unix(info.LastModifyTime, 0).Format(time.RFC3339),
 	}
@@ -302,7 +304,7 @@ func (i *InfoAPI) CheckNeoTransaction(ctx context.Context, Hash *pb.Hash) (*pb.B
 
 func (i *InfoAPI) CheckEthTransaction(ctx context.Context, Hash *pb.Hash) (*pb.Boolean, error) {
 	hash := common.HexToHash(Hash.GetHash())
-	confirmed, err := i.nep5Eth.HasBlockConfirmed(hash, i.cfg.EthCfg.ConfirmedHeight+1)
+	confirmed, err := i.nep5Eth.HasBlockConfirmed(hash, i.cfg.EthCfg.EthConfirmedHeight+1)
 	if err != nil || !confirmed {
 		return nil, fmt.Errorf("block not confirmed, %s", err)
 	}

@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
@@ -34,16 +33,17 @@ func hEth2NeoPendingCmd(parentCmd *ishell.Cmd) {
 
 func hEth2Neo() {
 	amount := 110000000
-	ethTx, err := ethTransaction.Burn(ethUserPrivate, neoUserAddr, big.NewInt(int64(amount)))
+	ethTx, err := ethTransactionNep5.Burn(ethUserPrivate, neoUserAddr, big.NewInt(int64(amount)))
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("withdraw send eth tx done: ", ethTx)
 
 	sentParas := fmt.Sprintf(`{
-		"hash":"%s"
-	}`, ethTx)
-	r, err := post(sentParas, fmt.Sprintf("%s/withdraw/ethTransactionSent", hubUrl))
+		"hash":"%s",
+		"chainType":"%s"
+	}`, ethTx, "eth")
+	r, err := post(sentParas, fmt.Sprintf("%s/withdraw/chainTransactionSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}

@@ -30,6 +30,7 @@ import (
 type DepositAPI struct {
 	neo    *neo.Transaction
 	eth    *eth.Transaction
+	bsc    *eth.Transaction
 	store  *gorm.DB
 	cfg    *config.Config
 	ctx    context.Context
@@ -37,11 +38,12 @@ type DepositAPI struct {
 	logger *zap.SugaredLogger
 }
 
-func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e *eth.Transaction, signer *signer.SignerClient, s *gorm.DB) *DepositAPI {
+func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction, e *eth.Transaction, bsc *eth.Transaction, signer *signer.SignerClient, s *gorm.DB) *DepositAPI {
 	api := &DepositAPI{
 		cfg:    cfg,
 		neo:    neo,
 		eth:    e,
+		bsc:    bsc,
 		ctx:    ctx,
 		store:  s,
 		signer: signer,
@@ -53,7 +55,7 @@ func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction
 
 func (d *DepositAPI) PackNeoTransaction(ctx context.Context, request *pb.PackNeoTxRequest) (*pb.PackNeoTxResponse, error) {
 	d.logger.Infof("call deposit PackNeoTransaction: %s", request.String())
-	receiverAddr := request.GetErc20ReceiverAddr()
+	receiverAddr := request.GetTokenMintedToAddress()
 	senderAddr := request.GetNep5SenderAddr()
 	amount := request.GetAmount()
 	if receiverAddr == "" || senderAddr == "" || amount <= 0 {
@@ -84,6 +86,11 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 		return nil, errors.New("invalid params")
 	}
 
+	chainType := types.StringToChainType(request.GetChainType())
+	if chainType != types.ETH && chainType != types.BSC {
+		return nil, errors.New("invalid chain")
+	}
+
 	if _, err := db.GetSwapInfoByTxHash(d.store, neoTxHash, types.NEO); err == nil {
 		d.logger.Errorf("deposit repeatedly, neo tx[%s]", neoTxHash)
 		return nil, fmt.Errorf("deposit repeatedly, tx[%s]", neoTxHash)
@@ -101,7 +108,7 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 	d.logger.Infof("send neo transaction successfully. neo[%s]", tx)
 
 	go func() {
-		if err := d.neoTransactionConfirmed(neoTxHash); err != nil {
+		if err := d.neoTransactionConfirmed(neoTxHash, chainType); err != nil {
 			d.logger.Errorf("%s, neo[%s]", err, neoTxHash)
 			return
 		}
@@ -112,7 +119,7 @@ func (d *DepositAPI) SendNeoTransaction(ctx context.Context, request *pb.SendNeo
 	}, nil
 }
 
-func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string) error {
+func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string, chainType types.ChainType) error {
 	_, err := d.neo.WaitTxVerifyAndConfirmed(neoTxHash, d.cfg.NEOCfg.ConfirmedHeight)
 	if err != nil {
 		return err
@@ -136,18 +143,23 @@ func (d *DepositAPI) neoTransactionConfirmed(neoTxHash string) error {
 		NeoTxHash:   neoTxHash,
 		EthUserAddr: neoInfo.UserEthAddress,
 		NeoUserAddr: neoInfo.FromAddress,
+		Chain:       chainType,
 		StartTime:   time.Now().Unix(),
 	}
 	d.logger.Infof("add state to %s, neo[%s]", types.SwapStateToString(types.DepositPending), neoTxHash)
 	return db.InsertSwapInfo(d.store, swapInfo)
 }
 
-func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.Hash) (*pb.Boolean, error) {
+func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.NeoTxConfirmedResponse) (*pb.Boolean, error) {
 	d.logger.Infof("call deposit NeoTransactionConfirmed: %s", request.String())
 	neoTxHash := request.GetHash()
 	if neoTxHash == "" {
 		d.logger.Errorf("transaction invalid params")
 		return nil, errors.New("invalid params")
+	}
+	chainType := types.StringToChainType(request.GetChainType())
+	if chainType != types.ETH && chainType != types.BSC {
+		return nil, errors.New("invalid chain")
 	}
 
 	if _, err := db.GetSwapInfoByTxHash(d.store, neoTxHash, types.NEO); err == nil {
@@ -156,7 +168,7 @@ func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.Ha
 	}
 
 	go func() {
-		if err := d.neoTransactionConfirmed(neoTxHash); err != nil {
+		if err := d.neoTransactionConfirmed(neoTxHash, chainType); err != nil {
 			d.logger.Errorf("%s, neo[%s]", err, neoTxHash)
 			return
 		}
@@ -167,7 +179,7 @@ func (d *DepositAPI) NeoTransactionConfirmed(ctx context.Context, request *pb.Ha
 	}, nil
 }
 
-func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (*proto.String, error) {
+func (d *DepositAPI) GetChainOwnerSign(ctx context.Context, request *proto.Hash) (*proto.String, error) {
 	d.logger.Infof("call deposit GetEthOwnerSign: %s", request.String())
 	neoTxHash := request.GetHash()
 	if neoTxHash == "" {
@@ -185,7 +197,7 @@ func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (
 		return nil, fmt.Errorf("repeat operation, [%s]", neoTxHash)
 	}
 
-	sign, err := d.signData(big.NewInt(swapInfo.Amount), swapInfo.EthUserAddr, hubUtil.RemoveHexPrefix(neoTxHash))
+	sign, err := d.signData(big.NewInt(swapInfo.Amount), swapInfo.EthUserAddr, hubUtil.RemoveHexPrefix(neoTxHash), swapInfo.Chain)
 	if err != nil {
 		d.logger.Error(err)
 		return nil, err
@@ -194,17 +206,26 @@ func (d *DepositAPI) GetEthOwnerSign(ctx context.Context, request *proto.Hash) (
 	return toString(sign), nil
 }
 
-func (d *DepositAPI) signData(amount *big.Int, receiveAddr string, neoTxHash string) (string, error) {
+func (d *DepositAPI) signData(amount *big.Int, receiveAddr string, neoTxHash string, chainType types.ChainType) (string, error) {
 	packedHash, err := packed(amount, receiveAddr, neoTxHash)
 	if err != nil {
 		return "", fmt.Errorf("packed: %s", err)
 	}
-
-	signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.Nep5EthOwner, packedHash)
-	if err != nil {
-		return "", fmt.Errorf("sign: %s", err)
+	var sig []byte
+	if chainType == types.ETH {
+		signature, err := d.signer.Sign(proto.SignType_ETH, d.cfg.EthCfg.EthNep5Owner, packedHash)
+		if err != nil {
+			return "", fmt.Errorf("sign: %s", err)
+		}
+		sig = signature.Sign
+	} else {
+		signature, err := d.signer.Sign(proto.SignType_BSC, d.cfg.BscCfg.BscNep5Owner, packedHash)
+		if err != nil {
+			return "", fmt.Errorf("sign: %s", err)
+		}
+		sig = signature.Sign
 	}
-	sig := signature.Sign
+
 	if len(sig) == 0 {
 		return "", errors.New("invalid signature")
 	}
@@ -246,18 +267,30 @@ func toString(b string) *pb.String {
 	return &pb.String{Value: b}
 }
 
-func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*pb.Boolean, error) {
+func (d *DepositAPI) ChainTransactionConfirmed(ctx context.Context, h *pb.ChainTxRequest) (*pb.Boolean, error) {
 	d.logger.Infof("call deposit EthTransactionConfirmed: %s", h.String())
 	hash := h.GetHash()
 	if hash == "" {
 		return nil, errors.New("invalid hash")
 	}
-	confirmed, err := d.eth.HasBlockConfirmed(common.HexToHash(hash), d.cfg.EthCfg.ConfirmedHeight)
+	chainType := types.StringToChainType(h.GetChainType())
+	if chainType != types.ETH && chainType != types.BSC {
+		return nil, errors.New("invalid chain")
+	}
+
+	var chain *eth.Transaction
+	if chainType == types.ETH {
+		chain = d.eth
+	} else {
+		chain = d.bsc
+	}
+
+	confirmed, err := chain.HasBlockConfirmed(common.HexToHash(hash), d.cfg.EthCfg.EthConfirmedHeight)
 	if err != nil || !confirmed {
 		d.logger.Errorf("block confirmed: %s, %t", err, confirmed)
 		return toBoolean(false), fmt.Errorf("block not confirmed")
 	}
-	amount, address, neoTx, err := d.eth.SyncMintLog(hash)
+	amount, address, neoTx, err := chain.SyncMintLog(hash)
 	if err != nil {
 		d.logger.Errorf("mint log: %s", err)
 		return toBoolean(false), err
@@ -291,7 +324,7 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 	}
 	if swapInfo.State == types.DepositPending {
 		if err := toConfirmDepositEthTx(common.HexToHash(hash), 0, neoTx, address.String(), amount.Int64(),
-			d.eth, d.cfg.EthCfg.ConfirmedHeight, d.store, d.logger, false); err != nil {
+			chain, d.cfg.EthCfg.EthConfirmedHeight, d.store, d.logger, false); err != nil {
 			d.logger.Errorf("deposit :%s, %s", err, hash)
 			return toBoolean(false), err
 		}
@@ -300,18 +333,25 @@ func (d *DepositAPI) EthTransactionConfirmed(ctx context.Context, h *pb.Hash) (*
 	return toBoolean(false), errors.New("invalid state")
 }
 
-func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.EthTransactionSentRequest) (*pb.Boolean, error) {
+func (d *DepositAPI) ChainTransactionSent(ctx context.Context, h *pb.ChainTransactionSentRequest) (*pb.Boolean, error) {
 	d.logger.Infof("call deposit EthTransactionSent: %s", h.String())
-	ethHash := h.GetEthTxHash()
+	ethHash := h.GetChainTxHash()
 	neoHash := h.GetNeoTxHash()
 	if ethHash == "" || neoHash == "" {
 		return nil, fmt.Errorf("invalid hash, %s", h)
+	}
+
+	swapInfo, err := db.GetSwapInfoByTxHash(d.store, neoHash, types.NEO)
+	if err != nil {
+		d.logger.Error("swap info not found, neo[%s]", err, neoHash)
+		return nil, err
 	}
 	if _, err := db.GetSwapPendingByTxEthHash(d.store, ethHash); err != nil {
 		if err := db.InsertSwapPending(d.store, &types.SwapPending{
 			Typ:       types.Deposit,
 			EthTxHash: ethHash,
 			NeoTxHash: neoHash,
+			Chain:     swapInfo.Chain,
 		}); err != nil {
 			d.logger.Error(err)
 			return toBoolean(false), err
@@ -319,14 +359,22 @@ func (d *DepositAPI) EthTransactionSent(ctx context.Context, h *pb.EthTransactio
 	}
 
 	go func() {
-		if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethHash), 0, d.cfg.EthCfg.ConfirmedHeight); err != nil {
-			d.logger.Errorf("tx confirmed: %s", err)
-			return
+		if swapInfo.Chain == types.ETH {
+			if err := d.eth.WaitTxVerifyAndConfirmed(common.HexToHash(ethHash), 0, d.cfg.EthCfg.EthConfirmedHeight); err != nil {
+				d.logger.Errorf("tx confirmed: %s", err)
+				return
+			}
+		} else {
+			if err := d.bsc.WaitTxVerifyAndConfirmed(common.HexToHash(ethHash), 0, d.cfg.BscCfg.BscConfirmedHeight); err != nil {
+				d.logger.Errorf("tx confirmed: %s", err)
+				return
+			}
 		}
-		h := pb.Hash{
-			Hash: ethHash,
+		h := pb.ChainTxRequest{
+			Hash:      ethHash,
+			ChainType: types.ChainTypeToString(swapInfo.Chain),
 		}
-		if _, err := d.EthTransactionConfirmed(ctx, &h); err != nil {
+		if _, err := d.ChainTransactionConfirmed(ctx, &h); err != nil {
 			d.logger.Errorf("tx confirmed: %s", err)
 			return
 		}
@@ -358,9 +406,9 @@ func (d *DepositAPI) correctSwapPending() error {
 							_ = db.DeleteSwapPending(d.store, info)
 						} else if swapInfo.State == types.DepositPending {
 							d.logger.Infof("continue deposit, eth %s, neo[%s]", info.EthTxHash, swapInfo.NeoTxHash)
-							if _, err := d.EthTransactionSent(context.Background(), &pb.EthTransactionSentRequest{
-								EthTxHash: info.EthTxHash,
-								NeoTxHash: info.NeoTxHash,
+							if _, err := d.ChainTransactionSent(context.Background(), &pb.ChainTransactionSentRequest{
+								ChainTxHash: info.EthTxHash,
+								NeoTxHash:   info.NeoTxHash,
 							}); err != nil {
 								d.logger.Error(err)
 							}
@@ -382,7 +430,7 @@ func (d *DepositAPI) Refund(ctx context.Context, h *pb.Hash) (*pb.Boolean, error
 		}
 		if swapInfo, err := db.GetSwapInfoByTxHash(d.store, hash, types.NEO); err == nil {
 			if swapInfo.State < types.DepositDone {
-				neoTx, err := d.neo.CreateUnLockTransaction(hash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), d.cfg.NEOCfg.OwnerAddress)
+				neoTx, err := d.neo.CreateUnLockTransaction(hash, swapInfo.NeoUserAddr, swapInfo.EthUserAddr, int(swapInfo.Amount), d.cfg.NEOCfg.Owner)
 				if err != nil {
 					d.logger.Errorf("create neo tx: %s, neo[%s]", err, hash)
 					return nil, fmt.Errorf("create tx: %s", err)
@@ -415,7 +463,7 @@ func (d *DepositAPI) Refund(ctx context.Context, h *pb.Hash) (*pb.Boolean, error
 	return toBoolean(true), nil
 }
 
-func (d *DepositAPI) EthTransactionID(ctx context.Context, hash *pb.Hash) (*pb.Hash, error) {
+func (d *DepositAPI) ChainTransactionID(ctx context.Context, hash *pb.Hash) (*pb.Hash, error) {
 	neoHash := hash.GetHash()
 	if neoHash == "" {
 		return nil, fmt.Errorf("invalid hash, %s", neoHash)

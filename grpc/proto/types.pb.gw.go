@@ -101,7 +101,7 @@ func local_request_DepositAPI_SendNeoTransaction_0(ctx context.Context, marshale
 }
 
 func request_DepositAPI_NeoTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+	var protoReq NeoTxConfirmedResponse
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -118,7 +118,7 @@ func request_DepositAPI_NeoTransactionConfirmed_0(ctx context.Context, marshaler
 }
 
 func local_request_DepositAPI_NeoTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+	var protoReq NeoTxConfirmedResponse
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -134,7 +134,7 @@ func local_request_DepositAPI_NeoTransactionConfirmed_0(ctx context.Context, mar
 
 }
 
-func request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_DepositAPI_GetChainOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
@@ -146,12 +146,12 @@ func request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.GetEthOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetChainOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_DepositAPI_GetChainOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
@@ -163,13 +163,13 @@ func local_request_DepositAPI_GetEthOwnerSign_0(ctx context.Context, marshaler r
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.GetEthOwnerSign(ctx, &protoReq)
+	msg, err := server.GetChainOwnerSign(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_DepositAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func request_DepositAPI_ChainTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTxRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -180,13 +180,13 @@ func request_DepositAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.EthTransactionConfirmed(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ChainTransactionConfirmed(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_DepositAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func local_request_DepositAPI_ChainTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTxRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -197,13 +197,13 @@ func local_request_DepositAPI_EthTransactionConfirmed_0(ctx context.Context, mar
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.EthTransactionConfirmed(ctx, &protoReq)
+	msg, err := server.ChainTransactionConfirmed(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_DepositAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq EthTransactionSentRequest
+func request_DepositAPI_ChainTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTransactionSentRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -214,13 +214,13 @@ func request_DepositAPI_EthTransactionSent_0(ctx context.Context, marshaler runt
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.EthTransactionSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ChainTransactionSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_DepositAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq EthTransactionSentRequest
+func local_request_DepositAPI_ChainTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTransactionSentRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -231,43 +231,43 @@ func local_request_DepositAPI_EthTransactionSent_0(ctx context.Context, marshale
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.EthTransactionSent(ctx, &protoReq)
+	msg, err := server.ChainTransactionSent(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
 var (
-	filter_DepositAPI_EthTransactionID_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+	filter_DepositAPI_ChainTransactionID_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_DepositAPI_EthTransactionID_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_DepositAPI_ChainTransactionID_0(ctx context.Context, marshaler runtime.Marshaler, client DepositAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DepositAPI_EthTransactionID_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DepositAPI_ChainTransactionID_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.EthTransactionID(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ChainTransactionID(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_DepositAPI_EthTransactionID_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_DepositAPI_ChainTransactionID_0(ctx context.Context, marshaler runtime.Marshaler, server DepositAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DepositAPI_EthTransactionID_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DepositAPI_ChainTransactionID_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.EthTransactionID(ctx, &protoReq)
+	msg, err := server.ChainTransactionID(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -306,8 +306,8 @@ func local_request_DepositAPI_Refund_0(ctx context.Context, marshaler runtime.Ma
 
 }
 
-func request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func request_WithdrawAPI_ChainTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTxRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -318,13 +318,13 @@ func request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, marshale
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.EthTransactionConfirmed(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ChainTransactionSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func local_request_WithdrawAPI_ChainTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTxRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -335,13 +335,13 @@ func local_request_WithdrawAPI_EthTransactionConfirmed_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.EthTransactionConfirmed(ctx, &protoReq)
+	msg, err := server.ChainTransactionSent(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_WithdrawAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func request_WithdrawAPI_ChainTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTxRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -352,13 +352,13 @@ func request_WithdrawAPI_EthTransactionSent_0(ctx context.Context, marshaler run
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.EthTransactionSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ChainTransactionConfirmed(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_WithdrawAPI_EthTransactionSent_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq Hash
+func local_request_WithdrawAPI_ChainTransactionConfirmed_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ChainTxRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -369,7 +369,7 @@ func local_request_WithdrawAPI_EthTransactionSent_0(ctx context.Context, marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.EthTransactionSent(ctx, &protoReq)
+	msg, err := server.ChainTransactionConfirmed(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -786,7 +786,7 @@ func local_request_QGasSwapAPI_GetPledgeSendBlock_0(ctx context.Context, marshal
 
 }
 
-func request_QGasSwapAPI_PledgeEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_QGasSwapAPI_PledgeChainTxSent_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq EthTxSentRequest
 	var metadata runtime.ServerMetadata
 
@@ -798,12 +798,12 @@ func request_QGasSwapAPI_PledgeEthTxSent_0(ctx context.Context, marshaler runtim
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.PledgeEthTxSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.PledgeChainTxSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_QGasSwapAPI_PledgeEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_QGasSwapAPI_PledgeChainTxSent_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq EthTxSentRequest
 	var metadata runtime.ServerMetadata
 
@@ -815,7 +815,7 @@ func local_request_QGasSwapAPI_PledgeEthTxSent_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.PledgeEthTxSent(ctx, &protoReq)
+	msg, err := server.PledgeChainTxSent(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -854,7 +854,7 @@ func local_request_QGasSwapAPI_GetWithdrawRewardBlock_0(ctx context.Context, mar
 
 }
 
-func request_QGasSwapAPI_GetOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_QGasSwapAPI_GetChainOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
@@ -866,12 +866,12 @@ func request_QGasSwapAPI_GetOwnerSign_0(ctx context.Context, marshaler runtime.M
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.GetOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetChainOwnerSign(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_QGasSwapAPI_GetOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_QGasSwapAPI_GetChainOwnerSign_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq Hash
 	var metadata runtime.ServerMetadata
 
@@ -883,12 +883,12 @@ func local_request_QGasSwapAPI_GetOwnerSign_0(ctx context.Context, marshaler run
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.GetOwnerSign(ctx, &protoReq)
+	msg, err := server.GetChainOwnerSign(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_QGasSwapAPI_WithdrawChainTxSent_0(ctx context.Context, marshaler runtime.Marshaler, client QGasSwapAPIClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QGasWithdrawRequest
 	var metadata runtime.ServerMetadata
 
@@ -900,12 +900,12 @@ func request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runt
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.WithdrawEthTxSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.WithdrawChainTxSent(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_QGasSwapAPI_WithdrawChainTxSent_0(ctx context.Context, marshaler runtime.Marshaler, server QGasSwapAPIServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq QGasWithdrawRequest
 	var metadata runtime.ServerMetadata
 
@@ -917,7 +917,7 @@ func local_request_QGasSwapAPI_WithdrawEthTxSent_0(ctx context.Context, marshale
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.WithdrawEthTxSent(ctx, &protoReq)
+	msg, err := server.WithdrawChainTxSent(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -1201,7 +1201,7 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_GetChainOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1210,18 +1210,18 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DepositAPI_GetEthOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DepositAPI_GetChainOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_GetEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_GetChainOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_EthTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_ChainTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1230,18 +1230,18 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DepositAPI_EthTransactionConfirmed_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DepositAPI_ChainTransactionConfirmed_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_EthTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_ChainTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_ChainTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1250,18 +1250,18 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DepositAPI_EthTransactionSent_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DepositAPI_ChainTransactionSent_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_ChainTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_DepositAPI_EthTransactionID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DepositAPI_ChainTransactionID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1270,14 +1270,14 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DepositAPI_EthTransactionID_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DepositAPI_ChainTransactionID_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_EthTransactionID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_ChainTransactionID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1309,7 +1309,7 @@ func RegisterDepositAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 func RegisterWithdrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WithdrawAPIServer) error {
 
-	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawAPI_ChainTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1318,18 +1318,18 @@ func RegisterWithdrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithdrawAPI_EthTransactionConfirmed_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WithdrawAPI_ChainTransactionSent_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawAPI_EthTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawAPI_ChainTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawAPI_ChainTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1338,14 +1338,14 @@ func RegisterWithdrawAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithdrawAPI_EthTransactionSent_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WithdrawAPI_ChainTransactionConfirmed_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawAPI_ChainTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1653,7 +1653,7 @@ func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_PledgeEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_PledgeChainTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1662,14 +1662,14 @@ func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasSwapAPI_PledgeEthTxSent_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_PledgeChainTxSent_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_PledgeEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_PledgeChainTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1693,7 +1693,7 @@ func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_GetOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetChainOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1702,18 +1702,18 @@ func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasSwapAPI_GetOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_GetChainOwnerSign_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_GetOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetChainOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_WithdrawEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_WithdrawChainTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1722,14 +1722,14 @@ func RegisterQGasSwapAPIHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_QGasSwapAPI_WithdrawEthTxSent_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_QGasSwapAPI_WithdrawChainTxSent_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_WithdrawEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_WithdrawChainTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1974,7 +1974,7 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_GetEthOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_GetChainOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -1983,18 +1983,18 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DepositAPI_GetEthOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DepositAPI_GetChainOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_GetEthOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_GetChainOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_EthTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_ChainTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2003,18 +2003,18 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DepositAPI_EthTransactionConfirmed_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DepositAPI_ChainTransactionConfirmed_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_EthTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_ChainTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DepositAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DepositAPI_ChainTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2023,18 +2023,18 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DepositAPI_EthTransactionSent_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DepositAPI_ChainTransactionSent_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_ChainTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_DepositAPI_EthTransactionID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DepositAPI_ChainTransactionID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2043,14 +2043,14 @@ func RegisterDepositAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DepositAPI_EthTransactionID_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DepositAPI_ChainTransactionID_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DepositAPI_EthTransactionID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DepositAPI_ChainTransactionID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2084,13 +2084,13 @@ var (
 
 	pattern_DepositAPI_NeoTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "neoTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DepositAPI_GetEthOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "getEthOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DepositAPI_GetChainOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "getChainOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DepositAPI_EthTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "ethTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DepositAPI_ChainTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "chainTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DepositAPI_EthTransactionSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "ethTransactionSent"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DepositAPI_ChainTransactionSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "chainTransactionSent"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DepositAPI_EthTransactionID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "ethTransactionID"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DepositAPI_ChainTransactionID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "chainTransactionID"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_DepositAPI_Refund_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"deposit", "refund"}, "", runtime.AssumeColonVerbOpt(true)))
 )
@@ -2102,13 +2102,13 @@ var (
 
 	forward_DepositAPI_NeoTransactionConfirmed_0 = runtime.ForwardResponseMessage
 
-	forward_DepositAPI_GetEthOwnerSign_0 = runtime.ForwardResponseMessage
+	forward_DepositAPI_GetChainOwnerSign_0 = runtime.ForwardResponseMessage
 
-	forward_DepositAPI_EthTransactionConfirmed_0 = runtime.ForwardResponseMessage
+	forward_DepositAPI_ChainTransactionConfirmed_0 = runtime.ForwardResponseMessage
 
-	forward_DepositAPI_EthTransactionSent_0 = runtime.ForwardResponseMessage
+	forward_DepositAPI_ChainTransactionSent_0 = runtime.ForwardResponseMessage
 
-	forward_DepositAPI_EthTransactionID_0 = runtime.ForwardResponseMessage
+	forward_DepositAPI_ChainTransactionID_0 = runtime.ForwardResponseMessage
 
 	forward_DepositAPI_Refund_0 = runtime.ForwardResponseMessage
 )
@@ -2151,7 +2151,7 @@ func RegisterWithdrawAPIHandler(ctx context.Context, mux *runtime.ServeMux, conn
 // "WithdrawAPIClient" to call the correct interceptors.
 func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WithdrawAPIClient) error {
 
-	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawAPI_ChainTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2160,18 +2160,18 @@ func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithdrawAPI_EthTransactionConfirmed_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WithdrawAPI_ChainTransactionSent_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawAPI_EthTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawAPI_ChainTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_WithdrawAPI_EthTransactionSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawAPI_ChainTransactionConfirmed_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2180,14 +2180,14 @@ func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithdrawAPI_EthTransactionSent_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WithdrawAPI_ChainTransactionConfirmed_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawAPI_EthTransactionSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawAPI_ChainTransactionConfirmed_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2195,15 +2195,15 @@ func RegisterWithdrawAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 }
 
 var (
-	pattern_WithdrawAPI_EthTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "ethTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawAPI_ChainTransactionSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "chainTransactionSent"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawAPI_EthTransactionSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "ethTransactionSent"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawAPI_ChainTransactionConfirmed_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"withdraw", "chainTransactionConfirmed"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_WithdrawAPI_EthTransactionConfirmed_0 = runtime.ForwardResponseMessage
+	forward_WithdrawAPI_ChainTransactionSent_0 = runtime.ForwardResponseMessage
 
-	forward_WithdrawAPI_EthTransactionSent_0 = runtime.ForwardResponseMessage
+	forward_WithdrawAPI_ChainTransactionConfirmed_0 = runtime.ForwardResponseMessage
 )
 
 // RegisterInfoAPIHandlerFromEndpoint is same as RegisterInfoAPIHandler but
@@ -2666,7 +2666,7 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_PledgeEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_PledgeChainTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2675,14 +2675,14 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasSwapAPI_PledgeEthTxSent_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_PledgeChainTxSent_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_PledgeEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_PledgeChainTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2706,7 +2706,7 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_GetOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_GetChainOwnerSign_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2715,18 +2715,18 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasSwapAPI_GetOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_GetChainOwnerSign_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_GetOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_GetChainOwnerSign_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_QGasSwapAPI_WithdrawEthTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_QGasSwapAPI_WithdrawChainTxSent_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -2735,14 +2735,14 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_QGasSwapAPI_WithdrawEthTxSent_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_QGasSwapAPI_WithdrawChainTxSent_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_QGasSwapAPI_WithdrawEthTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_QGasSwapAPI_WithdrawChainTxSent_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -2892,13 +2892,13 @@ func RegisterQGasSwapAPIHandlerClient(ctx context.Context, mux *runtime.ServeMux
 var (
 	pattern_QGasSwapAPI_GetPledgeSendBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getPledgeSendBlock"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_QGasSwapAPI_PledgeEthTxSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "pledgeEthTxSent"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_PledgeChainTxSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "pledgeChainTxSent"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_QGasSwapAPI_GetWithdrawRewardBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getWithdrawRewardBlock"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_QGasSwapAPI_GetOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_GetChainOwnerSign_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "getChainOwnerSign"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_QGasSwapAPI_WithdrawEthTxSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "withdrawEthTxSent"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_QGasSwapAPI_WithdrawChainTxSent_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "withdrawChainTxSent"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_QGasSwapAPI_ProcessBlock_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"qgasswap", "processBlock"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -2918,13 +2918,13 @@ var (
 var (
 	forward_QGasSwapAPI_GetPledgeSendBlock_0 = runtime.ForwardResponseMessage
 
-	forward_QGasSwapAPI_PledgeEthTxSent_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_PledgeChainTxSent_0 = runtime.ForwardResponseMessage
 
 	forward_QGasSwapAPI_GetWithdrawRewardBlock_0 = runtime.ForwardResponseMessage
 
-	forward_QGasSwapAPI_GetOwnerSign_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_GetChainOwnerSign_0 = runtime.ForwardResponseMessage
 
-	forward_QGasSwapAPI_WithdrawEthTxSent_0 = runtime.ForwardResponseMessage
+	forward_QGasSwapAPI_WithdrawChainTxSent_0 = runtime.ForwardResponseMessage
 
 	forward_QGasSwapAPI_ProcessBlock_0 = runtime.ForwardResponseMessage
 

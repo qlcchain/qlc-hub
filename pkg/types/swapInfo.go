@@ -9,6 +9,7 @@ import (
 type SwapInfo struct {
 	gorm.Model
 	State          SwapState `msg:"state" json:"state"`
+	Chain          ChainType `msg:"chain" json:"chain"`
 	Amount         int64     `msg:"amount" json:"amount"`
 	EthTxHash      string    `msg:"ethTxHash" json:"ethTxHash"`
 	NeoTxHash      string    `msg:"neoTxHash" json:"neoTxHash"`
@@ -39,8 +40,9 @@ func (s *SwapInfo) String() string {
 
 type SwapPending struct {
 	gorm.Model
-	Typ            SwapType `msg:"typ" json:"typ"`
-	EthTxHash      string   `msg:"ethTxHash" json:"ethTxHash"`
-	NeoTxHash      string   `msg:"neoTxHash" json:"neoTxHash"`
-	LastModifyTime int64    `msg:"lastModifyTime" json:"lastModifyTime"`
+	Typ            SwapType  `msg:"typ" json:"typ"`
+	Chain          ChainType `msg:"chain" json:"chain"`
+	EthTxHash      string    `msg:"ethTxHash" json:"ethTxHash"`
+	NeoTxHash      string    `msg:"neoTxHash" json:"neoTxHash"`
+	LastModifyTime int64     `msg:"lastModifyTime" json:"lastModifyTime"`
 }

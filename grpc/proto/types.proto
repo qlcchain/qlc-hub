@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 message PackNeoTxRequest {
     int64   amount              = 1;
     string  nep5SenderAddr      = 2;
-    string  erc20ReceiverAddr   = 3;
+    string  tokenMintedToAddress   = 3;
 }
 
 message PackNeoTxResponse {
@@ -21,10 +21,17 @@ message SendNeoTxnRequest {
     string  txHash            = 2;
     string  publicKey         = 3;
     string  nep5SenderAddr    = 4;
+    string  chainType         = 5;
+
 }
 
-message EthTransactionSentRequest{
-    string  ethTxHash         = 1;
+message NeoTxConfirmedResponse {
+    string  hash           = 1;
+    string  chainType      = 2;
+}
+
+message ChainTransactionSentRequest{
+    string  chainTxHash         = 1;
     string  neoTxHash         = 2;
 }
 
@@ -43,37 +50,37 @@ service DepositAPI {
         };
     }
 
-    rpc NeoTransactionConfirmed(Hash) returns (Boolean){
+    rpc NeoTransactionConfirmed(NeoTxConfirmedResponse) returns (Boolean){
         option (google.api.http) = {
           post: "/deposit/neoTransactionConfirmed"
           body: "*"
         };
     }
 
-    rpc GetEthOwnerSign(Hash) returns (String){
+    rpc GetChainOwnerSign(Hash) returns (String){
         option (google.api.http) = {
-          post: "/deposit/getEthOwnerSign"
+          post: "/deposit/getChainOwnerSign"
           body: "*"
         };
     }
 
-    rpc EthTransactionConfirmed(Hash) returns (Boolean){
+    rpc ChainTransactionConfirmed(ChainTxRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/deposit/ethTransactionConfirmed"
+          post: "/deposit/chainTransactionConfirmed"
           body: "*"
         };
     }
 
-    rpc EthTransactionSent(EthTransactionSentRequest) returns (Boolean){
+    rpc ChainTransactionSent(ChainTransactionSentRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/deposit/ethTransactionSent"
+          post: "/deposit/chainTransactionSent"
           body: "*"
         };
     }
 
-    rpc EthTransactionID(Hash) returns (Hash){
+    rpc ChainTransactionID(Hash) returns (Hash){
         option (google.api.http) = {
-          get: "/deposit/ethTransactionID"
+          get: "/deposit/chainTransactionID"
         };
     }
 
@@ -85,17 +92,22 @@ service DepositAPI {
     }
 }
 
+message ChainTxRequest{
+    string  hash       = 1;
+    string  chainType  = 2;
+}
+
 service WithdrawAPI {
-    rpc EthTransactionConfirmed(Hash) returns (Boolean){
+    rpc ChainTransactionSent(ChainTxRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/withdraw/ethTransactionConfirmed"
+          post: "/withdraw/chainTransactionSent"
           body: "*"
         };
     }
 
-    rpc EthTransactionSent(Hash) returns (Boolean){
+    rpc ChainTransactionConfirmed(ChainTxRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/withdraw/ethTransactionSent"
+          post: "/withdraw/chainTransactionConfirmed"
           body: "*"
         };
     }
@@ -113,21 +125,22 @@ message PingResponse {
 }
 
 message ConfigResponse {
-   string neoContract   = 1;
-   string neoOwner      = 2;
-   string neoUrl        = 3;
-   string nep5EthContract   = 4;
-   string nep5EthOwner      = 5;
-   string nep5EthUrl        = 6;
-   string qgasEthContract   = 7;
-   string qgasEthOwner      = 8;
-   string qgasEthUrl        = 9;
-   string qgasBscContract   = 10;
-   string qgasBscOwner      = 11;
-   string qgasBscUrl        = 12;
-   string qlcOwner          = 13;
-   string qlcUrl            = 14;
-   int64  totalSupply       = 15;
+   string neoUrl        = 1;
+   string neoContract   = 2;
+   string neoOwner      = 3;
+   string qlcUrl        = 4;
+   string qlcOwner      = 5;
+   string ethUrl        = 6;
+   string ethNep5Contract   = 7;
+   string ethNep5Owner      = 8;
+   string ethQGasContract   = 9;
+   string ethQGasOwner      = 10;
+   string bscUrl            = 11;
+   string bscNep5Contract   = 12;
+   string bscNep5Owner      = 13;
+   string bscQGasContract   = 14;
+   string bscQGasOwner      = 15;
+   int64  totalSupply       = 17;
 }
 
 message Offset {
@@ -151,12 +164,13 @@ message SwapInfo {
     int32  state            = 1;
     string stateStr         = 2;
 	int64  amount           = 3;
-	string ethTxHash        = 4;
-	string neoTxHash        = 5;
-	string ethUserAddr      = 6;
-	string neoUserAddr      = 7;
-	string startTime        = 8;
-	string lastModifyTime   = 9;
+	string neoUserAddr      = 4;
+    string neoTxHash        = 5;
+    string chain            = 6;
+    string chainUserAddr    = 7;
+	string chainTxHash      = 8;
+	string startTime        = 9;
+	string lastModifyTime   = 10;
 }
 
 message SwapInfos {
@@ -316,7 +330,7 @@ message StateBlockSigned {
 }
 
 message EthTxSentRequest{
-    string  ethTxHash         = 1;
+    string  chainTxHash         = 1;
     string  qlcTxHash         = 2;
 }
 
@@ -346,9 +360,9 @@ service QGasSwapAPI {
         };
     }
 
-    rpc PledgeEthTxSent(EthTxSentRequest) returns (Boolean){
+    rpc PledgeChainTxSent(EthTxSentRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/qgasswap/pledgeEthTxSent"
+          post: "/qgasswap/pledgeChainTxSent"
           body: "*"
         };
     }
@@ -360,16 +374,16 @@ service QGasSwapAPI {
         };
     }
 
-    rpc GetOwnerSign(Hash) returns (String){
+    rpc GetChainOwnerSign(Hash) returns (String){
         option (google.api.http) = {
-          post: "/qgasswap/getOwnerSign"
+          post: "/qgasswap/getChainOwnerSign"
           body: "*"
         };
     }
 
-    rpc WithdrawEthTxSent(QGasWithdrawRequest) returns (Boolean){
+    rpc WithdrawChainTxSent(QGasWithdrawRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/qgasswap/withdrawEthTxSent"
+          post: "/qgasswap/withdrawChainTxSent"
           body: "*"
         };
     }

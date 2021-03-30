@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
@@ -26,6 +25,7 @@ func addHubCmd(shell *ishell.Shell) {
 	hNeo2EthRefundCmd(hubCmd)
 	hEth2NeoCmd(hubCmd)
 	hEth2NeoPendingCmd(hubCmd)
+	hNeo2BscCmd(hubCmd)
 }
 
 func hNeo2EthCmd(parentCmd *ishell.Cmd) {
@@ -96,7 +96,7 @@ func hNeo2EthByNeoTx() {
 	ownerSign := r["value"].(string)
 	fmt.Println("hub sign: ", ownerSign)
 
-	ethTx, err := ethTransaction.Mint(ethUserPrivate, big.NewInt(int64(amount)), neoTxHash, ownerSign)
+	ethTx, err := ethTransactionNep5.Mint(ethUserPrivate, big.NewInt(int64(amount)), neoTxHash, ownerSign)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -146,8 +146,9 @@ func hNeo2Eth() {
 		"signature": "%s",
 		"publicKey": "%s",
 		"nep5SenderAddr":"%s",
-		"txHash":"%s"
-	}`, hex.EncodeToString(sign), hex.EncodeToString(neoUserAccount.PrivateKey().PublicKey().Bytes()), neoUserAddr, neoTxHash)
+		"txHash":"%s",
+		"chainType": "%s"
+	}`, hex.EncodeToString(sign), hex.EncodeToString(neoUserAccount.PrivateKey().PublicKey().Bytes()), neoUserAddr, neoTxHash, "eth")
 	r, err = post(sendParas, fmt.Sprintf("%s/deposit/sendNeoTransaction", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
@@ -162,24 +163,24 @@ func hNeo2Eth() {
 	ethParas := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, neoTxHash)
-	r, err = post(ethParas, fmt.Sprintf("%s/deposit/getEthOwnerSign", hubUrl))
+	r, err = post(ethParas, fmt.Sprintf("%s/deposit/getChainOwnerSign", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}
 	ownerSign := r["value"].(string)
 	fmt.Println("hub sign: ", ownerSign)
 
-	ethTx, err := ethTransaction.Mint(ethUserPrivate, big.NewInt(int64(amount)), neoTxHash, ownerSign)
+	ethTx, err := ethTransactionNep5.Mint(ethUserPrivate, big.NewInt(int64(amount)), neoTxHash, ownerSign)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("deposit send eth tx done: ", ethTx)
 
 	sentParas := fmt.Sprintf(`{
-		"ethTxHash":"%s",
+		"chainTxHash":"%s",
 		"neoTxHash":"%s"
 	}`, ethTx, neoTxHash)
-	r, err = post(sentParas, fmt.Sprintf("%s/deposit/ethTransactionSent", hubUrl))
+	r, err = post(sentParas, fmt.Sprintf("%s/deposit/chainTransactionSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}
@@ -251,4 +252,87 @@ func hNeo2EthRefund() {
 	}
 	log.Println("refund done: ", r2["value"].(bool))
 
+}
+
+func hNeo2BscCmd(parentCmd *ishell.Cmd) {
+	c := &ishell.Cmd{
+		Name: "neo2Bsc",
+		Help: "neo -> bsc",
+		Func: func(c *ishell.Context) {
+			hNeo2Bsc()
+		},
+	}
+	parentCmd.AddCmd(c)
+}
+func hNeo2Bsc() {
+	amount := 100000000
+
+	// PackNeoTransaction
+	unsignedParas := fmt.Sprintf(`{
+		"amount": %d,
+		"nep5SenderAddr": "%s",
+		"tokenMintedToAddress": "%s"
+	}`, amount, neoUserAddr, bscUserAddress)
+	r, err := post(unsignedParas, fmt.Sprintf("%s/deposit/packNeoTransaction", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+	neoTxHash := r["txHash"].(string)
+	unsignedData := r["unsignedData"].(string)
+	log.Println("neo tx hash: ", neoTxHash)
+	log.Println("unsigned: ", unsignedData)
+
+	// SendNeoTransaction
+	dataBytes, err := hex.DecodeString(unsignedData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sign := neoUserAccount.PrivateKey().Sign(dataBytes)
+	sendParas := fmt.Sprintf(`{
+		"signature": "%s",
+		"publicKey": "%s",
+		"nep5SenderAddr":"%s",
+		"txHash":"%s",
+		"chainType": "%s"
+	}`, hex.EncodeToString(sign), hex.EncodeToString(neoUserAccount.PrivateKey().PublicKey().Bytes()), neoUserAddr, neoTxHash, "bsc")
+	r, err = post(sendParas, fmt.Sprintf("%s/deposit/sendNeoTransaction", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+	log.Println("send neo tx done: ", r["value"].(bool))
+
+	if !waitForSwapState(neoTxHash, types.SwapStateToString(types.DepositPending)) {
+		log.Fatal("fail")
+	}
+
+	// GetEthOwnerSign
+	ethParas := fmt.Sprintf(`{
+		"hash":"%s"
+	}`, neoTxHash)
+	r, err = post(ethParas, fmt.Sprintf("%s/deposit/getChainOwnerSign", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+	ownerSign := r["value"].(string)
+	fmt.Println("hub sign: ", ownerSign)
+
+	ethTx, err := bscTransactionNep5.Mint(bscUserPrivate, big.NewInt(int64(amount)), neoTxHash, ownerSign)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("deposit send eth tx done: ", ethTx)
+
+	sentParas := fmt.Sprintf(`{
+		"chainTxHash":"%s",
+		"neoTxHash":"%s"
+	}`, ethTx, neoTxHash)
+	r, err = post(sentParas, fmt.Sprintf("%s/deposit/chainTransactionSent", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+
+	if !waitForSwapState(neoTxHash, types.SwapStateToString(types.DepositDone)) {
+		log.Fatal("fail")
+	}
+	fmt.Println("successfully")
 }

@@ -41,9 +41,9 @@
         ]
       }
     },
-    "/deposit/ethTransactionConfirmed": {
+    "/deposit/chainTransactionConfirmed": {
       "post": {
-        "operationId": "DepositAPI_EthTransactionConfirmed",
+        "operationId": "DepositAPI_ChainTransactionConfirmed",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -64,7 +64,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoChainTxRequest"
             }
           }
         ],
@@ -73,9 +73,9 @@
         ]
       }
     },
-    "/deposit/ethTransactionID": {
+    "/deposit/chainTransactionID": {
       "get": {
-        "operationId": "DepositAPI_EthTransactionID",
+        "operationId": "DepositAPI_ChainTransactionID",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -103,9 +103,9 @@
         ]
       }
     },
-    "/deposit/ethTransactionSent": {
+    "/deposit/chainTransactionSent": {
       "post": {
-        "operationId": "DepositAPI_EthTransactionSent",
+        "operationId": "DepositAPI_ChainTransactionSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -126,7 +126,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoEthTransactionSentRequest"
+              "$ref": "#/definitions/protoChainTransactionSentRequest"
             }
           }
         ],
@@ -135,9 +135,9 @@
         ]
       }
     },
-    "/deposit/getEthOwnerSign": {
+    "/deposit/getChainOwnerSign": {
       "post": {
-        "operationId": "DepositAPI_GetEthOwnerSign",
+        "operationId": "DepositAPI_GetChainOwnerSign",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -190,7 +190,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoNeoTxConfirmedResponse"
             }
           }
         ],
@@ -651,9 +651,9 @@
         ]
       }
     },
-    "/qgasswap/getOwnerSign": {
+    "/qgasswap/getChainOwnerSign": {
       "post": {
-        "operationId": "QGasSwapAPI_GetOwnerSign",
+        "operationId": "QGasSwapAPI_GetChainOwnerSign",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -747,9 +747,9 @@
         ]
       }
     },
-    "/qgasswap/pledgeEthTxSent": {
+    "/qgasswap/pledgeChainTxSent": {
       "post": {
-        "operationId": "QGasSwapAPI_PledgeEthTxSent",
+        "operationId": "QGasSwapAPI_PledgeChainTxSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1011,9 +1011,9 @@
         ]
       }
     },
-    "/qgasswap/withdrawEthTxSent": {
+    "/qgasswap/withdrawChainTxSent": {
       "post": {
-        "operationId": "QGasSwapAPI_WithdrawEthTxSent",
+        "operationId": "QGasSwapAPI_WithdrawChainTxSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1043,9 +1043,9 @@
         ]
       }
     },
-    "/withdraw/ethTransactionConfirmed": {
+    "/withdraw/chainTransactionConfirmed": {
       "post": {
-        "operationId": "WithdrawAPI_EthTransactionConfirmed",
+        "operationId": "WithdrawAPI_ChainTransactionConfirmed",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1066,7 +1066,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoChainTxRequest"
             }
           }
         ],
@@ -1075,9 +1075,9 @@
         ]
       }
     },
-    "/withdraw/ethTransactionSent": {
+    "/withdraw/chainTransactionSent": {
       "post": {
-        "operationId": "WithdrawAPI_EthTransactionSent",
+        "operationId": "WithdrawAPI_ChainTransactionSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1098,7 +1098,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoChainTxRequest"
             }
           }
         ],
@@ -1146,49 +1146,74 @@
         }
       }
     },
+    "protoChainTransactionSentRequest": {
+      "type": "object",
+      "properties": {
+        "chainTxHash": {
+          "type": "string"
+        },
+        "neoTxHash": {
+          "type": "string"
+        }
+      }
+    },
+    "protoChainTxRequest": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "chainType": {
+          "type": "string"
+        }
+      }
+    },
     "protoConfigResponse": {
       "type": "object",
       "properties": {
+        "neoUrl": {
+          "type": "string"
+        },
         "neoContract": {
           "type": "string"
         },
         "neoOwner": {
           "type": "string"
         },
-        "neoUrl": {
-          "type": "string"
-        },
-        "nep5EthContract": {
-          "type": "string"
-        },
-        "nep5EthOwner": {
-          "type": "string"
-        },
-        "nep5EthUrl": {
-          "type": "string"
-        },
-        "qgasEthContract": {
-          "type": "string"
-        },
-        "qgasEthOwner": {
-          "type": "string"
-        },
-        "qgasEthUrl": {
-          "type": "string"
-        },
-        "qgasBscContract": {
-          "type": "string"
-        },
-        "qgasBscOwner": {
-          "type": "string"
-        },
-        "qgasBscUrl": {
+        "qlcUrl": {
           "type": "string"
         },
         "qlcOwner": {
           "type": "string"
         },
-        "qlcUrl": {
+        "ethUrl": {
+          "type": "string"
+        },
+        "ethNep5Contract": {
+          "type": "string"
+        },
+        "ethNep5Owner": {
+          "type": "string"
+        },
+        "ethQGasContract": {
+          "type": "string"
+        },
+        "ethQGasOwner": {
+          "type": "string"
+        },
+        "bscUrl": {
+          "type": "string"
+        },
+        "bscNep5Contract": {
+          "type": "string"
+        },
+        "bscNep5Owner": {
+          "type": "string"
+        },
+        "bscQGasContract": {
+          "type": "string"
+        },
+        "bscQGasOwner": {
           "type": "string"
         },
         "totalSupply": {
@@ -1197,21 +1222,10 @@
         }
       }
     },
-    "protoEthTransactionSentRequest": {
-      "type": "object",
-      "properties": {
-        "ethTxHash": {
-          "type": "string"
-        },
-        "neoTxHash": {
-          "type": "string"
-        }
-      }
-    },
     "protoEthTxSentRequest": {
       "type": "object",
       "properties": {
-        "ethTxHash": {
+        "chainTxHash": {
           "type": "string"
         },
         "qlcTxHash": {
@@ -1239,6 +1253,17 @@
         }
       }
     },
+    "protoNeoTxConfirmedResponse": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "chainType": {
+          "type": "string"
+        }
+      }
+    },
     "protoPackNeoTxRequest": {
       "type": "object",
       "properties": {
@@ -1249,7 +1274,7 @@
         "nep5SenderAddr": {
           "type": "string"
         },
-        "erc20ReceiverAddr": {
+        "tokenMintedToAddress": {
           "type": "string"
         }
       }
@@ -1389,6 +1414,9 @@
         },
         "nep5SenderAddr": {
           "type": "string"
+        },
+        "chainType": {
+          "type": "string"
         }
       }
     },
@@ -1452,16 +1480,19 @@
           "type": "string",
           "format": "int64"
         },
-        "ethTxHash": {
+        "neoUserAddr": {
           "type": "string"
         },
         "neoTxHash": {
           "type": "string"
         },
-        "ethUserAddr": {
+        "chain": {
           "type": "string"
         },
-        "neoUserAddr": {
+        "chainUserAddr": {
+          "type": "string"
+        },
+        "chainTxHash": {
           "type": "string"
         },
         "startTime": {
