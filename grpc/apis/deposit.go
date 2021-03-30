@@ -55,7 +55,7 @@ func NewDepositAPI(ctx context.Context, cfg *config.Config, neo *neo.Transaction
 
 func (d *DepositAPI) PackNeoTransaction(ctx context.Context, request *pb.PackNeoTxRequest) (*pb.PackNeoTxResponse, error) {
 	d.logger.Infof("call deposit PackNeoTransaction: %s", request.String())
-	receiverAddr := request.GetErc20ReceiverAddr()
+	receiverAddr := request.GetTokenMintedToAddress()
 	senderAddr := request.GetNep5SenderAddr()
 	amount := request.GetAmount()
 	if receiverAddr == "" || senderAddr == "" || amount <= 0 {

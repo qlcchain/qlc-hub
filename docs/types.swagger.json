@@ -1171,46 +1171,49 @@
     "protoConfigResponse": {
       "type": "object",
       "properties": {
+        "neoUrl": {
+          "type": "string"
+        },
         "neoContract": {
           "type": "string"
         },
         "neoOwner": {
           "type": "string"
         },
-        "neoUrl": {
-          "type": "string"
-        },
-        "nep5EthContract": {
-          "type": "string"
-        },
-        "nep5EthOwner": {
-          "type": "string"
-        },
-        "nep5EthUrl": {
-          "type": "string"
-        },
-        "qgasEthContract": {
-          "type": "string"
-        },
-        "qgasEthOwner": {
-          "type": "string"
-        },
-        "qgasEthUrl": {
-          "type": "string"
-        },
-        "qgasBscContract": {
-          "type": "string"
-        },
-        "qgasBscOwner": {
-          "type": "string"
-        },
-        "qgasBscUrl": {
+        "qlcUrl": {
           "type": "string"
         },
         "qlcOwner": {
           "type": "string"
         },
-        "qlcUrl": {
+        "ethUrl": {
+          "type": "string"
+        },
+        "ethNep5Contract": {
+          "type": "string"
+        },
+        "ethNep5Owner": {
+          "type": "string"
+        },
+        "ethQGasContract": {
+          "type": "string"
+        },
+        "ethQGasOwner": {
+          "type": "string"
+        },
+        "bscUrl": {
+          "type": "string"
+        },
+        "bscNep5Contract": {
+          "type": "string"
+        },
+        "bscNep5Owner": {
+          "type": "string"
+        },
+        "bscQGasContract": {
+          "type": "string"
+        },
+        "bscQGasOwner": {
           "type": "string"
         },
         "totalSupply": {
@@ -1271,7 +1274,7 @@
         "nep5SenderAddr": {
           "type": "string"
         },
-        "erc20ReceiverAddr": {
+        "tokenMintedToAddress": {
           "type": "string"
         }
       }

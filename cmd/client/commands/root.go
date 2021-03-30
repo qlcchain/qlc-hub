@@ -31,7 +31,7 @@ var (
 	//neoUserAddr        = "ARmZ7hzU1SapXr5p75MC8Hh9xSMRStM4JK"
 	neoConfirmedHeight int
 
-	// eth setting (neo -> eth)
+	// eth setting (nep5 -> eth)
 	ethUrl             = []string{"wss://rinkeby.infura.io/ws/v3/0865b420656e4d70bcbbcc76e265fd57"}
 	ethContract        = "0xE2484A4178Ce7FfD5cd000030b2a5de08c0Caf8D"
 	ethOwnerAddress    = "0x0A8EFAacbeC7763855b9A39845DDbd03b03775C1"
@@ -39,14 +39,17 @@ var (
 	ethUserAddress     = "0xf6933949C4096670562a5E3a21B8c29c2aacA505"
 	ethConfirmedHeight int
 
-	// eth setting (qlc -> eth)
+	// bsc setting (nep5 -> bsc)
+	bscUrl          = []string{"https://bsc-rpc-test.qlcchain.online"}
+	bscContractNep5 = "0xF284c1C1D03BCCC8b32e9736919C0D7CA8b06aeD"
+	bscUserPrivate  = "d6aedb156c57320b7246c4463c9ee9c9d54df23513ece5eda0f2c9d3fdfc5822"
+	bscUserAddress  = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
+
+	// eth setting (qgas -> eth)
 	ethContractQLC = "0x1aFFc415416f1D157F4603f37aE1AC9011487111"
 
-	// bsc setting (qlc -> eth)
-	bscUrl         = []string{"https://bsc-rpc-test.qlcchain.online"}
+	// bsc setting (qgas -> eth)
 	bscContractQLC = "0xF791c6cf47C3650Fb8e65f1Ab0bFaDEfcFD51af5"
-	bscUserPrivate = "d6aedb156c57320b7246c4463c9ee9c9d54df23513ece5eda0f2c9d3fdfc5822"
-	bscUserAddress = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
 
 	// qlc setting
 	qlcUserPrivate = "8be0696a2d51dec8e2859dcb8ce2fd7ce7412eb9d6fa8a2089be8e8f1eeb4f0e458779381a8d21312b071729344a0cb49dc1da385993e19d58b5578da44c0df0"
@@ -56,13 +59,14 @@ var (
 )
 
 var (
-	neoTrasaction     *neo.Transaction
-	ethTransaction    *eth.Transaction
-	ethTransactionQLC *eth.Transaction
-	bscTransactionQLC *eth.Transaction
-	singerClient      *signer.SignerClient
-	cfg               = &config.Config{}
-	hubCmd            = &HubCmd{}
+	neoTrasaction      *neo.Transaction
+	ethTransactionNep5 *eth.Transaction
+	bscTransactionNep5 *eth.Transaction
+	ethTransactionQLC  *eth.Transaction
+	bscTransactionQLC  *eth.Transaction
+	singerClient       *signer.SignerClient
+	cfg                = &config.Config{}
+	hubCmd             = &HubCmd{}
 )
 
 type HubCmd struct {
@@ -96,7 +100,8 @@ func initParams(osArgs []string) {
 		log.Fatal("invalid neo endpoints")
 	}
 
-	ethTransaction, _ = eth.NewTransaction(ethUrl, ethContract)
+	ethTransactionNep5, _ = eth.NewTransaction(ethUrl, ethContract)
+	bscTransactionNep5, _ = eth.NewTransaction(bscUrl, bscContractNep5)
 	ethTransactionQLC, _ = eth.NewTransaction(ethUrl, ethContractQLC)
 	bscTransactionQLC, _ = eth.NewTransaction(bscUrl, bscContractQLC)
 	//defer ethClient.Close()

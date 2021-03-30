@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 message PackNeoTxRequest {
     int64   amount              = 1;
     string  nep5SenderAddr      = 2;
-    string  erc20ReceiverAddr   = 3;
+    string  tokenMintedToAddress   = 3;
 }
 
 message PackNeoTxResponse {
@@ -125,21 +125,22 @@ message PingResponse {
 }
 
 message ConfigResponse {
-   string neoContract   = 1;
-   string neoOwner      = 2;
-   string neoUrl        = 3;
-   string nep5EthContract   = 4;
-   string nep5EthOwner      = 5;
-   string nep5EthUrl        = 6;
-   string qgasEthContract   = 7;
-   string qgasEthOwner      = 8;
-   string qgasEthUrl        = 9;
-   string qgasBscContract   = 10;
-   string qgasBscOwner      = 11;
-   string qgasBscUrl        = 12;
-   string qlcOwner          = 13;
-   string qlcUrl            = 14;
-   int64  totalSupply       = 15;
+   string neoUrl        = 1;
+   string neoContract   = 2;
+   string neoOwner      = 3;
+   string qlcUrl        = 4;
+   string qlcOwner      = 5;
+   string ethUrl        = 6;
+   string ethNep5Contract   = 7;
+   string ethNep5Owner      = 8;
+   string ethQGasContract   = 9;
+   string ethQGasOwner      = 10;
+   string bscUrl            = 11;
+   string bscNep5Contract   = 12;
+   string bscNep5Owner      = 13;
+   string bscQGasContract   = 14;
+   string bscQGasOwner      = 15;
+   int64  totalSupply       = 17;
 }
 
 message Offset {

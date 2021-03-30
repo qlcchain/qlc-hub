@@ -33,7 +33,7 @@ func hEth2NeoPendingCmd(parentCmd *ishell.Cmd) {
 
 func hEth2Neo() {
 	amount := 110000000
-	ethTx, err := ethTransaction.Burn(ethUserPrivate, neoUserAddr, big.NewInt(int64(amount)))
+	ethTx, err := ethTransactionNep5.Burn(ethUserPrivate, neoUserAddr, big.NewInt(int64(amount)))
 	if err != nil {
 		log.Fatal(err)
 	}
