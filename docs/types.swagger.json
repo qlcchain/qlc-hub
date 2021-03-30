@@ -41,9 +41,9 @@
         ]
       }
     },
-    "/deposit/ethTransactionConfirmed": {
+    "/deposit/chainTransactionConfirmed": {
       "post": {
-        "operationId": "DepositAPI_EthTransactionConfirmed",
+        "operationId": "DepositAPI_ChainTransactionConfirmed",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -64,7 +64,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoChainTxRequest"
             }
           }
         ],
@@ -73,9 +73,9 @@
         ]
       }
     },
-    "/deposit/ethTransactionID": {
+    "/deposit/chainTransactionID": {
       "get": {
-        "operationId": "DepositAPI_EthTransactionID",
+        "operationId": "DepositAPI_ChainTransactionID",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -103,9 +103,9 @@
         ]
       }
     },
-    "/deposit/ethTransactionSent": {
+    "/deposit/chainTransactionSent": {
       "post": {
-        "operationId": "DepositAPI_EthTransactionSent",
+        "operationId": "DepositAPI_ChainTransactionSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -126,7 +126,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoEthTransactionSentRequest"
+              "$ref": "#/definitions/protoChainTransactionSentRequest"
             }
           }
         ],
@@ -1043,9 +1043,9 @@
         ]
       }
     },
-    "/withdraw/ethTransactionConfirmed": {
+    "/withdraw/chainTransactionConfirmed": {
       "post": {
-        "operationId": "WithdrawAPI_EthTransactionConfirmed",
+        "operationId": "WithdrawAPI_ChainTransactionConfirmed",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1066,7 +1066,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoChainTxRequest"
             }
           }
         ],
@@ -1075,9 +1075,9 @@
         ]
       }
     },
-    "/withdraw/ethTransactionSent": {
+    "/withdraw/chainTransactionSent": {
       "post": {
-        "operationId": "WithdrawAPI_EthTransactionSent",
+        "operationId": "WithdrawAPI_ChainTransactionSent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1098,7 +1098,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/protoHash"
+              "$ref": "#/definitions/protoChainTxRequest"
             }
           }
         ],
@@ -1143,6 +1143,28 @@
         "value": {
           "type": "boolean",
           "format": "boolean"
+        }
+      }
+    },
+    "protoChainTransactionSentRequest": {
+      "type": "object",
+      "properties": {
+        "chainTxHash": {
+          "type": "string"
+        },
+        "neoTxHash": {
+          "type": "string"
+        }
+      }
+    },
+    "protoChainTxRequest": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        },
+        "chainType": {
+          "type": "string"
         }
       }
     },
@@ -1194,17 +1216,6 @@
         "totalSupply": {
           "type": "string",
           "format": "int64"
-        }
-      }
-    },
-    "protoEthTransactionSentRequest": {
-      "type": "object",
-      "properties": {
-        "ethTxHash": {
-          "type": "string"
-        },
-        "neoTxHash": {
-          "type": "string"
         }
       }
     },

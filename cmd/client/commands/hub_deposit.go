@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
@@ -146,8 +145,9 @@ func hNeo2Eth() {
 		"signature": "%s",
 		"publicKey": "%s",
 		"nep5SenderAddr":"%s",
-		"txHash":"%s"
-	}`, hex.EncodeToString(sign), hex.EncodeToString(neoUserAccount.PrivateKey().PublicKey().Bytes()), neoUserAddr, neoTxHash)
+		"txHash":"%s",
+		"chainType": "%s"
+	}`, hex.EncodeToString(sign), hex.EncodeToString(neoUserAccount.PrivateKey().PublicKey().Bytes()), neoUserAddr, neoTxHash, "eth")
 	r, err = post(sendParas, fmt.Sprintf("%s/deposit/sendNeoTransaction", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
@@ -162,7 +162,7 @@ func hNeo2Eth() {
 	ethParas := fmt.Sprintf(`{
 		"hash":"%s"
 	}`, neoTxHash)
-	r, err = post(ethParas, fmt.Sprintf("%s/deposit/getEthOwnerSign", hubUrl))
+	r, err = post(ethParas, fmt.Sprintf("%s/deposit/getChainOwnerSign", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}
@@ -176,10 +176,10 @@ func hNeo2Eth() {
 	fmt.Println("deposit send eth tx done: ", ethTx)
 
 	sentParas := fmt.Sprintf(`{
-		"ethTxHash":"%s",
+		"chainTxHash":"%s",
 		"neoTxHash":"%s"
 	}`, ethTx, neoTxHash)
-	r, err = post(sentParas, fmt.Sprintf("%s/deposit/ethTransactionSent", hubUrl))
+	r, err = post(sentParas, fmt.Sprintf("%s/deposit/chainTransactionSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}

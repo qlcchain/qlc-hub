@@ -30,8 +30,8 @@ message NeoTxConfirmedResponse {
     string  chainType      = 2;
 }
 
-message EthTransactionSentRequest{
-    string  ethTxHash         = 1;
+message ChainTransactionSentRequest{
+    string  chainTxHash         = 1;
     string  neoTxHash         = 2;
 }
 
@@ -64,23 +64,23 @@ service DepositAPI {
         };
     }
 
-    rpc EthTransactionConfirmed(Hash) returns (Boolean){
+    rpc ChainTransactionConfirmed(ChainTxRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/deposit/ethTransactionConfirmed"
+          post: "/deposit/chainTransactionConfirmed"
           body: "*"
         };
     }
 
-    rpc EthTransactionSent(EthTransactionSentRequest) returns (Boolean){
+    rpc ChainTransactionSent(ChainTransactionSentRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/deposit/ethTransactionSent"
+          post: "/deposit/chainTransactionSent"
           body: "*"
         };
     }
 
-    rpc EthTransactionID(Hash) returns (Hash){
+    rpc ChainTransactionID(Hash) returns (Hash){
         option (google.api.http) = {
-          get: "/deposit/ethTransactionID"
+          get: "/deposit/chainTransactionID"
         };
     }
 
@@ -92,17 +92,22 @@ service DepositAPI {
     }
 }
 
+message ChainTxRequest{
+    string  hash       = 1;
+    string  chainType  = 2;
+}
+
 service WithdrawAPI {
-    rpc EthTransactionConfirmed(Hash) returns (Boolean){
+    rpc ChainTransactionSent(ChainTxRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/withdraw/ethTransactionConfirmed"
+          post: "/withdraw/chainTransactionSent"
           body: "*"
         };
     }
 
-    rpc EthTransactionSent(Hash) returns (Boolean){
+    rpc ChainTransactionConfirmed(ChainTxRequest) returns (Boolean){
         option (google.api.http) = {
-          post: "/withdraw/ethTransactionSent"
+          post: "/withdraw/chainTransactionConfirmed"
           body: "*"
         };
     }

@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/abiosoft/ishell"
-
 	"github.com/qlcchain/qlc-hub/pkg/types"
 )
 
@@ -41,9 +40,10 @@ func hEth2Neo() {
 	fmt.Println("withdraw send eth tx done: ", ethTx)
 
 	sentParas := fmt.Sprintf(`{
-		"hash":"%s"
-	}`, ethTx)
-	r, err := post(sentParas, fmt.Sprintf("%s/withdraw/ethTransactionSent", hubUrl))
+		"hash":"%s",
+		"chainType":"%s"
+	}`, ethTx, "eth")
+	r, err := post(sentParas, fmt.Sprintf("%s/withdraw/chainTransactionSent", hubUrl))
 	if err != nil {
 		log.Fatal(err, r)
 	}

@@ -228,8 +228,8 @@ func (g *Server) Stop() {
 }
 
 func (g *Server) registerApi() error {
-	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.ethNep5, g.signer, g.store))
-	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.ethNep5, g.store))
+	pb.RegisterDepositAPIServer(g.rpc, apis.NewDepositAPI(g.ctx, g.cfg, g.neo, g.ethNep5, g.bscNep5, g.signer, g.store))
+	pb.RegisterWithdrawAPIServer(g.rpc, apis.NewWithdrawAPI(g.ctx, g.cfg, g.neo, g.ethNep5, g.bscNep5, g.store))
 	pb.RegisterInfoAPIServer(g.rpc, apis.NewInfoAPI(g.ctx, g.cfg, g.neo, g.ethNep5, g.ethQGas, g.bscQGas, g.store))
 	pb.RegisterDebugAPIServer(g.rpc, apis.NewDebugAPI(g.ctx, g.cfg, g.ethNep5, g.neo, g.store))
 	pb.RegisterQGasSwapAPIServer(g.rpc, apis.NewQGasSwapAPI(g.ctx, g.cfg, g.qlc, g.ethQGas, g.bscQGas, g.signer, g.store))
@@ -260,10 +260,10 @@ func authorizer(manager *jwt.JWTManager) jwt.AuthorizeFn {
 		"/proto.DepositAPI/PackNeoTransaction":       jwt.Both,
 		"/proto.DepositAPI/SendNeoTransaction":       jwt.Both,
 		"/proto.DepositAPI/NeoTransactionConfirmed":  jwt.Both,
-		"/proto.DepositAPI/EthTransactionSent":       jwt.Both,
+		"/proto.DepositAPI/ChainTransactionSent":     jwt.Both,
 		"/proto.DepositAPI/GetChainOwnerSign":        jwt.Both,
 		"/proto.DepositAPI/Refund":                   jwt.Both,
-		"/proto.DepositAPI/EthTransactionID":         jwt.Both,
+		"/proto.DepositAPI/ChainTransactionID":       jwt.Both,
 		"/proto.WithdrawAPI/EthTransactionConfirmed": jwt.Both,
 		"/proto.WithdrawAPI/EthTransactionSent":      jwt.Both,
 		"/proto.InfoAPI/Ping":                        jwt.Both,
