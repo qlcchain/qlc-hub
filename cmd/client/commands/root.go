@@ -46,10 +46,10 @@ var (
 	bscUserAddress  = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
 
 	// eth setting (qgas -> eth)
-	ethContractQLC = "0x1aFFc415416f1D157F4603f37aE1AC9011487111"
+	ethContractQGas = "0x1aFFc415416f1D157F4603f37aE1AC9011487111"
 
 	// bsc setting (qgas -> eth)
-	bscContractQLC = "0xF791c6cf47C3650Fb8e65f1Ab0bFaDEfcFD51af5"
+	bscContractQGas = "0xF791c6cf47C3650Fb8e65f1Ab0bFaDEfcFD51af5"
 
 	// qlc setting
 	qlcUserPrivate = "8be0696a2d51dec8e2859dcb8ce2fd7ce7412eb9d6fa8a2089be8e8f1eeb4f0e458779381a8d21312b071729344a0cb49dc1da385993e19d58b5578da44c0df0"
@@ -102,8 +102,8 @@ func initParams(osArgs []string) {
 
 	ethTransactionNep5, _ = eth.NewTransaction(ethUrl, ethContract)
 	bscTransactionNep5, _ = eth.NewTransaction(bscUrl, bscContractNep5)
-	ethTransactionQLC, _ = eth.NewTransaction(ethUrl, ethContractQLC)
-	bscTransactionQLC, _ = eth.NewTransaction(bscUrl, bscContractQLC)
+	ethTransactionQLC, _ = eth.NewTransaction(ethUrl, ethContractQGas)
+	bscTransactionQLC, _ = eth.NewTransaction(bscUrl, bscContractQGas)
 	//defer ethClient.Close()
 
 	log.Println("hub endpoint: ", hubUrl)

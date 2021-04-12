@@ -51,7 +51,7 @@ func qQlc2EthPendingCmd(parentCmd *ishell.Cmd) {
 }
 
 func nQlc2Eth() {
-	amount := 900000000
+	amount := 500000000
 
 	// get pledge send block
 	Paras := fmt.Sprintf(`{

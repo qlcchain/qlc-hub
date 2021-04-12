@@ -72,3 +72,38 @@ func hEth2NeoPending() {
 
 	fmt.Println("successfully")
 }
+
+func hBsc2NeoCmd(parentCmd *ishell.Cmd) {
+	c := &ishell.Cmd{
+		Name: "bsc2neo",
+		Help: "bsc -> neo",
+		Func: func(c *ishell.Context) {
+			hBsc2Neo()
+		},
+	}
+	parentCmd.AddCmd(c)
+}
+
+func hBsc2Neo() {
+	amount := 110000000
+	ethTx, err := bscTransactionNep5.Burn(bscUserPrivate, neoUserAddr, big.NewInt(int64(amount)))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("withdraw send eth tx done: ", ethTx)
+
+	sentParas := fmt.Sprintf(`{
+		"hash":"%s",
+		"chainType":"%s"
+	}`, ethTx, "bsc")
+	r, err := post(sentParas, fmt.Sprintf("%s/withdraw/chainTransactionSent", hubUrl))
+	if err != nil {
+		log.Fatal(err, r)
+	}
+
+	if !waitForSwapState(ethTx, types.SwapStateToString(types.WithDrawDone)) {
+		log.Fatal("fail")
+	}
+
+	fmt.Println("successfully")
+}

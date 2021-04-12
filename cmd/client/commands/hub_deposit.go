@@ -26,6 +26,7 @@ func addHubCmd(shell *ishell.Shell) {
 	hEth2NeoCmd(hubCmd)
 	hEth2NeoPendingCmd(hubCmd)
 	hNeo2BscCmd(hubCmd)
+	hBsc2NeoCmd(hubCmd)
 }
 
 func hNeo2EthCmd(parentCmd *ishell.Cmd) {
@@ -125,7 +126,7 @@ func hNeo2Eth() {
 	unsignedParas := fmt.Sprintf(`{
 		"amount": %d,
 		"nep5SenderAddr": "%s",
-		"erc20ReceiverAddr": "%s"
+		"tokenMintedToAddress": "%s"
 	}`, amount, neoUserAddr, ethUserAddress)
 	r, err := post(unsignedParas, fmt.Sprintf("%s/deposit/packNeoTransaction", hubUrl))
 	if err != nil {
