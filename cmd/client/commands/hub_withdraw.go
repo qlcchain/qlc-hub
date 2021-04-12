@@ -85,7 +85,7 @@ func hBsc2NeoCmd(parentCmd *ishell.Cmd) {
 }
 
 func hBsc2Neo() {
-	amount := 110000000
+	amount := 1100
 	ethTx, err := bscTransactionNep5.Burn(bscUserPrivate, neoUserAddr, big.NewInt(int64(amount)))
 	if err != nil {
 		log.Fatal(err)

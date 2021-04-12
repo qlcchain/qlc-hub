@@ -21,7 +21,7 @@ var (
 	hubUrl string
 
 	// neo setting
-	neoUrl            = []string{"http://seed5.ngd.network:20332"}
+	neoUrl            = []string{"https://testnet2.neo2.coz.io:443"}
 	neoContract       = "bfcbb52d61bc6d3ef2c8cf43f595f4bf5cac66c5"
 	neoContractLE     util.Uint160
 	neoOwnerAddress   = "ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ"
@@ -41,7 +41,7 @@ var (
 
 	// bsc setting (nep5 -> bsc)
 	bscUrl          = []string{"https://bsc-rpc-test.qlcchain.online"}
-	bscContractNep5 = "0xF284c1C1D03BCCC8b32e9736919C0D7CA8b06aeD"
+	bscContractNep5 = "0x550f28C8ccc66002E927483C6cb83D9997d9ebf2"
 	bscUserPrivate  = "d6aedb156c57320b7246c4463c9ee9c9d54df23513ece5eda0f2c9d3fdfc5822"
 	bscUserAddress  = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
 

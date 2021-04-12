@@ -23,7 +23,6 @@ import (
 	"github.com/nspcc-dev/neo-go/pkg/vm/emit"
 	"github.com/nspcc-dev/neo-go/pkg/vm/opcode"
 	"github.com/nspcc-dev/neo-go/pkg/wallet"
-
 	"github.com/qlcchain/qlc-hub/grpc/proto"
 	hubUtil "github.com/qlcchain/qlc-hub/pkg/util"
 )
@@ -308,6 +307,7 @@ func (n *Transaction) sendRawTransaction(rawTX *transaction.Transaction) error {
 					if err := uc.SendRawTransaction(rawTX); err == nil {
 						n.client = uc
 						n.url = url
+						n.logger.Infof("send neo tx successfully: %s", url)
 						return nil
 					} else {
 						n.logger.Infof("send neo tx fail: %s", url)
