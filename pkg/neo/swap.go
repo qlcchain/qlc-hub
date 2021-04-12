@@ -317,6 +317,7 @@ func (n *Transaction) sendRawTransaction(rawTX *transaction.Transaction) error {
 		}
 		return fmt.Errorf("sendRawTransaction: %s", err)
 	} else {
+		n.logger.Infof("send neo tx successfully: %s", url)
 		return nil
 	}
 }
