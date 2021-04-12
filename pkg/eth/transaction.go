@@ -48,12 +48,13 @@ func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint
 	cTicker := time.NewTicker(3 * time.Second)
 	cTimer := time.NewTimer(600 * time.Second)
 	client := t.Client()
+	var erro error
 	for {
 		select {
 		case <-cTicker.C:
 			tx, p, err := client.TransactionByHash(context.Background(), txHash)
 			if err != nil {
-				t.logger.Errorf("tx by hash: %s , txHash: %s", err, txHash.String())
+				erro = err
 			}
 			if tx != nil && !p { // if tx not found , p is false
 				if txHeight == 0 {
@@ -67,6 +68,9 @@ func (t *Transaction) WaitTxVerifyAndConfirmed(txHash common.Hash, txHeight uint
 				}
 			}
 		case <-cTimer.C:
+			if erro != nil {
+				t.logger.Errorf("tx by hash: %s , txHash: %s", erro, txHash.String())
+			}
 			return fmt.Errorf("tx by hash timeout: %s", txHash)
 		}
 	}
