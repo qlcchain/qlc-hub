@@ -427,7 +427,7 @@ func (w *WithdrawAPI) correctSwapState() error {
 	for {
 		select {
 		case <-vTicker.C:
-			infos, err := db.GetSwapInfos(w.store, 0, 0)
+			infos, err := db.GetSwapInfos(w.store, "", 0, 0)
 			if err != nil {
 				w.logger.Error(err)
 				continue

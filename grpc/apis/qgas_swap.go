@@ -665,7 +665,7 @@ func (g *QGasSwapAPI) SwapInfoList(ctx context.Context, offset *pb.Offset) (*pb.
 	page := offset.GetPage()
 	pageSize := offset.GetPageSize()
 
-	infos, err := db.GetQGasSwapInfos(g.store, int(page), int(pageSize))
+	infos, err := db.GetQGasSwapInfos(g.store, offset.GetChain(), int(page), int(pageSize))
 	if err != nil {
 		return nil, fmt.Errorf("get swapInfos: %s", err)
 	}
@@ -681,13 +681,13 @@ func (g *QGasSwapAPI) SwapInfosByAddress(ctx context.Context, offset *pb.AddrAnd
 	addr := offset.GetAddress()
 
 	if err := g.qlc.ValidateAddress(addr); err == nil {
-		infos, err := db.GetQGasSwapInfosByUserAddr(g.store, int(page), int(pageSize), addr, types.QGasDeposit)
+		infos, err := db.GetQGasSwapInfosByUserAddr(g.store, int(page), int(pageSize), addr, offset.GetChain(), false)
 		if err != nil {
 			return nil, fmt.Errorf("get swapInfos: %s", err)
 		}
 		return toQGasSwapInfos(infos), nil
 	} else {
-		infos, err := db.GetQGasSwapInfosByUserAddr(g.store, int(page), int(pageSize), addr, types.QGasWithdraw)
+		infos, err := db.GetQGasSwapInfosByUserAddr(g.store, int(page), int(pageSize), addr, offset.GetChain(), true)
 		if err != nil {
 			return nil, fmt.Errorf("get swapInfos: %s", err)
 		}
@@ -714,7 +714,7 @@ func (g *QGasSwapAPI) SwapInfosByState(ctx context.Context, offset *pb.StateAndO
 
 func (g *QGasSwapAPI) SwapInfosCount(ctx context.Context, empty *empty.Empty) (*pb.Map, error) {
 	count := make(map[string]int64)
-	infos, err := db.GetQGasSwapInfos(g.store, 0, 0)
+	infos, err := db.GetQGasSwapInfos(g.store, "", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("get swapInfos: %s", err)
 	}
@@ -733,7 +733,7 @@ func (g *QGasSwapAPI) SwapInfosCount(ctx context.Context, empty *empty.Empty) (*
 
 func (g *QGasSwapAPI) SwapInfosAmount(ctx context.Context, empty *empty.Empty) (*pb.Map, error) {
 	amount := make(map[string]int64)
-	infos, err := db.GetQGasSwapInfos(g.store, 0, 0)
+	infos, err := db.GetQGasSwapInfos(g.store, "", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("get swapInfos: %s", err)
 	}
@@ -756,7 +756,7 @@ func (g *QGasSwapAPI) correctSwapState() error {
 	for {
 		select {
 		case <-vTicker.C:
-			infos, err := db.GetQGasSwapInfos(g.store, 0, 0)
+			infos, err := db.GetQGasSwapInfos(g.store, "", 0, 0)
 			if err != nil {
 				g.logger.Error(err)
 				continue

@@ -61,12 +61,21 @@ func UpdateSwapInfo(db *gorm.DB, record *types.SwapInfo) error {
 	return db.Save(record).Error
 }
 
-func GetSwapInfos(db *gorm.DB, page, pageSize int) ([]*types.SwapInfo, error) {
+func GetSwapInfos(db *gorm.DB, chain string, page, pageSize int) ([]*types.SwapInfo, error) {
 	var result []*types.SwapInfo
-	if err := db.Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-		return result, nil
+	chainType := types.StringToChainType(chain)
+	if chain == "" {
+		if err := db.Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+			return result, nil
+		} else {
+			return nil, err
+		}
 	} else {
-		return nil, err
+		if err := db.Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+			return result, nil
+		} else {
+			return nil, err
+		}
 	}
 }
 
@@ -97,23 +106,40 @@ func GetSwapInfosByState(db *gorm.DB, page, pageSize int, state types.SwapState)
 	}
 }
 
-func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, action types.ChainType) ([]*types.SwapInfo, error) {
+func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, chain string, isEthAddr bool) ([]*types.SwapInfo, error) {
 	var result []*types.SwapInfo
-	if action == types.ETH {
+	chainType := types.StringToChainType(chain)
+	if isEthAddr {
 		addr = stringToLower(addr)
 		if len(addr) == 40 {
 			addr = fmt.Sprintf("0x%s", addr)
 		}
-		if err := db.Where("eth_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-			return result, nil
+		if chain == "" {
+			if err := db.Where("eth_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		} else {
-			return nil, err
+			if err := db.Where("eth_user_addr = ?", addr).Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		}
 	} else {
-		if err := db.Where("neo_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-			return result, nil
+		if chain == "" {
+			if err := db.Where("neo_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		} else {
-			return nil, err
+			if err := db.Where("neo_user_addr = ? & chain = ?", addr, chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		}
 	}
 }
@@ -182,12 +208,21 @@ func UpdateQGasSwapInfo(db *gorm.DB, record *types.QGasSwapInfo) error {
 	return db.Save(record).Error
 }
 
-func GetQGasSwapInfos(db *gorm.DB, page, pageSize int) ([]*types.QGasSwapInfo, error) {
+func GetQGasSwapInfos(db *gorm.DB, chain string, page, pageSize int) ([]*types.QGasSwapInfo, error) {
 	var result []*types.QGasSwapInfo
-	if err := db.Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-		return result, nil
+	chainType := types.StringToChainType(chain)
+	if chain == "" {
+		if err := db.Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+			return result, nil
+		} else {
+			return nil, err
+		}
 	} else {
-		return nil, err
+		if err := db.Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+			return result, nil
+		} else {
+			return nil, err
+		}
 	}
 }
 
@@ -227,23 +262,40 @@ func GetQGasSwapInfosByState(db *gorm.DB, page, pageSize int, state types.QGasSw
 	}
 }
 
-func GetQGasSwapInfosByUserAddr(db *gorm.DB, page, pageSize int, addr string, action types.QGasSwapType) ([]*types.QGasSwapInfo, error) {
+func GetQGasSwapInfosByUserAddr(db *gorm.DB, page, pageSize int, addr string, chain string, isEthUser bool) ([]*types.QGasSwapInfo, error) {
 	var result []*types.QGasSwapInfo
-	if action == types.QGasWithdraw {
+	chainType := types.StringToChainType(chain)
+	if isEthUser {
 		addr = stringToLower(addr)
 		if len(addr) == 40 {
 			addr = fmt.Sprintf("0x%s", addr)
 		}
-		if err := db.Where("cross_chain_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-			return result, nil
+		if chain == "" {
+			if err := db.Where("cross_chain_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		} else {
-			return nil, err
+			if err := db.Where("cross_chain_user_addr = ?", addr).Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		}
 	} else {
-		if err := db.Where("qlc_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-			return result, nil
+		if chain == "" {
+			if err := db.Where("qlc_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		} else {
-			return nil, err
+			if err := db.Where("qlc_user_addr = ?", addr).Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		}
 	}
 }

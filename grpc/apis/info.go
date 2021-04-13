@@ -86,7 +86,7 @@ func (i *InfoAPI) SwapInfoList(ctx context.Context, offset *pb.Offset) (*pb.Swap
 	page := offset.GetPage()
 	pageSize := offset.GetPageSize()
 
-	infos, err := db.GetSwapInfos(i.store, int(page), int(pageSize))
+	infos, err := db.GetSwapInfos(i.store, offset.GetChain(), int(page), int(pageSize))
 	if err != nil {
 		return nil, fmt.Errorf("get swapInfos: %s", err)
 	}
@@ -100,15 +100,16 @@ func (i *InfoAPI) SwapInfosByAddress(ctx context.Context, offset *pb.AddrAndOffs
 	page := offset.GetPage()
 	pageSize := offset.GetPageSize()
 	addr := offset.GetAddress()
+	chain := offset.GetChain()
 
 	if err := i.neo.ValidateAddress(addr); err == nil {
-		infos, err := db.GetSwapInfosByAddr(i.store, int(page), int(pageSize), addr, types.NEO)
+		infos, err := db.GetSwapInfosByAddr(i.store, int(page), int(pageSize), addr, chain, false)
 		if err != nil {
 			return nil, fmt.Errorf("get swapInfos: %s", err)
 		}
 		return toSwapInfos(infos), nil
 	} else {
-		infos, err := db.GetSwapInfosByAddr(i.store, int(page), int(pageSize), addr, types.ETH)
+		infos, err := db.GetSwapInfosByAddr(i.store, int(page), int(pageSize), addr, chain, true)
 		if err != nil {
 			return nil, fmt.Errorf("get swapInfos: %s", err)
 		}
@@ -153,7 +154,7 @@ func (i *InfoAPI) SwapInfosByState(ctx context.Context, offset *pb.StateAndOffse
 
 func (i *InfoAPI) SwapCountByState(ctx context.Context, empty *empty.Empty) (*pb.Map, error) {
 	count := make(map[string]int64)
-	infos, err := db.GetSwapInfos(i.store, 0, 0)
+	infos, err := db.GetSwapInfos(i.store, "", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("get swapInfos: %s", err)
 	}
@@ -172,7 +173,7 @@ func (i *InfoAPI) SwapCountByState(ctx context.Context, empty *empty.Empty) (*pb
 
 func (i *InfoAPI) SwapAmountByState(ctx context.Context, empty *empty.Empty) (*pb.Map, error) {
 	amount := make(map[string]int64)
-	infos, err := db.GetSwapInfos(i.store, 0, 0)
+	infos, err := db.GetSwapInfos(i.store, "", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("get swapInfos: %s", err)
 	}
@@ -196,13 +197,13 @@ func (i *InfoAPI) SwapAmountByAddress(ctx context.Context, address *pb.Address) 
 	}
 
 	if err := i.neo.ValidateAddress(addr); err == nil {
-		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, types.NEO)
+		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, "", false)
 		if err != nil {
 			return nil, fmt.Errorf("get swapInfos: %s", err)
 		}
 		return i.swapAmountByAddress(infos, addr, false)
 	} else {
-		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, types.ETH)
+		infos, err := db.GetSwapInfosByAddr(i.store, 0, 0, addr, "", true)
 		if err != nil {
 			return nil, fmt.Errorf("get swapInfos: %s", err)
 		}

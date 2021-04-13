@@ -522,6 +522,12 @@
         },
         "parameters": [
           {
+            "name": "chain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
             "name": "page",
             "in": "query",
             "required": false,
@@ -561,6 +567,12 @@
         "parameters": [
           {
             "name": "address",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "chain",
             "in": "query",
             "required": false,
             "type": "string"
@@ -860,6 +872,12 @@
         },
         "parameters": [
           {
+            "name": "chain",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
             "name": "page",
             "in": "query",
             "required": false,
@@ -921,6 +939,12 @@
         "parameters": [
           {
             "name": "address",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "chain",
             "in": "query",
             "required": false,
             "type": "string"

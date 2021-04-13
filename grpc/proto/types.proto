@@ -144,12 +144,14 @@ message ConfigResponse {
 }
 
 message Offset {
-    int32   page         = 1;
-    int32   pageSize     = 2;
+    string  chain        = 1;
+    int32   page         = 2;
+    int32   pageSize     = 3;
 }
 
 message AddrAndOffset {
     string  address      = 1;
+    string  chain        = 2;
     int32   page         = 3;
     int32   pageSize     = 4;
 }
