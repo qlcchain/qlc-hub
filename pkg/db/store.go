@@ -224,6 +224,8 @@ func DeleteSwapPending(db *gorm.DB, record *types.SwapPending) error {
 func InsertQGasSwapInfo(db *gorm.DB, record *types.QGasSwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
 	record.CrossChainTxHash = util.AddHashPrefix(record.CrossChainTxHash)
+	record.QlcSendTxHash = util.RemoveHexPrefix(record.QlcSendTxHash)
+	record.QlcRewardTxHash = util.RemoveHexPrefix(record.QlcRewardTxHash)
 	record.CrossChainUserAddr = stringToLower(record.CrossChainUserAddr)
 	return db.Create(record).Error
 }
@@ -232,6 +234,8 @@ func UpdateQGasSwapInfo(db *gorm.DB, record *types.QGasSwapInfo) error {
 	record.LastModifyTime = time.Now().Unix()
 	record.CrossChainTxHash = util.AddHashPrefix(record.CrossChainTxHash)
 	record.CrossChainUserAddr = stringToLower(record.CrossChainUserAddr)
+	record.QlcSendTxHash = util.RemoveHexPrefix(record.QlcSendTxHash)
+	record.QlcRewardTxHash = util.RemoveHexPrefix(record.QlcRewardTxHash)
 	return db.Save(record).Error
 }
 
@@ -272,6 +276,7 @@ func GetQGasSwapInfoByUniqueID(db *gorm.DB, hash string, action types.QGasSwapTy
 			return nil, err
 		}
 	} else {
+		hash = util.RemoveHexPrefix(hash)
 		if err := db.Where("qlc_send_tx_hash = ?", hash).First(&result).Error; err == nil {
 			return &result, nil
 		} else {
