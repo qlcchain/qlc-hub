@@ -71,18 +71,36 @@ func GetSwapInfos(db *gorm.DB, chain string, page, pageSize int) ([]*types.SwapI
 			return nil, err
 		}
 	} else {
-		if chainType == types.ETH {
-			if err := db.Where("chain != ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-				return result, nil
-			} else {
-				return nil, err
+		fResult := make([]*types.SwapInfo, 0)
+		if err := db.Order("last_modify_time DESC").Find(&result).Error; err == nil {
+			for _, r := range result {
+				if r.Chain == chainType {
+					fResult = append(fResult, r)
+				}
 			}
+			return getOffsetSwapInfo(fResult, page, pageSize), nil
 		} else {
-			if err := db.Where("chain = ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-				return result, nil
-			} else {
-				return nil, err
+			return nil, err
+		}
+		//if err := db.Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+		//	return result, nil
+		//} else {
+		//	return nil, err
+		//}
+	}
+}
+
+func getOffsetSwapInfo(infos []*types.SwapInfo, page, pageSize int) []*types.SwapInfo {
+	if pageSize == 0 {
+		return infos
+	} else {
+		if len(infos) > page*pageSize {
+			if len(infos) >= (page+1)*pageSize {
+				return infos[page*pageSize : (page+1)*pageSize]
 			}
+			return infos[page*pageSize:]
+		} else {
+			return make([]*types.SwapInfo, 0)
 		}
 	}
 }
@@ -130,19 +148,22 @@ func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, chain stri
 					return nil, err
 				}
 			} else {
-				if chainType == types.BSC {
-					if err := db.Where("eth_user_addr = ?", addr).Where("chain = ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-						return result, nil
-					} else {
-						return nil, err
+				fResult := make([]*types.SwapInfo, 0)
+				if err := db.Where("eth_user_addr = ?", addr).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+					for _, r := range result {
+						if r.Chain == chainType {
+							fResult = append(fResult, r)
+						}
 					}
+					return getOffsetSwapInfo(fResult, page, pageSize), nil
 				} else {
-					if err := db.Where("eth_user_addr = ?", addr).Where("chain != ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-						return result, nil
-					} else {
-						return nil, err
-					}
+					return nil, err
 				}
+				//if err := db.Where("eth_user_addr = ?", addr).Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				//	return result, nil
+				//} else {
+				//	return nil, err
+				//}
 			}
 		} else {
 			if chain == "" {
@@ -152,19 +173,22 @@ func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, chain stri
 					return nil, err
 				}
 			} else {
-				if chainType == types.BSC {
-					if err := db.Where("neo_user_addr = ?", addr).Where("chain == ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-						return result, nil
-					} else {
-						return nil, err
+				fResult := make([]*types.SwapInfo, 0)
+				if err := db.Where("neo_user_addr = ?", addr).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+					for _, r := range result {
+						if r.Chain == chainType {
+							fResult = append(fResult, r)
+						}
 					}
+					return getOffsetSwapInfo(fResult, page, pageSize), nil
 				} else {
-					if err := db.Where("neo_user_addr = ?", addr).Where("chain != ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-						return result, nil
-					} else {
-						return nil, err
-					}
+					return nil, err
 				}
+				//if err := db.Where("neo_user_addr = ?", addr).Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				//	return result, nil
+				//} else {
+				//	return nil, err
+				//}
 			}
 		}
 	}

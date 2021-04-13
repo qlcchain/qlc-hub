@@ -80,7 +80,7 @@ func (t *Transaction) QGasBurn(signerAccount string, nep5Addr string, amount *bi
 }
 
 // if key not found, return is 0
-func (t *Transaction) GetLockedAmountByQLCTxHash(qlcHash string) (*big.Int, error) {
+func (t *Transaction) GetQGasLockedAmountByQLCTxHash(qlcHash string) (*big.Int, error) {
 	instance, err := NewQGasChainCaller(t.contract, t.client)
 	if err != nil {
 		return nil, err
