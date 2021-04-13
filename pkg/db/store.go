@@ -71,10 +71,18 @@ func GetSwapInfos(db *gorm.DB, chain string, page, pageSize int) ([]*types.SwapI
 			return nil, err
 		}
 	} else {
-		if err := db.Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-			return result, nil
+		if chainType == types.ETH {
+			if err := db.Where("chain != ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		} else {
-			return nil, err
+			if err := db.Where("chain = ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+				return result, nil
+			} else {
+				return nil, err
+			}
 		}
 	}
 }
@@ -109,39 +117,58 @@ func GetSwapInfosByState(db *gorm.DB, page, pageSize int, state types.SwapState)
 func GetSwapInfosByAddr(db *gorm.DB, page, pageSize int, addr string, chain string, isEthAddr bool) ([]*types.SwapInfo, error) {
 	var result []*types.SwapInfo
 	chainType := types.StringToChainType(chain)
-	if isEthAddr {
-		addr = stringToLower(addr)
-		if len(addr) == 40 {
-			addr = fmt.Sprintf("0x%s", addr)
-		}
-		if chain == "" {
-			if err := db.Where("eth_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-				return result, nil
+	if chainType == types.ETH || chainType == types.BSC || chain == "" {
+		if isEthAddr {
+			addr = stringToLower(addr)
+			if len(addr) == 40 {
+				addr = fmt.Sprintf("0x%s", addr)
+			}
+			if chain == "" {
+				if err := db.Where("eth_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+					return result, nil
+				} else {
+					return nil, err
+				}
 			} else {
-				return nil, err
+				if chainType == types.BSC {
+					if err := db.Where("eth_user_addr = ?", addr).Where("chain = ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+						return result, nil
+					} else {
+						return nil, err
+					}
+				} else {
+					if err := db.Where("eth_user_addr = ?", addr).Where("chain != ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+						return result, nil
+					} else {
+						return nil, err
+					}
+				}
 			}
 		} else {
-			if err := db.Where("eth_user_addr = ?", addr).Where("chain = ?", chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-				return result, nil
+			if chain == "" {
+				if err := db.Where("neo_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+					return result, nil
+				} else {
+					return nil, err
+				}
 			} else {
-				return nil, err
-			}
-		}
-	} else {
-		if chain == "" {
-			if err := db.Where("neo_user_addr = ?", addr).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-				return result, nil
-			} else {
-				return nil, err
-			}
-		} else {
-			if err := db.Where("neo_user_addr = ? & chain = ?", addr, chainType).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
-				return result, nil
-			} else {
-				return nil, err
+				if chainType == types.BSC {
+					if err := db.Where("neo_user_addr = ?", addr).Where("chain == ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+						return result, nil
+					} else {
+						return nil, err
+					}
+				} else {
+					if err := db.Where("neo_user_addr = ?", addr).Where("chain != ?", types.BSC).Scopes(Paginate(page, pageSize)).Order("last_modify_time DESC").Find(&result).Error; err == nil {
+						return result, nil
+					} else {
+						return nil, err
+					}
+				}
 			}
 		}
 	}
+	return nil, nil
 }
 
 func stringToLower(str string) string {
