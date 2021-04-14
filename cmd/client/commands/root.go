@@ -21,7 +21,7 @@ var (
 	hubUrl string
 
 	// neo setting
-	neoUrl            = []string{"https://testnet2.neo2.coz.io:443"}
+	neoUrl            = []string{"http://seed5.ngd.network:20332"}
 	neoContract       = "bfcbb52d61bc6d3ef2c8cf43f595f4bf5cac66c5"
 	neoContractLE     util.Uint160
 	neoOwnerAddress   = "ANFnCg69c8VfE36hBhLZRrmofZ9CZU1vqZ"
@@ -41,15 +41,15 @@ var (
 
 	// bsc setting (nep5 -> bsc)
 	bscUrl          = []string{"https://bsc-rpc-test.qlcchain.online"}
-	bscContractNep5 = "0x550f28C8ccc66002E927483C6cb83D9997d9ebf2"
+	bscContractNep5 = "0xF284c1C1D03BCCC8b32e9736919C0D7CA8b06aeD"
 	bscUserPrivate  = "d6aedb156c57320b7246c4463c9ee9c9d54df23513ece5eda0f2c9d3fdfc5822"
 	bscUserAddress  = "0x318c6E6613D34a57972f2679d5039E807f048C6E"
 
 	// eth setting (qgas -> eth)
-	ethContractQGas = "0x1aFFc415416f1D157F4603f37aE1AC9011487111"
+	ethContractQGas = "0x334856843E77B9f1a857814c96289236F13418D9"
 
 	// bsc setting (qgas -> eth)
-	bscContractQGas = "0xF791c6cf47C3650Fb8e65f1Ab0bFaDEfcFD51af5"
+	bscContractQGas = "0xfEF38Cebfa3c73a194b1296f5c6dbaafc81f77Da"
 
 	// qlc setting
 	qlcUserPrivate = "8be0696a2d51dec8e2859dcb8ce2fd7ce7412eb9d6fa8a2089be8e8f1eeb4f0e458779381a8d21312b071729344a0cb49dc1da385993e19d58b5578da44c0df0"

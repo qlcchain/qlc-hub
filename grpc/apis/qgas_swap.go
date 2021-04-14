@@ -261,7 +261,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 	}
 
 	if blk.Type == qlctypes.ContractSend { // pledge
-		g.logger.Infof("QGas pledge send block: %s", blk.String(), types.QGasSwapStateToString(swapInfo.State))
+		g.logger.Infof("QGas pledge send block: %s", blk.GetHash().String(), types.QGasSwapStateToString(swapInfo.State))
 		if blk.GetHash().String() != swapInfo.QlcSendTxHash {
 			g.logger.Errorf("QGas invalid send hash: %s, qlc[%s]", swapInfo.QlcSendTxHash, blk.GetHash())
 			return nil, errors.New("invalid state")

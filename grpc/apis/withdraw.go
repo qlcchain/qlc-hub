@@ -123,11 +123,11 @@ func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(chainTxHash common.Hash, txHeig
 	if txHeight != 0 {
 		if chainType == types.ETH {
 			if err := w.eth.WaitTxVerifyAndConfirmed(chainTxHash, txHeight, w.cfg.EthCfg.EthConfirmedHeight+1); err != nil {
-				return fmt.Errorf("tx confirmed: %s", err)
+				return fmt.Errorf("eth tx confirmed: %s", err)
 			}
 		} else {
 			if err := w.bsc.WaitTxVerifyAndConfirmed(chainTxHash, txHeight, w.cfg.BscCfg.BscConfirmedHeight+1); err != nil {
-				return fmt.Errorf("tx confirmed: %s", err)
+				return fmt.Errorf("bsc tx confirmed: %s", err)
 			}
 		}
 	}
@@ -166,7 +166,7 @@ func (w *WithdrawAPI) toWaitConfirmWithdrawEthTx(chainTxHash common.Hash, txHeig
 
 	w.logger.Infof("neo tx created: %s. eth[%s]", neoTx, chainTxHash.String())
 	if _, err := w.neo.WaitTxVerifyAndConfirmed(neoTx, w.cfg.NEOCfg.ConfirmedHeight); err != nil {
-		return fmt.Errorf("tx confirmed: %s", err)
+		return fmt.Errorf("neo tx confirmed: %s", err)
 	}
 	if _, err := w.neo.QueryLockedInfo(chainTxHash.String()); err != nil {
 		return fmt.Errorf("cannot get swap info: %s", err)
