@@ -224,11 +224,12 @@ func (g *QGasSwapAPI) convertBlock(params *pb.StateBlockSigned) (*qlctypes.State
 	if err != nil {
 		return nil, nil, fmt.Errorf("signature, %s", err)
 	}
-	workStr := params.GetWork()
-	work := new(qlctypes.Work)
-	if err := work.ParseWorkHexString(workStr); err != nil {
-		return nil, nil, fmt.Errorf("work, %s", err)
-	}
+
+	//workStr := params.GetWork()
+	//work := new(qlctypes.Work)
+	//if err := work.ParseWorkHexString(workStr); err != nil {
+	//	return nil, nil, fmt.Errorf("work, %s", err)
+	//}
 
 	swapInfo, err := db.GetQGasSwapInfoByUserTxHash(g.store, params.GetHash())
 	blockStr := swapInfo.BlockStr
@@ -240,7 +241,7 @@ func (g *QGasSwapAPI) convertBlock(params *pb.StateBlockSigned) (*qlctypes.State
 	if err := block.Deserialize(blockBytes); err != nil {
 		return nil, nil, fmt.Errorf("block deserialize, %s", err)
 	}
-	block.Work = *work
+	//block.Work = *work
 	block.Signature = signature
 	return block, swapInfo, nil
 }
@@ -250,7 +251,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 		return nil, errors.New("nil block")
 	}
 	g.logger.Infof("call QGas Process Block ......... (%s) ", params)
-	if params.GetHash() == "" || params.GetSignature() == "" || params.GetWork() == "" {
+	if params.GetHash() == "" || params.GetSignature() == "" {
 		return nil, errors.New("invalid params")
 	}
 
@@ -590,12 +591,12 @@ func (g *QGasSwapAPI) signEthData(amount *big.Int, receiveAddr string, neoTxHash
 }
 
 func (g *QGasSwapAPI) signQLCTx(block *qlctypes.StateBlock) error {
-	var w qlctypes.Work
-	worker, err := qlctypes.NewWorker(w, block.Root())
-	if err != nil {
-		return err
-	}
-	block.Work = worker.NewWork()
+	//var w qlctypes.Work
+	//worker, err := qlctypes.NewWorker(w, block.Root())
+	//if err != nil {
+	//	return err
+	//}
+	//block.Work = worker.NewWork()
 	hash := block.GetHash()
 	signature, err := g.signer.Sign(pb.SignType_QLC, g.cfg.QlcCfg.QlcOwner, hash.Bytes())
 	if err != nil {

@@ -178,19 +178,19 @@ func nQlc2EthPending() {
 }
 
 func signQLCTx(hash, root string) (string, string) {
-	var w qlctypes.Work
-	var rootHash qlctypes.Hash
-	rootHash.Of(root)
-	worker, err := qlctypes.NewWorker(w, rootHash)
-	if err != nil {
-		log.Fatal(err)
-	}
-	work := worker.NewWork()
+	//var w qlctypes.Work
+	//var rootHash qlctypes.Hash
+	//rootHash.Of(root)
+	//worker, err := qlctypes.NewWorker(w, rootHash)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//work := worker.NewWork()
 
 	var blockHash qlctypes.Hash
 	blockHash.Of(hash)
 	signature := qlcUserAccount.Sign(blockHash)
-	return signature.String(), work.String()
+	return signature.String(), ""
 }
 
 func nQlc2Bsc() {
