@@ -766,12 +766,26 @@ func (g *QGasSwapAPI) correctSwapState() error {
 				continue
 			}
 			for _, info := range infos {
-				if info.State == types.QGasPledgePending {
+				if info.State == types.QGasPledgePending && time.Now().Unix()-info.LastModifyTime > 60*6 {
 					if info.CrossChainTxHash != "" {
 						g.processPledgeEthTx(info)
+					} else {
+						var amount *big.Int
+						var err error
+						if info.Chain == types.ETH {
+							amount, err = g.eth.GetQGasLockedAmountByQLCTxHash(info.QlcSendTxHash)
+						} else {
+							amount, err = g.bsc.GetQGasLockedAmountByQLCTxHash(info.QlcSendTxHash)
+						}
+						if err == nil && amount.Int64() == info.Amount {
+							info.State = types.QGasPledgeDone //can not get tx hash in eth contract
+							if err := db.UpdateQGasSwapInfo(g.store, info); err == nil {
+								g.logger.Infof("correct qgas deposit swap state: qlc[%s]", info.QlcSendTxHash)
+							}
+						}
 					}
 				}
-				if info.State == types.QGasWithDrawInit {
+				if info.State == types.QGasWithDrawInit && time.Now().Unix()-info.LastModifyTime > 60*5 {
 					if err := g.processWithdrawChainTx(info); err != nil {
 						g.logger.Errorf("QGas eth tx confirmed:  %s, eth[%s]", err, info.CrossChainTxHash)
 					}
