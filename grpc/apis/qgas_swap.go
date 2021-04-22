@@ -252,6 +252,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 	}
 	g.logger.Infof("call QGas Process Block ......... (%s) ", params)
 	if params.GetHash() == "" || params.GetSignature() == "" {
+		g.logger.Errorf("invalid params, %s", params)
 		return nil, errors.New("invalid params")
 	}
 
@@ -353,6 +354,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 			Hash: swapInfo.QlcRewardTxHash,
 		}, nil
 	}
+	g.logger.Errorf("invalid block typ: %s", blk.GetType())
 	return nil, fmt.Errorf("invalid block typ: %s", blk.GetType())
 }
 
