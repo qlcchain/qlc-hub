@@ -262,6 +262,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 		return nil, err
 	}
 
+	g.logger.Infof("QGas process block: %s", blk.String())
 	if blk.Type == qlctypes.ContractSend { // pledge
 		g.logger.Infof("QGas pledge send block: %s", blk.GetHash().String(), types.QGasSwapStateToString(swapInfo.State))
 		if blk.GetHash().String() != swapInfo.QlcSendTxHash {
@@ -332,7 +333,7 @@ func (g *QGasSwapAPI) ProcessBlock(ctx context.Context, params *pb.StateBlockSig
 			}, nil
 		}
 	} else if blk.Type == qlctypes.ContractReward { // withdraw
-		g.logger.Infof("QGas withdraw reward block: %s", blk.String(), types.QGasSwapStateToString(swapInfo.State))
+		g.logger.Infof("QGas withdraw reward block: %s", blk.GetHash().String(), types.QGasSwapStateToString(swapInfo.State))
 		if !g.qlc.CheckBlockOnChain(blk.GetHash()) {
 			if err := g.qlc.ProcessAndWaitConfirmed(blk); err != nil {
 				g.logger.Errorf("QGas Process withdraw reward block: %s, eth[%s]", err, swapInfo.CrossChainTxHash)
