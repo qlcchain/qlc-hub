@@ -12,14 +12,13 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/mr-tron/base58 v1.2.0
-	github.com/nspcc-dev/neo-go v0.78.3
+	github.com/nspcc-dev/neo-go v0.98.0
 	github.com/qlcchain/qlc-go-sdk v0.0.0-20210324133031-2045ee7a8e36
 	github.com/rs/cors v1.7.0
-	go.uber.org/zap v1.16.0
-	golang.org/x/tools v0.0.0-20201022035929-9cf592e881e9 // indirect
+	go.uber.org/zap v1.18.1
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
-	google.golang.org/grpc v1.36.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/grpc v1.41.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gopkg.in/validator.v2 v2.0.0-20200605151824-2b28d334fa05
 	gorm.io/driver/sqlite v1.1.4
