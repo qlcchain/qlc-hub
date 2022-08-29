@@ -15,8 +15,7 @@ require (
 	github.com/nspcc-dev/neo-go v0.78.3
 	github.com/qlcchain/qlc-go-sdk v0.0.0-20210324133031-2045ee7a8e36
 	github.com/rs/cors v1.7.0
-	go.uber.org/zap v1.16.0
-	golang.org/x/tools v0.0.0-20201022035929-9cf592e881e9 // indirect
+	go.uber.org/zap v1.23.0
 	google.golang.org/genproto v0.0.0-20200904004341-0bd0a958aa1d
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.26.0
